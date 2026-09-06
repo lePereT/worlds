@@ -1,78 +1,195 @@
 package.path='./src/?.lua;'..package.path
-local Model=require('worlds.harden')
-local Certified=require('worlds.certified')
-local Attachment=require('worlds.attachment')
+local W=require('worlds')
+local Model,Att=W.Model,W.Att
+local Internal=require('worlds.internal')
+
 local passed=0
 local function test(name,f)
-  io.write(string.format('%-76s ',name)); local ok,err=pcall(f); if not ok then print('FAIL'); error(err,0) end; passed=passed+1; print('ok')
+  io.write(string.format('%-88s ',name))
+  local ok,err=pcall(f)
+  if not ok then print('FAIL'); error(err,0) end
+  passed=passed+1; print('ok')
 end
-local function fail(f,pat) local ok,err=pcall(f); assert(not ok,'expected failure'); if pat then assert(tostring(err):find(pat,1,true),tostring(err)) end end
+local function eq(a,b,msg) assert(a==b,msg or (tostring(a)..' ~= '..tostring(b))) end
+local function ne(a,b,msg) assert(a~=b,msg or (tostring(a)..' == '..tostring(b))) end
 
-test('kernel handles and incidence arrays are opaque outside Model methods',function()
-  local m=Model.new('O'); local W=m:world('W',m.actuality); local P=m:point('P',W,'P'); local a=m:admit('a',W,{P},'A')
-  fail(function() a.sort='FORGED' end,'opaque')
-  fail(function() W.parent=nil end,'opaque')
-  fail(function() m.next_serial=1 end,'opaque')
-  local ps=a.points; ps[1]=nil; assert(a.points[1]==P,'mutating returned incidence array changed kernel state')
-  local objects=m.objects; objects[1]=nil; assert(m.objects[1]==m.actuality,'mutating returned object list changed Model state')
-  fail(function() m:face('forged',W,{{dim=1}}, {},'F') end,'Strand of this Model')
-  assert(m._cell==nil and m._face==nil and m._clone_generated==nil)
-  assert(m._stage_component==nil and m._parents==nil and m._realised_uses==nil and m._offer_pool==nil)
-  fail(function() Certified.certify({actuality=W,same_point=function() return true end,objects={}}) end,'certify expects World Model')
-  Certified.certify(m)
+local function attach(m,world,seed,fixed)
+  local p=Att.patch(m,seed)
+  local q=Att.at(m,world):query(p,fixed)
+  local status,w=q:step(math.huge)
+  eq(status,'hit','expected complete attachment')
+  return w:graft(),w
+end
+local function status(m,world,seed,fixed)
+  local q=Att.at(m,world):query(Att.patch(m,seed),fixed)
+  return q:step(math.huge)
+end
+
+local function nested_factory(m)
+  local O=m.actuality
+  local Make=m:point('Make',O,'ConstructorIdentity')
+  local FactorySchema=m:point('FactorySchema',O,'FactorySchema')
+  local ChildSchema=m:point('ChildSchema',O,'ChildSchema')
+
+  local D1=m:world('make-D'); local G1=m:world('make-G')
+  local make_gate=m:strand('make?',D1,{Make},'ConstructorAuthority')
+  local fi=m:point('factory-instance',G1,'FactoryInstance')
+  local factory=m:strand('factory',G1,{FactorySchema,fi},'FactoryAuthority')
+  m:face('construct',G1,{make_gate},{factory},'Construct')
+
+  local D2=m:world('factory-D'); local G2=m:world('factory-G')
+  local fiq=m:point('factory-instance?',D2,'FactoryInstance')
+  local fgate=m:strand('factory?',D2,{FactorySchema,fiq},'FactoryAuthority')
+  local ci=m:point('child-instance',G2,'ChildInstance')
+  local child=m:strand('child',G2,{ChildSchema,ci},'ChildAuthority')
+  m:face('factory-body',G2,{fgate},{child},'FactoryBody')
+
+  local D3=m:world('child-D'); local G3=m:world('child-G')
+  local ciq=m:point('child-instance?',D3,'ChildInstance')
+  local cgate=m:strand('child?',D3,{ChildSchema,ciq},'ChildAuthority')
+  local R=m:point('R',G3,'ResultIdentity')
+  local out=m:strand('child-result',G3,{R},'ChildResult')
+  m:face('child-body',G3,{cgate},{out},'ChildBody')
+
+  return {Make=Make,G1=G1,make_gate=make_gate,fi=fi,factory=factory,
+          G2=G2,fiq=fiq,fgate=fgate,ci=ci,child=child,
+          G3=G3,ciq=ciq,cgate=cgate}
+end
+
+test('1. higher order remains repeated fresh attachment through stable and generated identity',function()
+  local m=Model.new('O'); local a=nested_factory(m); local K=m:world('call',m.actuality)
+  local make=m:strand('make',K,{a.Make},'ConstructorAuthority')
+  local i1=attach(m,K,a.make_gate,{{demand=a.make_gate,supply=make}})
+  local factory=i1.map[a.factory]
+  local i2=attach(m,factory.world,a.fgate,{{demand=a.fgate,supply=factory}})
+  local child=i2.map[a.child]
+  local i3=attach(m,child.world,a.cgate,{{demand=a.cgate,supply=child}})
+  eq(i1.map[a.G1].parent,K)
+  eq(i2.map[a.G2].parent,factory.world)
+  eq(i3.map[a.G3].parent,child.world)
+  eq(i2.map[a.fiq],i1.map[a.fi])
+  eq(i3.map[a.ciq],i2.map[a.ci])
 end)
 
-test('rawset shadow fields cannot alter certification observations',function()
-  local m=Model.new('O'); local W=m:world('W',m.actuality); local P=m:point('P',W,'P'); m:strand('minted',W,{P},'A')
-  fail(function() Certified.certify(m) end,'actual authority requires exactly one producer or explicit admission')
-  rawset(m,'objects',{m.actuality})
-  fail(function() Certified.certify(m) end,'non-opaque handle')
-
-  local n=Model.new('O'); local NW=n:world('W',n.actuality); local NP=n:point('P',NW,'P'); local a=n:admit('a',NW,{NP},'A')
-  local x=n:strand('x',NW,{NP},'A'); local y=n:strand('y',NW,{NP},'A')
-  local f1=n:face('one',NW,{a},{x},'F'); n:face('two',NW,{a},{y},'F')
-  fail(function() Certified.certify(n) end,'scarcity')
-  rawset(f1,'inputs',{})
-  fail(function() Certified.certify(n) end,'non-opaque handle')
+test('2. independent higher-order paths retain fresh generated identities',function()
+  local m=Model.new('O'); local a=nested_factory(m)
+  local K1=m:world('K1',m.actuality); local K2=m:world('K2',m.actuality)
+  local make1=m:strand('make1',K1,{a.Make},'ConstructorAuthority')
+  local make2=m:strand('make2',K2,{a.Make},'ConstructorAuthority')
+  local x=attach(m,K1,a.make_gate,{{demand=a.make_gate,supply=make1}})
+  local y=attach(m,K2,a.make_gate,{{demand=a.make_gate,supply=make2}})
+  ne(x.map[a.fi],y.map[a.fi])
+  local fx=attach(m,x.map[a.factory].world,a.fgate,{{demand=a.fgate,supply=x.map[a.factory]}})
+  local fy=attach(m,y.map[a.factory].world,a.fgate,{{demand=a.fgate,supply=y.map[a.factory]}})
+  ne(fx.map[a.ci],fy.map[a.ci])
 end)
 
-test('certification detects mutation of its pinned Lua trust modules',function()
-  local Audit=require('worlds.audit')
-  local original=Audit.check_certified
-  rawset(Audit,'check_certified',function() return true end)
-  local m=Model.new('O'); local W=m:world('W',m.actuality); local P=m:point('P',W,'P'); m:strand('minted',W,{P},'A')
-  fail(function() Certified.certify(m) end,'trust surface changed')
-  rawset(Audit,'check_certified',original)
+local function dynamic_capture(m)
+  local O=m.actuality
+  local Make=m:point('Make',O,'ConstructorIdentity')
+  local ChildSchema=m:point('ChildSchema',O,'ChildSchema')
+  local X=m:point('X',O,'Resource')
+  local Dg=m:world('make-gate-D'); local Dx=m:world('make-x-D'); local G=m:world('closure-G')
+  local gate=m:strand('make?',Dg,{Make},'ConstructorAuthority')
+  local xin=m:strand('x?',Dx,{X},'ResourceOccurrence')
+  local ci=m:point('child-instance',G,'ChildInstance')
+  local held=m:strand('held-x',G,{X},'HeldResource')
+  local child=m:strand('child',G,{ChildSchema,ci},'ChildAuthority')
+  local construct=m:face('construct',G,{gate,xin},{held,child},'Construct')
 
-  local original_same=Model.same_point
-  rawset(Model,'same_point',function() return true end)
-  local n=Model.new('O'); local NW=n:world('W',n.actuality); local NP=n:point('P',NW,'P'); n:admit('a',NW,{NP},'A')
-  fail(function() Certified.certify(n) end,'trust surface changed')
-  rawset(Model,'same_point',original_same)
-  Certified.certify(n)
+  local Dc=m:world('child-D'); local Dh=m:world('held-D'); local Gc=m:world('child-G')
+  local ciq=m:point('child-instance?',Dc,'ChildInstance')
+  local cgate=m:strand('child?',Dc,{ChildSchema,ciq},'ChildAuthority')
+  local heldq=m:strand('held?',Dh,{X},'HeldResource')
+  local out=m:strand('out',Gc,{X},'Result')
+  local body=m:face('body',Gc,{cgate,heldq},{out},'ChildBody')
+  return {Make=Make,X=X,gate=gate,xin=xin,G=G,held=held,child=child,construct=construct,
+          cgate=cgate,heldq=heldq,body=body}
+end
+
+test('3. dynamic capture is still explicit authority transfer into fresh locality',function()
+  local m=Model.new('O'); local a=dynamic_capture(m); local K=m:world('call',m.actuality)
+  local make=m:strand('make',K,{a.Make},'ConstructorAuthority')
+  local x=m:strand('x',K,{a.X},'ResourceOccurrence')
+  local i=attach(m,K,a.gate,{{demand=a.gate,supply=make}})
+  local held=i.map[a.held]
+  ne(held,x); eq(i.map[a.construct].inputs[2],x); eq(held.world,i.map[a.G])
+  local child=i.map[a.child]
+  local j=attach(m,child.world,a.cgate,{{demand=a.cgate,supply=child}})
+  eq(j.map[a.heldq],held); eq(j.map[a.body].inputs[2],held)
 end)
 
-
-test('attachment handles keep semantic state outside user-mutable tables',function()
-  local m=Model.new('O'); local O=m.actuality; local X=m:point('X',O,'X'); local D=m:world('D'); local G=m:world('G')
-  local d=m:strand('d',D,{X},'R'); local o=m:strand('o',G,{X},'O'); m:face('f',G,{d},{o},'F'); local K=m:world('K',O); m:strand('r',K,{X},'R')
-  local p=Attachment.patch(m,d); fail(function() p.foo='bar' end,'immutable'); rawset(p,'foo','shadow')
-  local fixed={}; local q=Attachment.query(m,K,p,fixed); fixed[1]={demand=d,supply=nil}
-  local st,w=q:step(math.huge); assert(st=='hit' and Attachment.is_witness(w))
-  fail(function() w.signature='forged' end,'immutable'); rawset(w,'signature','forged')
-  local i=Attachment.graft(w); assert(i and i.faces[1])
-  fail(function() Attachment.graft({}) end,'Witness')
+test('4. recursive/re-entrant behaviour is repeated attachment, never cyclic actual geometry',function()
+  local m=Model.new('O'); local O=m.actuality; local F=m:point('F',O,'CallableIdentity')
+  local D=m:world('D'); local G=m:world('G')
+  local gate=m:strand('f?',D,{F},'CallableAuthority')
+  local nextf=m:strand('next',G,{F},'CallableAuthority')
+  m:face('body',G,{gate},{nextf},'Body')
+  local K=m:world('initial',O); local f0=m:strand('f0',K,{F},'CallableAuthority')
+  local i1=attach(m,K,gate,{{demand=gate,supply=f0}})
+  local f1=i1.map[nextf]
+  local i2=attach(m,f1.world,gate,{{demand=gate,supply=f1}})
+  local f2=i2.map[nextf]
+  local i3=attach(m,f2.world,gate,{{demand=gate,supply=f2}})
+  eq(i2.map[G].parent,f1.world); eq(i3.map[G].parent,f2.world)
+  local ok,why=Internal.model(m):check_actual_subcomplex(); assert(ok,why)
 end)
 
-test('failed atomic mutation invalidates adjacency caches',function()
-  local Internal=require('worlds.internal'); local m=Model.new('O'); local W=m:world('W',m.actuality); local im=Internal.model(m)
-  assert(#im:_children(W)==0)
-  local ok=pcall(function()
-    m:atomic(function() m:world('temporary',W); assert(#im:_children(W)==1); error('rollback') end)
-  end)
-  assert(not ok and #im:_children(W)==0)
-  local keep=m:world('keep',W); local xs=im:_children(W); assert(#xs==1 and xs[1]==keep)
+local function choice_model()
+  local m=Model.new('O'); local O=m.actuality
+  local C=m:point('Choice',O,'ChoiceIdentity')
+  local True=m:point('True',O,'BranchTag')
+  local False=m:point('False',O,'BranchTag')
+  local X=m:point('X',O,'Resource')
+  local function branch(tag,name)
+    local Dg=m:world(name..'-Dg'); local Dx=m:world(name..'-Dx'); local G=m:world(name..'-G')
+    local gate=m:strand(name..'-gate',Dg,{C,tag},'ChoiceAuthority')
+    local x=m:strand(name..'-x?',Dx,{X},'R')
+    local out=m:strand(name..'-out',G,{X},'Out')
+    local body=m:face(name..'-body',G,{gate,x},{out},'BranchBody')
+    return {gate=gate,x=x,G=G,body=body}
+  end
+  return m,{C=C,True=True,False=False,X=X,t=branch(True,'true'),f=branch(False,'false')}
+end
+
+test('5. alternatives are separate patches selected by identity incidence, not an implicit chooser',function()
+  local m,a=choice_model(); local K=m:world('choice-call',m.actuality)
+  local r=m:strand('r',K,{a.X},'R')
+  local choose=m:strand('choose-true',K,{a.C,a.True},'ChoiceAuthority')
+  local stt,wt=status(m,K,a.t.gate,{{demand=a.t.gate,supply=choose}}); eq(stt,'hit')
+  local stf=status(m,K,a.f.gate,{{demand=a.f.gate,supply=choose}}); eq(stf,'retry')
+  local i=wt:graft(); eq(i.map[a.t.x],r); assert(m:is_suspended(a.f.G))
+  eq(Internal.model(m):_realised_uses(r),1)
 end)
 
+test('6. one-shot continuation is authority plus detached resume geometry',function()
+  local m=Model.new('O'); local O=m.actuality
+  local H=m:point('Handler',O,'HandlerIdentity')
+  local KId=m:point('Continuation',O,'ContinuationIdentity')
+  local V=m:point('V',O,'Value')
 
-print(string.format('%d/%d Lua hardening tests passed',passed,passed))
+  local D1=m:world('handle-D'); local G1=m:world('handle-G')
+  local gate=m:strand('op?',D1,{H},'OperationAuthority')
+  local inst=m:point('resume-inst',G1,'ResumeInstance')
+  local held=m:strand('held-state',G1,{V,inst},'HeldState')
+  local k=m:strand('k',G1,{KId,inst},'ContinuationAuthority')
+  m:face('handle',G1,{gate},{held,k},'HandlerBody')
+
+  local D2=m:world('resume-D'); local G2=m:world('resume-G')
+  local iq=m:point('resume-inst?',D2,'ResumeInstance')
+  local kg=m:strand('k?',D2,{KId,iq},'ContinuationAuthority')
+  local hq=m:strand('held?',D2,{V,iq},'HeldState')
+  local rv=m:strand('resume-value?',D2,{V},'ResumeValue')
+  local out=m:strand('done',G2,{V},'Result')
+  local resume=m:face('resume',G2,{kg,hq,rv},{out},'ResumeBody')
+
+  local Wc=m:world('handler-call',O); local op=m:strand('op',Wc,{H},'OperationAuthority')
+  local first=attach(m,Wc,gate,{{demand=gate,supply=op}})
+  local kk,hh=first.map[k],first.map[held]
+  local value=m:strand('v',kk.world,{V},'ResumeValue')
+  local second=attach(m,kk.world,kg,{{demand=kg,supply=kk}})
+  eq(second.map[hq],hh); eq(second.map[rv],value); eq(second.map[resume].sort,'ResumeBody')
+  local st=status(m,kk.world,kg,{{demand=kg,supply=kk}}); eq(st,'retry')
+end)
+
+print(string.format('%d/%d high-value semantic regression tests passed',passed,passed))

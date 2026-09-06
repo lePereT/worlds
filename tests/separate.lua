@@ -1,5 +1,5 @@
 package.path='./src/?.lua;'..package.path
-local Model=require('worlds.harden'); local Sep=require('worlds.separate'); local Att=require('worlds.attachment')
+local Model=require('worlds.harden'); local Sep=require('worlds.separate'); local Att=require('worlds.att')
 local Internal=require('worlds.internal')
 local passed=0
 local function test(name,f) io.write(string.format('%-78s ',name)); local ok,err=pcall(f); if not ok then print('FAIL'); error(err,0) end; passed=passed+1; print('ok') end
@@ -9,9 +9,9 @@ local function expect_fail(f,pat) local ok,err=pcall(f); assert(not ok,'expected
 
 local function invoke(m,gate,trigger)
   local p=Att.patch(m,gate)
-  local q=Att.query(m,trigger.world,p,{{demand=gate,supply=trigger}})
+  local q=Att.at(m,trigger.world):query(p,{{demand=gate,supply=trigger}})
   local st,w=q:step(math.huge); assert(st=='hit','expected attachment hit, got '..tostring(st))
-  return Att.graft(w)
+  return w:graft()
 end
 
 local function provider(private_variant)
@@ -173,7 +173,7 @@ test('13. late aliasing across Separate is rejected atomically before grafting',
   local unit=Sep.export_unit(p,gate)
   local c=Model.new('C'); local Fc=c:point('F',c.actuality,'F'); local Xc=c:point('X',c.actuality,'X'); local linked=Sep.import_unit(c,unit,unit.frontier)
   local W=c:world('call',c.actuality); local f=c:strand('f',W,{Fc},'A'); local r=c:strand('r',W,{Xc},'R'); local before_o,before_w=#c.objects,#c.worlds
-  local q=Att.query(c,W,Att.patch(c,linked.stages[1].gate),{{demand=linked.stages[1].gate,supply=f}}); local st=q:step(math.huge); eq(st,'retry')
+  local q=Att.at(c,W):query(Att.patch(c,linked.stages[1].gate),{{demand=linked.stages[1].gate,supply=f}}); local st=q:step(math.huge); eq(st,'retry')
   eq(#c.objects,before_o); eq(#c.worlds,before_w); eq(Internal.model(c):_realised_uses(f),0); eq(Internal.model(c):_realised_uses(r),0)
 end)
 

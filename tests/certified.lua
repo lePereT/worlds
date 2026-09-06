@@ -1,5 +1,5 @@
 package.path='./src/?.lua;'..package.path
-local K={Model=require('worlds.harden'),Certified=require('worlds.certified'),Attachment=require('worlds.attachment')}
+local K={Model=require('worlds.harden'),Certified=require('worlds.certified'),Attachment=require('worlds.att')}
 local Model=K.Model
 local Certified=K.Certified
 local Attachment=K.Attachment
@@ -60,8 +60,8 @@ test('successful witnessed graft preserves certification for a certified model',
   local D=m:world('D'); local G=m:world('G'); local gate=m:strand('gate',D,{F},'Call'); local out=m:strand('out',G,{F},'Out'); m:face('body',G,{gate},{out},'Body')
   local W=m:world('W',O); local trigger=m:admit('trigger',W,{F},'Call')
   Certified.certify(m)
-  local p=Attachment.patch(m,gate); local q=Attachment.query(m,W,p,{{demand=gate,supply=trigger}}); local st,w=q:step(math.huge); assert(st=='hit')
-  Attachment.graft(w); Certified.certify(m)
+  local p=Attachment.patch(m,gate); local q=Attachment.at(m,W):query(p,{{demand=gate,supply=trigger}}); local st,w=q:step(math.huge); assert(st=='hit')
+  w:graft(); Certified.certify(m)
 end)
 
 print(string.format('%d/%d certified World tests passed',passed,passed))

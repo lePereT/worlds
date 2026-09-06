@@ -1,15 +1,19 @@
-# Worlds 0.2 tests
+# Worlds 0.3 tests
 
 ```text
-api.lua               0.2 public surface and compatibility break
+api.lua               minimal public surface
 compat.lua            Lua 5.1/library compatibility
-attachment.lua         complete Att(K), global matching, locality, freshness
-attachment_query.lua   retained Hit/Retry/Unknown search and invalidation
-harden.lua             opaque Lua trust boundary
-certified.lua          actual + detached-patch certification
-separate.lua           portable geometry using attachment/graft
-frontier.lua           frontier abstraction and separate invocation
-stress_attachment.lua  deterministic generated attachment/query stress
+attachment.lua        complete Att over actual Frontiers
+attachment_query.lua  retained Hit/Retry/Unknown search
+regression.lua        higher-order/capture/recursion semantic regressions
+harden.lua            opaque trust boundary
+certified.lua         certification and immutable Readers
+separate.lua          portable detached geometry
+residual.lua          exact pointed Cuts and derived internal cubes
+residual_global.lua   exact cross-patch compatibility/conflict
+residual_causal.lua   residual Frontiers, causal enablement and global cubes
+att03.lua             unified actual/read-only Att API
+stress_attachment.lua generated attachment oracle comparison
+stress_residual.lua   generated exact-cut state-space comparison
+reference/            exhaustive test-only semantic oracles
 ```
-
-`regression.lua` exercises higher-order grafting, capture, repeated unfolding, alternatives and one-shot continuations through the attachment/graft model.

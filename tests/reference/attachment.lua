@@ -1,8 +1,8 @@
 -- Exhaustive reference enumerator for Att_K(P).
 --
 -- Deliberately not exported by worlds.lua.  It exists for differential tests,
--- hostile examples and the next few months of research.  Production code should
--- use worlds.Attachment.query rather than materialising the complete space.
+-- hostile examples and the next few months of research.  Production code should use Worlds.Att over an exact Frontier rather than
+-- materialising the complete space.
 
 local Internal=require('worlds.internal')
 local Topology=require('worlds.topology')

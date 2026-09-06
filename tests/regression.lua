@@ -1,6 +1,6 @@
 package.path='./src/?.lua;'..package.path
 local W=require('worlds')
-local Model,Att=W.Model,W.Attachment
+local Model,Att=W.Model,W.Att
 local Internal=require('worlds.internal')
 
 local passed=0
@@ -15,13 +15,13 @@ local function ne(a,b,msg) assert(a~=b,msg or (tostring(a)..' == '..tostring(b))
 
 local function attach(m,world,seed,fixed)
   local p=Att.patch(m,seed)
-  local q=Att.query(m,world,p,fixed)
+  local q=Att.at(m,world):query(p,fixed)
   local status,w=q:step(math.huge)
   eq(status,'hit','expected complete attachment')
-  return Att.graft(w),w
+  return w:graft(),w
 end
 local function status(m,world,seed,fixed)
-  local q=Att.query(m,world,Att.patch(m,seed),fixed)
+  local q=Att.at(m,world):query(Att.patch(m,seed),fixed)
   return q:step(math.huge)
 end
 
@@ -158,7 +158,7 @@ test('5. alternatives are separate patches selected by identity incidence, not a
   local choose=m:strand('choose-true',K,{a.C,a.True},'ChoiceAuthority')
   local stt,wt=status(m,K,a.t.gate,{{demand=a.t.gate,supply=choose}}); eq(stt,'hit')
   local stf=status(m,K,a.f.gate,{{demand=a.f.gate,supply=choose}}); eq(stf,'retry')
-  local i=Att.graft(wt); eq(i.map[a.t.x],r); assert(m:is_suspended(a.f.G))
+  local i=wt:graft(); eq(i.map[a.t.x],r); assert(m:is_suspended(a.f.G))
   eq(Internal.model(m):_realised_uses(r),1)
 end)
 

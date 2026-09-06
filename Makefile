@@ -1,8 +1,8 @@
 LUA ?= lua
 LUAC ?= luac
 
-DIRECTED = tests/api.lua tests/compat.lua tests/attachment.lua tests/attachment_query.lua tests/regression.lua tests/harden.lua tests/certified.lua tests/separate.lua tests/frontier.lua
-STRESS = tests/stress_attachment.lua
+DIRECTED = tests/api.lua tests/compat.lua tests/attachment.lua tests/attachment_query.lua tests/regression.lua tests/harden.lua tests/certified.lua tests/separate.lua tests/residual.lua tests/residual_global.lua tests/residual_causal.lua tests/att03.lua
+STRESS = tests/stress_attachment.lua tests/stress_residual.lua
 
 .PHONY: all test stress syntax lua51 luajit
 

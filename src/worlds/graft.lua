@@ -1,4 +1,4 @@
--- Fresh attachment grafting for Worlds 0.2.
+-- Fresh exact-Witness grafting for Worlds 0.3.
 --
 -- Search/possibility is non-generative. This module is the single operation
 -- which takes a complete boundary matching and grows actuality with a fresh

@@ -115,7 +115,7 @@ end
 
 local mutating={world=true,point=true,glue_points='equivalence',strand=true,face=true,copy=true,discard=true,admit=true,_graft_attachment='equivalence'}
 
--- v0.2 public Model carrier surface. Attachment/grafting lives in Worlds.Attachment.
+-- v0.3 public Model carrier surface. Attachment and residual development live in Worlds.Att.
 -- method here is an API decision, not an accidental consequence of Raw gaining
 -- another helper.
 local PUBLIC_METHODS={

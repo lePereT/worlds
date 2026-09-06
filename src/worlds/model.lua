@@ -241,7 +241,7 @@ function M:find_actual_point(name,sort)
 end
 
 -- Fresh grafting is kept beside, rather than inside, the carrier.
--- Attachment/search itself is a derived public construction in worlds.attachment.
+-- Attachment/search itself is a derived public construction in worlds.att.
 require('worlds.graft').install(M)
 
 return M

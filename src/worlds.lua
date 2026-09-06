@@ -1,15 +1,14 @@
--- Worlds public surface, v0.2.0.
+-- Worlds public surface, v0.3.0.
 --
--- The carrier remains World/Point/Strand/Face.  Actualisation is no longer a
--- trigger-centred Model operation: Worlds.Attachment derives complete boundary
--- attachment, retained queries witness/refute it, and graft makes one witnessed
--- attachment freshly actual.
+-- The semantic carrier remains World / Point / Strand / Face.  Complete
+-- attachment, exact residual frontiers and pointed cuts are one derived
+-- relation exposed as Att; no residual/concurrency/compiler bookkeeping is
+-- carrier ontology.
 return {
-  VERSION='0.2.0',
+  VERSION='0.3.0',
   Model=require('worlds.harden'),
-  Attachment=require('worlds.attachment'),
+  Att=require('worlds.att'),
   Certified=require('worlds.certified'),
   Separate=require('worlds.separate'),
-  Frontier=require('worlds.frontier'),
   Completion=require('worlds.completion'),
 }
