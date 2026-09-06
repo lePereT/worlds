@@ -1,19 +1,39 @@
-# Worlds 0.3 tests
+# Worlds test suite
+
+The test suite exercises the Worlds 0.4.0 kernel directly:
 
 ```text
-api.lua               minimal public surface
-compat.lua            Lua 5.1/library compatibility
-attachment.lua        complete Att over actual Frontiers
-attachment_query.lua  retained Hit/Retry/Unknown search
-regression.lua        higher-order/capture/recursion semantic regressions
-harden.lua            opaque trust boundary
-certified.lua         certification and immutable Readers
-separate.lua          portable detached geometry
-residual.lua          exact pointed Cuts and derived internal cubes
-residual_global.lua   exact cross-patch compatibility/conflict
-residual_causal.lua   residual Frontiers, causal enablement and global cubes
-att03.lua             unified actual/read-only Att API
-stress_attachment.lua generated attachment oracle comparison
-stress_residual.lua   generated exact-cut state-space comparison
-reference/            exhaustive test-only semantic oracles
+Geometry + membrane selection + exact Attachment + fresh gluing
 ```
+
+It intentionally contains no compatibility layer for earlier Worlds models and
+constructs no transaction, residual, frontier or boundary object.
+
+The directed cases cover:
+
+- geometry, membrane locality and ordered incidence;
+- complete attachment and selection entitlement;
+- scarcity, identity sharing and non-injective Point substitution;
+- fresh gluing, generativity and recursive unfolding;
+- exact isomorphism and commuting-development laws;
+- extensional value interpretations without merging exact identity;
+- Theory admissibility with accepted, rejected and unknown judgements;
+- nominal interaction, name passing and fresh-name extrusion;
+- proof relevance and proof irrelevance;
+- term rewriting and quotient-sensitive process semantics;
+- cases where an extensional quotient is not a congruence for exact contexts;
+- derived Theory-sensitive attachment over equivalent process representatives.
+
+The suite includes an independent exhaustive attachment oracle for small
+geometries. Production attachment results are compared against it so solver
+strategy remains separate from semantic meaning.
+
+Higher constructions such as geometric `each`/`together` products are tested in
+client experiments rather than being promoted to kernel test fixtures before
+their derived laws are settled. Their durable implications belong in
+`RESEARCH.md` until they become part of a stable derived library/theory.
+
+`documentation_test.lua` fixes the maintained documentation set. Progress
+reports and experiment journals do not belong in the release repository;
+durable kernel statements belong in `LAWS.md` and current open work belongs in
+`RESEARCH.md`.

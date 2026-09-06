@@ -1,26 +1,51 @@
-LUA ?= lua
-LUAC ?= luac
+SHELL := /bin/sh
 
-DIRECTED = tests/api.lua tests/compat.lua tests/attachment.lua tests/attachment_query.lua tests/regression.lua tests/harden.lua tests/certified.lua tests/separate.lua tests/residual.lua tests/residual_global.lua tests/residual_causal.lua tests/att03.lua
-STRESS = tests/stress_attachment.lua tests/stress_residual.lua
+# Preferred interpreter order: LuaJIT, generic Lua, versioned Lua, TexLua.
+# Override explicitly with e.g. `make LUA=texlua test`.
+LUA_CANDIDATES := luajit lua lua5.4 lua5.3 texlua
+LUA ?= $(shell for c in $(LUA_CANDIDATES); do \
+    if command -v $$c >/dev/null 2>&1; then printf '%s' $$c; break; fi; \
+  done)
 
-.PHONY: all test stress syntax lua51 luajit
+ifeq ($(strip $(LUA)),)
+$(error No Lua interpreter found. Tried: $(LUA_CANDIDATES))
+endif
 
-all: test stress syntax
+ROOT := $(CURDIR)
+export LUA_PATH := $(ROOT)/src/?.lua;$(ROOT)/src/?/init.lua;;
 
-test:
-	@set -e; for f in $(DIRECTED); do echo "=== $$f ==="; $(LUA) $$f; done
+.PHONY: all doctor check syntax test torture bench clean tree
 
-stress:
-	@set -e; for f in $(STRESS); do echo "=== $$f ==="; $(LUA) $$f; done
+all: check test
+
+doctor:
+	@printf 'Lua:      %s\n' "$(LUA)"
+	@$(LUA) tools/lua-info.lua
+	@printf 'Worlds:   %s\n' "$$(cat VERSION)"
+	@printf 'LUA_PATH: %s\n' "$$LUA_PATH"
+
+check: syntax
+	@$(LUA) tests/devcontainer_test.lua
 
 syntax:
-	@set -e; find src tests -name '*.lua' -type f | sort | while read f; do $(LUAC) -p "$$f"; done
+	@$(LUA) tests/syntax.lua
 
-lua51:
-	@command -v lua5.1 >/dev/null 2>&1 || { echo 'lua5.1 not found'; exit 2; }
-	@$(MAKE) all LUA=lua5.1 LUAC=luac5.1
+test:
+	@$(LUA) tools/run-tests.lua tests
 
-luajit:
-	@command -v luajit >/dev/null 2>&1 || { echo 'luajit not found'; exit 2; }
-	@$(MAKE) test stress LUA=luajit
+# Focused higher-Theory stress cases begin at case 37.
+torture:
+	@set -e; for t in tests/3[7-9]_*.lua tests/4[0-8]_*.lua; do \
+		echo "== $$t =="; $(LUA) "$$t"; \
+	done
+
+bench:
+	@$(LUA) tools/run-bench.lua bench
+
+clean:
+	@rm -rf .cache
+
+tree:
+	@find . -path './.git' -prune -o -type f -print | sort
+
+export LUA

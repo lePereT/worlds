@@ -1,0 +1,14 @@
+# Small interactive setup for Worlds development.
+autoload -Uz compinit
+compinit -d "$HOME/.cache/zsh/zcompdump"
+
+setopt auto_cd
+setopt interactive_comments
+setopt hist_ignore_dups
+setopt share_history
+
+HISTFILE="$HOME/.cache/zsh/history"
+HISTSIZE=10000
+SAVEHIST=10000
+
+PROMPT='%F{cyan}%n%f:%F{blue}%~%f %# '
