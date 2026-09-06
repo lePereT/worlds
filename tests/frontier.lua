@@ -1,6 +1,6 @@
 package.path='./src/?.lua;'..package.path
 local W=require('worlds')
-local Model,Sep,Frontier=W.Model,W.Separate,W.Frontier
+local Model,Sep,Frontier,Att=W.Model,W.Separate,W.Frontier,W.Attachment
 
 local passed=0
 local function test(name,f)
@@ -73,7 +73,7 @@ test('6. specialisation records shape only; separate developments bind distinct 
   local results={}
   for i=1,2 do
     local w=m:world('call'..i,O); local t=m:point('t'..i,O,'T'); local r=m:point('r'..i,O,'R')
-    local trig=m:admit('call'..i,w,{Fn,t,t,r},'Call'); local inst=m:develop(trig); results[i]=inst.egress[1]
+    local trig=m:admit('call'..i,w,{Fn,t,t,r},'Call'); local q=Att.query(m,w,Att.patch(m,gate),{{demand=gate,supply=trig}}); local st,wh=q:step(math.huge); assert(st=='hit'); local inst=Att.graft(wh); results[i]=inst.egress[1]
     assert(m:same_point(results[i].points[1],t) and m:same_point(results[i].points[2],t) and m:same_point(results[i].points[3],r))
   end
   assert(not m:same_point(results[1].points[1],results[2].points[1]),'specialisation accidentally fixed caller identity')

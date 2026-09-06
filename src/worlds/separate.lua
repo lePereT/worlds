@@ -10,6 +10,8 @@
 -- provider geometry are linker-private and are anonymised at the frontier.
 
 local S={FORMAT='worlds.unit/1'}
+local Internal=require('worlds.internal')
+local Topology=require('worlds.topology')
 local function assertf(ok,fmt,...)
   if not ok then error(string.format(fmt,...),3) end
 end
@@ -34,11 +36,11 @@ local function is_egress(m,s,component)
 end
 
 local function boundary_cells(m,gate)
-  local component=m:_stage_component(gate)
-  assertf(m:_is_open_input(gate,component),'frontier gate must be an open input')
+  local component=Topology.component(m,gate)
+  assertf(Topology.is_open_input(m,gate,component),'frontier gate must be an open input')
   local demands,egress={},{}
   for c,_ in pairs(component) do
-    if c.dim==1 and m:_is_open_input(c,component) then demands[#demands+1]=c end
+    if c.dim==1 and Topology.is_open_input(m,c,component) then demands[#demands+1]=c end
     if c.dim==1 and is_egress(m,c,component) then egress[#egress+1]=c end
   end
   local function order(a,b)
@@ -52,7 +54,7 @@ end
 
 local function collect_actual_points(m,c,set)
   if c.dim==0 then if m:is_realised(c) then set[c]=true end; return end
-  for _,d in ipairs(m.deps(c)) do collect_actual_points(m,d,set) end
+  for _,d in ipairs(m:deps(c)) do collect_actual_points(m,d,set) end
 end
 
 local function cell_sig(m,c,ctx)
@@ -76,6 +78,7 @@ local function cell_sig(m,c,ctx)
 end
 
 function S.frontier(m,gate)
+  m=Internal.model(m)
   assertf(gate and gate.dim==1 and m:is_suspended(gate),'frontier gate must be suspended Strand')
   local _,demands,egress=boundary_cells(m,gate)
   local external={}; for _,c in ipairs(demands) do collect_actual_points(m,c,external) end
@@ -86,8 +89,8 @@ function S.frontier(m,gate)
 end
 
 local function certify_stage(m,gate)
-  local component=m:_stage_component(gate)
-  assertf(m:_is_open_input(gate,component),'stage gate is not open input')
+  local component=Topology.component(m,gate)
+  assertf(Topology.is_open_input(m,gate,component),'stage gate is not open input')
   for s,_ in pairs(component) do
     if s.dim==1 then
       local uses=0
@@ -101,7 +104,7 @@ local function certify_stage(m,gate)
 end
 
 local function stage_payload(m,gate,anchor_index,anchors,external_anchors)
-  local component=m:_stage_component(gate)
+  local component=Topology.component(m,gate)
   local worlds={}
   local function add_world(w)
     if not w or worlds[w] or m:is_realised(w) then return end
@@ -136,6 +139,7 @@ local function stage_payload(m,gate,anchor_index,anchors,external_anchors)
 end
 
 function S.export_unit(m,entry_gate,extra_gates)
+  m=Internal.model(m)
   certify_stage(m,entry_gate)
   local _,demands=boundary_cells(m,entry_gate)
   local external={}; for _,c in ipairs(demands) do collect_actual_points(m,c,external) end
@@ -192,6 +196,7 @@ local function find_external_anchor(m,a)
 end
 
 function S.import_unit(m,unit,expected_frontier)
+  m=Internal.model(m)
   S.validate_unit(unit)
   if expected_frontier then assertf(unit.frontier==expected_frontier,'frontier mismatch') end
   return m:atomic(function()

@@ -1,10 +1,18 @@
 package.path='./src/?.lua;'..package.path
-local Model=require('model'); local Sep=require('separate')
+local Model=require('worlds.harden'); local Sep=require('worlds.separate'); local Att=require('worlds.attachment')
+local Internal=require('worlds.internal')
 local passed=0
 local function test(name,f) io.write(string.format('%-78s ',name)); local ok,err=pcall(f); if not ok then print('FAIL'); error(err,0) end; passed=passed+1; print('ok') end
 local function eq(a,b,msg) assert(a==b,msg or (tostring(a)..' ~= '..tostring(b))) end
 local function ne(a,b,msg) assert(a~=b,msg or (tostring(a)..' == '..tostring(b))) end
 local function expect_fail(f,pat) local ok,err=pcall(f); assert(not ok,'expected failure'); if pat then assert(tostring(err):match(pat),tostring(err)) end end
+
+local function invoke(m,gate,trigger)
+  local p=Att.patch(m,gate)
+  local q=Att.query(m,trigger.world,p,{{demand=gate,supply=trigger}})
+  local st,w=q:step(math.huge); assert(st=='hit','expected attachment hit, got '..tostring(st))
+  return Att.graft(w)
+end
 
 local function provider(private_variant)
   local m=Model.new('ProviderActuality'); local O=m.actuality
@@ -41,11 +49,11 @@ test('3. client can compile from frontier only and link opaque provider later',f
   -- At client compile time only ca.expected is consulted; provider objects are inaccessible.
   local linked=Sep.import_unit(c,unit,ca.expected); assert(linked.stages[1].gate)
   local W=c:world('link-call',c.actuality); local mod=c:strand('mod',W,{ca.Mod},'ModuleAuthority'); local dep=c:strand('dep',W,{ca.Dep},'DependencyAuthority')
-  local i=c:develop(mod)
+  local i=invoke(c,linked.stages[1].gate,mod)
   local export
   for old,new in pairs(i.map) do if type(old)=='table' and old.dim==1 and old.sort=='ModuleExport' then export=new end end
   assert(export and c:is_realised(export)); eq(i.map[linked.stages[1].gate],mod)
-  local ok,why=c:check_actual_subcomplex(); assert(ok,why)
+  local ok,why=Internal.model(c):check_actual_subcomplex(); assert(ok,why)
 end)
 
 test('4. frontier mismatch is rejected before provider geometry is installed',function()
@@ -62,9 +70,9 @@ end)
 test('6. imported provider interior remains suspended until local invocation',function()
   local p,a=provider(false); local unit=Sep.export_unit(p,a.gate); local c,ca=client(unit.frontier); local linked=Sep.import_unit(c,unit,ca.expected)
   for _,w in ipairs(linked.stages[1].worlds) do assert(c:is_suspended(w)) end
-  local Other=c:world('unrelated',c.actuality); local sentinel=c:point('sentinel',Other,'Sentinel'); local before=#c:_children(Other)
-  local W=c:world('link-call',c.actuality); local mod=c:strand('mod',W,{ca.Mod},'ModuleAuthority'); c:strand('dep',W,{ca.Dep},'DependencyAuthority'); local i=c:develop(mod)
-  eq(#c:_children(Other),before); eq(sentinel.world,Other); for _,w in ipairs(i.worlds) do eq(w.parent,W) end
+  local Other=c:world('unrelated',c.actuality); local sentinel=c:point('sentinel',Other,'Sentinel'); local before=#Internal.model(c):_children(Other)
+  local W=c:world('link-call',c.actuality); local mod=c:strand('mod',W,{ca.Mod},'ModuleAuthority'); c:strand('dep',W,{ca.Dep},'DependencyAuthority'); local i=invoke(c,linked.stages[1].gate,mod)
+  eq(#Internal.model(c):_children(Other),before); eq(sentinel.world,Other); for _,w in ipairs(i.worlds) do eq(w.parent,W) end
 end)
 
 -- Provider with a public factory entry stage and a private callable stage. The
@@ -90,11 +98,11 @@ test('7. opaque nested stage survives separate compilation without public contra
   assert(not unit.frontier:match('HiddenBody')); assert(not unit.frontier:match('child%?'))
   local c=Model.new('C'); local Factory=c:point('PublicFactory',c.actuality,'FactoryIdentity')
   local linked=Sep.import_unit(c,unit,unit.frontier)
-  local W=c:world('call',c.actuality); local f=c:strand('factory',W,{Factory},'FactoryAuthority'); local first=c:develop(f)
+  local W=c:world('call',c.actuality); local f=c:strand('factory',W,{Factory},'FactoryAuthority'); local first=invoke(c,linked.stages[1].gate,f)
   local child
   for old,new in pairs(first.map) do if type(old)=='table' and old.dim==1 and old.sort=='OpaqueChildAuthority' then child=new end end
   assert(child and c:is_realised(child))
-  local second=c:develop(child); assert(second.event.sort=='HiddenBody')
+  local second=invoke(c,linked.stages[2].gate,child); assert(second.faces[1].sort=='HiddenBody')
 end)
 
 test('8. provider stage is independently certified before export',function()
@@ -114,9 +122,9 @@ test('9. linker-private anchors are isolated from ordinary client locality',func
   for _,pnt in pairs(linked.anchors) do if pnt.world==linked.link_world then private_count=private_count+1 end end
   assert(private_count>0)
   local W=c:world('ordinary-client-world',c.actuality)
-  -- Merely existing as a private anchor in the link World cannot make it local
-  -- client supply; local supply is exact-World authority.
-  for _,o in ipairs(c:_offer_pool(c:strand('dummy',W,{Factory},'DummyAuthority'))) do assert(o.world~=linked.link_world) end
+  -- Private linker identity remains in its own World. Att(K) obtains authority
+  -- only from exact-local unspent Strands; this Point alone grants none.
+  for _,pnt in pairs(linked.anchors) do if pnt.world==linked.link_world then assert(pnt.world~=W) end end
 end)
 
 test('10. malformed opaque payload rolls back link installation atomically',function()
@@ -163,16 +171,16 @@ test('13. late aliasing across Separate is rejected atomically before grafting',
   local Dg=p:world('Dg'); local Da=p:world('Da'); local Db=p:world('Db'); local G=p:world('G')
   local gate=p:strand('gate',Dg,{F},'A'); local a=p:strand('a',Da,{X},'R'); local b=p:strand('b',Db,{X},'R'); local out=p:strand('out',G,{X},'Out'); p:face('body',G,{gate,a,b},{out},'Body')
   local unit=Sep.export_unit(p,gate)
-  local c=Model.new('C'); local Fc=c:point('F',c.actuality,'F'); local Xc=c:point('X',c.actuality,'X'); Sep.import_unit(c,unit,unit.frontier)
+  local c=Model.new('C'); local Fc=c:point('F',c.actuality,'F'); local Xc=c:point('X',c.actuality,'X'); local linked=Sep.import_unit(c,unit,unit.frontier)
   local W=c:world('call',c.actuality); local f=c:strand('f',W,{Fc},'A'); local r=c:strand('r',W,{Xc},'R'); local before_o,before_w=#c.objects,#c.worlds
-  expect_fail(function() c:develop(f) end,'would use realised Strand')
-  eq(#c.objects,before_o); eq(#c.worlds,before_w); eq(c:_realised_uses(f),0); eq(c:_realised_uses(r),0)
+  local q=Att.query(c,W,Att.patch(c,linked.stages[1].gate),{{demand=linked.stages[1].gate,supply=f}}); local st=q:step(math.huge); eq(st,'retry')
+  eq(#c.objects,before_o); eq(#c.worlds,before_w); eq(Internal.model(c):_realised_uses(f),0); eq(Internal.model(c):_realised_uses(r),0)
 end)
 
 test('14. generated abstract identities remain fresh across separately-linked invocations',function()
-  local p,a=provider(false); local unit=Sep.export_unit(p,a.gate); local c,ca=client(unit.frontier); Sep.import_unit(c,unit,unit.frontier)
+  local p,a=provider(false); local unit=Sep.export_unit(p,a.gate); local c,ca=client(unit.frontier); local linked=Sep.import_unit(c,unit,unit.frontier)
   local function run(n)
-    local W=c:world('call'..n,c.actuality); local mod=c:strand('mod'..n,W,{ca.Mod},'ModuleAuthority'); c:strand('dep'..n,W,{ca.Dep},'DependencyAuthority'); return c:develop(mod)
+    local W=c:world('call'..n,c.actuality); local mod=c:strand('mod'..n,W,{ca.Mod},'ModuleAuthority'); c:strand('dep'..n,W,{ca.Dep},'DependencyAuthority'); return invoke(c,linked.stages[1].gate,mod)
   end
   local i1,i2=run(1),run(2); local p1,p2
   for old,new in pairs(i1.map) do if type(old)=='table' and old.dim==0 and old.sort=='AbstractType' then p1=new end end

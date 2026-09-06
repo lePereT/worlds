@@ -17,6 +17,7 @@
 -- distinction meaningful; no persistent lifecycle metadata is stored.
 
 local C={}
+local Internal=require('worlds.internal')
 
 local function descendants(m,w)
   local set={}
@@ -38,6 +39,7 @@ end
 -- whose own World lies outside the subtree.  Such an occurrence is not a
 -- resident residue; it has already crossed the membrane geometrically.
 function C.egress(m,w)
+  m=Internal.model(m)
   local ws=descendants(m,w); local out={}
   for _,f in ipairs(m.objects) do
     if f.dim==2 and m:is_realised(f) and ws[f.world] then
@@ -50,6 +52,7 @@ function C.egress(m,w)
 end
 
 function C.residual_authority(m,w)
+  m=Internal.model(m)
   local ws=descendants(m,w); local out={}
   for _,s in ipairs(resident_strands(m,ws)) do
     if m:_realised_uses(s)==0 then out[#out+1]=s end
@@ -62,6 +65,7 @@ end
 -- remains resident anywhere in it.  Points/Faces are history/identity and do
 -- not prevent retirement.  Child Worlds are retired together with the subtree.
 function C.can_retire(m,w)
+  m=Internal.model(m)
   if not (w and w.dim==-1 and m:is_realised(w)) then return false,'retirement requires an actual World' end
   if w==m.actuality then return false,'the distinguished actuality root is not retired by this predicate' end
   local residual=C.residual_authority(m,w)
@@ -76,6 +80,7 @@ end
 -- archive/delete the subtree after this succeeds, but the semantic kernel does
 -- not add a closed/retired state to World.
 function C.require_retirable(m,w)
+  m=Internal.model(m)
   local ok,why,res=C.can_retire(m,w)
   if not ok then error('World not retirable: '..tostring(why),2) end
   return true
@@ -84,6 +89,7 @@ end
 -- Useful diagnostic only: a World with residual authority is *not* thereby a
 -- leak.  It becomes a leak only relative to an attempted retirement boundary.
 function C.status(m,w)
+  m=Internal.model(m)
   local residual=C.residual_authority(m,w)
   if #residual==0 then return 'quiescent',residual end
   return 'live-or-residual',residual

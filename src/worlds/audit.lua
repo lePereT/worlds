@@ -3,6 +3,9 @@
 -- Face.sort is uninterpreted.  Structural authority changes are certified from
 -- private construction facts created by Model:admit/copy/discard, never from a
 -- trusted semantic label vocabulary.
+local Topology=require('worlds.topology')
+local topology_component=assert(Topology.component)
+local topology_is_open_input=assert(Topology.is_open_input)
 local A={}
 
 local function actual_faces(m)
@@ -81,8 +84,8 @@ end
 
 function A.check_stage(m,gate)
   if not (gate and gate.dim==1 and m:is_suspended(gate)) then return false,'stage gate must be suspended Strand' end
-  local component=m:_stage_component(gate)
-  if not m:_is_open_input(gate,component) then return false,'stage gate is not an open input' end
+  local component=topology_component(m,gate)
+  if not topology_is_open_input(m,gate,component) then return false,'stage gate is not an open input' end
   local faces,strands={},{}
   for c,_ in pairs(component) do if c.dim==2 then faces[#faces+1]=c elseif c.dim==1 then strands[#strands+1]=c end end
   if causal_cycle(faces,strands) then return false,'suspended causality: stage incidence contains a cycle' end

@@ -1,179 +1,111 @@
 # Future
 
-This is the working programme. The order matters less than the discipline: derive before adding.
+The order is deliberately conservative: establish attachment before promoting its consequences.
 
-## 1. Derive `develop` completely from geometry
+## 1. Formalise Att(K) and graft
 
-The executable model already does this operationally, but the formal story should expose the derivation cleanly:
+The immediate mathematical programme is:
 
 ```text
-stable Point incidence
-        ↓
-entry-gate candidates
-        ↓
-detached World-root stage
-        ↓
-open frontier orientation
-        ↓
-World-local structural matching
-        ↓
-prospective use-site check
-        ↓
+carrier/certification
+    ↓
+derived open patch/boundary
+    ↓
+Att_K(P)
+    ↓
 fresh graft
 ```
 
-The proof obligations should then become consequences:
+Primary theorem:
 
 ```text
-freshness
-actual-subcomplex preservation
-scarcity
-unique provenance
-causal acyclicity
-locality
+Certified(K)    μ ∈ Att_K(P)
+---------------------------
+Certified(graft(K,P,μ))
 ```
 
-One correction to preserve in future formal work: scarcity is about **input use-sites**, not merely distinct consuming Faces. A Face with inputs `[r,r]` uses `r` twice.
+Then prove locality, freshness, scarcity and equivariance under open-patch isomorphism/permutation.
 
-## 2. Extend frontier abstraction after 0.1
+## 2. Exact residual attachment
 
-`v0.1.0` includes the first generic artefact-level frontier variable and complete `specialise` operation. The immediate source-less non-tail-call pressure which produced it is now represented without a continuation object in the kernel:
+Define `b/a` without allowing silent rematching onto different authority. Prove or refute residual square/coherence laws.
+
+If successful, derive rather than assume:
 
 ```text
-provider geometry
-
-call gate:
-    schema
-    args
-    continuation-schema
-    ...α
+causality
+conflict
+independence
+higher cubical concurrency
 ```
 
-`α` is not a kernel object. It is a finite abstract Point row used by the separate-compilation artefact layer.
+## 3. Better Retry certificates
 
-At source-less link time:
+The 0.2 executable query uses a conservative dependency fingerprint. Replace this experimentally with dependencies extracted from the actual proof of emptiness.
+
+Goal:
 
 ```text
-A[α] -- specialise(α := F) --> A[F]
+Retry proof
+    ⇒ minimal/useful invalidation frontier
 ```
 
-Every occurrence of `α` expands coherently to the same suspended identity shape. Actual generative Points still bind later during `develop`.
+without changing the definition of Att(K).
 
-The 0.1 tests cover coherent repeated occurrence, equivalence shape, empty rows, multiple variables, generativity, malformed substitution and the prohibition on sending a `FrontierVar` into the kernel.
+## 4. Open-process composition and `together`
 
-Next questions are deliberately narrower:
-
-- partial specialisation and substitution composition;
-- canonical serialisation/hashing of abstract artefacts;
-- public frontier equivalence under private substitutions;
-- capability/effect rows as a second real consumer;
-- locality and certification-preservation proofs for `specialise`.
-
-Keep `specialise` outside the kernel unless a hostile example proves that impossible.
-
-## 3. Formal verification
-
-`formal/README.md` lays out the first proof programme. Do not formalise Relay or a production allocator first. Formalise the small mathematical object.
-
-A good first milestone is:
+Develop a generic open normal form supporting:
 
 ```text
-Certified(K)
-Develop(K,u,K')
-----------------
-Certified(K')
+sequential composition
+independent juxtaposition
+symmetric port/resource gluing
+hiding/internalisation
+causal normalisation
 ```
 
-followed by locality, freshness, custody and non-interference.
+Characterise the minimum laws a resource theory must satisfy. Preserve the constitutional rule that sibling order is not causal order.
 
-## 4. Factorise finite choice
+## 5. Fibers as the first substantial concurrency client
 
-The current finite-choice result uses complete-path expansion. It establishes representability, but not an efficient compiler representation.
+Once the preceding geometry is stable, express the Fibers V1 vocabulary as Relay/library forms over it rather than importing Fibers' current search implementation as language ontology.
 
-We want to factor common prefixes and suffixes:
+Avoid ambient scope semantics where linear authority/custody already suffices.
+
+## 6. Frontier and separate compilation
+
+Continue artefact-level Point-row frontier work:
+
+* partial/composed specialisation;
+* canonical serialisation/hashing;
+* semantic ABI comparison;
+* capability/effect rows;
+* proof that specialisation preserves certification.
+
+Keep these outside the carrier unless a hostile example forces otherwise.
+
+## 7. Borrowing and shared authority
+
+Exclusive loan/return looks like ordinary authority flow. Attack shared loans, reborrowing, higher-order escape, retirement while borrowed and atomic/shared state.
+
+## 8. Infinite/reactive behaviour
+
+Treat potentially infinite execution as unbounded fresh finite history rather than weakening actual causal acyclicity. Determine when closed historical interior can be erased from runtime representation.
+
+## 9. Enrichments
+
+Once the configuration/process geometry is mathematically established, explore cost, probability and quantum process enrichments. Do not encode amplitudes/probabilities as ad hoc fields on carrier cells.
+
+## 10. Production implementation work
+
+Use small transparent accelerations only where deleting them leaves the same definitions/proofs:
 
 ```text
-        common prefix
-             |
-           choice
-          /      \
-         A        B
-          \      /
-          generic join
-             |
-        common suffix
+adjacency indexes
+Point-equivalence indexes
+boundary shape indexes
+retained solver heuristics
+canonical fingerprints
 ```
 
-and prove equivalence to the path-expanded resource semantics without exponential duplication.
-
-## 5. Harden Point gluing
-
-The executable cross-carrier experiment uses direct equivalence-class mutation. A production/reference boundary should make compound Point-gluing and development transactional or persistent.
-
-Identity commitment is semantic commitment; failure must not leave half a quotient behind.
-
-## 6. Fixed points
-
-Actual causal cycles are currently rejected.
-
-Ordinary recursion unfolds fresh occurrences and remains acyclic. Mutually recursive initialisation requires explicit bootstrap geometry.
-
-Do not add a `recursive` flag. Either discover a principled fixed-point geometry or keep explicit bootstrap as the answer.
-
-## 7. Borrowing and authority patterns
-
-Exclusive loan/return already looks like ordinary authority flow. Attack:
-
-```text
-shared loans
-reborrowing
-exclusive/shared transitions
-higher-order escape
-retirement while borrowed
-```
-
-Only add lifetime machinery if geometry genuinely fails.
-
-## 8. Effects, handlers and continuation frontiers
-
-Dynamic handler selection already works through Point identity and detached stages.
-
-The new frontier-abstraction work should be tested against:
-
-```text
-continuation tails
-ambient capability rows
-effect-handler frontiers
-opaque higher-order returned callables
-```
-
-A good result would be one artefact abstraction mechanism rather than separate continuation/effect/module machinery.
-
-## 9. Infinite and reactive behaviour
-
-The current causal law describes finite realised history. Fibers and reactive systems need potentially unbounded unfolding.
-
-The likely direction is infinite production of fresh finite history, not an actual finite causal cycle. This needs precise semantics.
-
-## 10. Nondeterminism and probability
-
-The kernel deliberately rejects two structurally indistinguishable alternatives rather than inventing a chooser.
-
-If genuine nondeterminism or probability is required, find the smallest geometric source of choice rather than placing hidden policy in `develop`.
-
-## 11. Compiler experiments
-
-Once the laws are stable enough, measure the practical consequences:
-
-```text
-canonical frontier hashes
-semantic ABI comparison
-recursive invalidation boundaries
-parallel detached-stage certification
-World/Point indexes for local matching
-distributed provider custody
-```
-
-The implementation goal is simple to state:
-
-> compile independently until the geometry proves that coordination is necessary.
+The reference implementation should remain recognisably the executable mathematics.

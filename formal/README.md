@@ -1,90 +1,91 @@
-# Formal verification
+# Worlds formalisation plan — 0.2
 
-There is deliberately no Lean, Coq or Isabelle code in `v0.1.0`.
+The 0.2 rewrite deliberately makes the executable kernel closer to the intended mathematics before Lean work begins.
 
-The kernel is small enough that the first job is to choose definitions which make the intended theorems simple, rather than to commit early to an implementation encoding.
+The first formal target is finite Worlds only.
 
-## Mathematical object
+## 1. Carrier
 
-The first formal carrier should need little more than:
-
-```text
-finite World forest with actuality root Ω
-Point identities and Point equivalence
-World-resident Strands
-World-resident Faces
-Strand -> Point incidence
-Face -> input/output Strand incidence
-```
-
-Actuality is reachability to `Ω`, not a stored bit.
-
-Fresh IDs, union-find, arrays, caches and indexes are implementation choices and should stay out of the first specification.
-
-## Define development relationally first
-
-Prefer:
+Define finite:
 
 ```text
-Develop K trigger K'
+World
+Point
+Strand
+Face
 ```
 
-to an executable `develop : Kernel -> Strand -> Kernel` at first.
+with World residence, Point incidence, Face input/output incidence, Point equivalence, distinguished actuality root and the certification laws.
 
-The relation should derive:
+## 2. Derived topology
+
+Define:
 
 ```text
-entry gate
-stage
-open demands
-local match
-prospective use-sites
-fresh graft
+actuality / detachment
+connected detached patch
+incoming boundary
+returned boundary
+generated roots
 ```
 
-from geometry.
+without stored polarity or gate metadata.
 
-Only afterwards should an executable matcher be proved sound and complete with respect to the relation.
+## 3. Attachment
 
-## First theorem targets
-
-A useful first sequence is:
-
-1. Worlds form a well-founded forest and actuality is reachability;
-2. actual geometry is an honest subcomplex;
-3. detached Faces cannot hold realised Strand authority;
-4. successful development preserves certification;
-5. generated Worlds/Points/Strands/Faces are fresh;
-6. development is local to the trigger World plus its selected detached-stage index;
-7. Point gluing cannot teleport Strand authority;
-8. disjoint developments commute up to fresh renaming;
-9. retirement cannot discard unspent resident authority;
-10. finite-choice normalisation preserves the earlier path resource criterion.
-
-## A correction to keep explicit
-
-Resource use must be defined by **input positions**, not simply by the set of Faces which mention a Strand.
+For actual locality `K` and detached open patch `P`, define
 
 ```text
-Face inputs = [r, r]
+Att K P
 ```
 
-contains two uses of `r` even though there is one consuming Face.
+as complete admissible boundary embeddings.
 
-That distinction matters for the scarcity theorem and should be built into the first formal definition.
-
-## Frontier abstraction
-
-`specialise` should be formalised outside the kernel as a transformation on parametric compiled artefacts:
+Important properties to prove early:
 
 ```text
-A[α] -> A[F]
+locality
+scarcity / injectivity on authority occurrence
+Point-binding consistency
+equivariance under patch isomorphism/permutation
+non-generation by query
 ```
 
-where `α` ranges over abstract Point-frontier shape. The useful theorem is certification preservation under valid substitution, not a new kernel primitive.
+## 4. Graft
 
-## What would count as success
+Define fresh grafting from a witness:
 
-If the central preservation, locality and non-interference proofs are short once the geometry is defined, that is evidence that the kernel has found a good abstraction.
+```text
+μ : Att K P
+----------------
+graft K P μ = K'
+```
 
-If those proofs need hidden environments, path tables or feature-specific cases, that is evidence against the current design and should feed back into the kernel before a large formal development accumulates.
+The first major theorem should be certification preservation:
+
+```text
+Certified K
+μ : Att K P
+----------------
+Certified (graft K P μ)
+```
+
+Freshness and locality should ideally be short corollaries of the construction.
+
+## 5. Residuals only after the base theorem
+
+Once attachment/graft are stable, investigate exact residual attachment:
+
+```text
+b / a
+```
+
+and whether commuting residual squares derive a precubical/cubical configuration structure.
+
+Do not add concurrency primitives to the carrier to make the proof convenient.
+
+## 6. Executable correspondence
+
+The Lua implementation is an oracle, not the formal definition. Its retained fail-first search, serial ordering and dependency fingerprints are intentionally absent from the mathematics.
+
+Differential/property tests should compare the solver to an exhaustive finite attachment relation for small models.

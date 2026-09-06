@@ -4,7 +4,7 @@
 -- It is a variadic row of Point positions in an incomplete portable artefact.
 -- specialise(...) replaces each row occurrence with ordinary suspended Points
 -- preserving only sort/order/equivalence shape. Actual generative identity is
--- still bound later by develop(...).
+-- still bound later by complete attachment/graft.
 local F={FORMAT='worlds.frontier-artifact/1'}
 
 local function fail(msg) error('Worlds frontier: '..msg,0) end

@@ -1,33 +1,23 @@
 -- Immutable certified observation of a World model.
 --
 -- Certification is deliberately a boundary, not another semantic ontology.
--- It validates actual geometry and every developable detached stage, then copies
+-- It validates actual geometry and every attachable detached patch, then copies
 -- only primitive World/Point/Strand/Face facts into an immutable Reader view.
 -- Downstream Relay code cannot mutate the Model through this capability.
 
-local Audit=require('audit')
-local Model=require('model')
+local Audit=require('worlds.audit')
+local Model=require('worlds.harden')
+local Internal=require('worlds.internal')
+local Topology=require('worlds.topology')
+local topology_patches=assert(Topology.patches)
 
--- Pin the bootstrap trust surface at module initialisation.  The compiler may
--- use the public modules elsewhere, but certification does not dynamically
--- consult mutable module-table entries after this point.
+-- Pin the Lua trust surface once. This is implementation hardening supplied
+-- by `harden.lua`; the semantic certification logic below remains geometric.
 local audit_check_certified=assert(Audit.check_certified)
 local audit_check_stage=assert(Audit.check_stage)
 local model_is_model=assert(Model.is_model)
-local model_pristine=assert(Model.pristine)
-
-local function module_fingerprint(t)
-  local out={}
-  for k,v in pairs(t) do out[k]=v end
-  return out
-end
-local model_module=module_fingerprint(Model)
-local audit_module=module_fingerprint(Audit)
-local function unchanged_module(t,baseline,name)
-  for k,v in pairs(baseline) do if rawget(t,k)~=v then return false,name..' module entry changed: '..tostring(k) end end
-  for k in pairs(t) do if baseline[k]==nil then return false,name..' module entry added: '..tostring(k) end end
-  return true
-end
+local model_pristine=assert(Internal.pristine)
+local trust_guard=assert(Internal.guard)({Model=Model,Audit=Audit,Topology=Topology})
 
 local C={SCHEMA='worlds.certified/1'}
 local View={}; View.__index=View; View.__metatable=false; View.__newindex=function() error('certified World view is immutable',2) end
@@ -46,15 +36,6 @@ local function detached(x,seen)
   for k,v in pairs(x) do out[detached(k,seen)]=detached(v,seen) end
   return out
 end
-local function immutable_proxy(data)
-  return setmetatable({}, {
-    __index=data,
-    __newindex=function() error('certified World view is immutable',2) end,
-    __pairs=function() return next,data,nil end,
-    __len=function() return #data end,
-    __metatable=false,
-  })
-end
 
 local function component_id(m,p,points)
   local best=p.serial
@@ -65,20 +46,9 @@ local function component_id(m,p,points)
 end
 
 local function validate_stages(m)
-  local checked={}
-  for _,s in ipairs(m.objects) do
-    if s.dim==1 and m:is_suspended(s) then
-      local component=m:_stage_component(s)
-      if m:_is_open_input(s,component) then
-        local min=nil
-        for c in pairs(component) do if not min or c.serial<min then min=c.serial end end
-        if not checked[min] then
-          local ok,why=audit_check_stage(m,s)
-          if not ok then return false,why end
-          checked[min]=true
-        end
-      end
-    end
+  for _,patch in ipairs(topology_patches(m)) do
+    local ok,why=audit_check_stage(m,patch.inputs[1])
+    if not ok then return false,why end
   end
   return true
 end
@@ -95,32 +65,32 @@ end
 
 function C.certify(m)
   if not model_is_model(m) then fail('certify expects World Model') end
-  local ok,why=unchanged_module(Model,model_module,'Model'); if not ok then fail('World certification trust surface changed: '..why) end
-  ok,why=unchanged_module(Audit,audit_module,'Audit'); if not ok then fail('World certification trust surface changed: '..why) end
+  local ok,why=trust_guard(); if not ok then fail('World certification trust surface changed: '..why) end
   ok,why=model_pristine(m); if not ok then fail('World certification rejected non-opaque handle: '..why) end
-  ok,why=certify_model(m)
+  local im=Internal.model(m)
+  ok,why=certify_model(im)
   if not ok then fail('World certification failed: '..tostring(why)) end
 
-  local points={}; for _,o in ipairs(m.objects) do if o.dim==0 then points[#points+1]=o end end
+  local points={}; for _,o in ipairs(im.objects) do if o.dim==0 then points[#points+1]=o end end
   local worlds,ps,ss,fs={},{},{},{}
   local producers,consumers={},{}
 
-  for _,o in ipairs(m.objects) do
+  for _,o in ipairs(im.objects) do
     if o.dim==-1 then
       worlds[o.serial]={
         id=o.serial,name=o.name,parent=o.parent and o.parent.serial or nil,
-        realised=m:is_realised(o),actuality=(o==m.actuality),origin=o.origin and o.origin.serial or nil,
+        realised=im:is_realised(o),actuality=(o==im.actuality),origin=o.origin and o.origin.serial or nil,
       }
     elseif o.dim==0 then
       ps[o.serial]={
         id=o.serial,name=o.name,sort=o.sort,world=o.world.serial,
-        realised=m:is_realised(o),component=component_id(m,o,points),origin=o.origin and o.origin.serial or nil,
+        realised=im:is_realised(o),component=component_id(im,o,points),origin=o.origin and o.origin.serial or nil,
       }
     elseif o.dim==1 then
       local ids={}; for i,p in ipairs(o.points or {}) do ids[i]=p.serial end
       ss[o.serial]={
         id=o.serial,name=o.name,sort=o.sort,world=o.world.serial,points=ids,
-        realised=m:is_realised(o),origin=o.origin and o.origin.serial or nil,
+        realised=im:is_realised(o),origin=o.origin and o.origin.serial or nil,
       }
     elseif o.dim==2 then
       local ins,outs={},{}
@@ -128,9 +98,9 @@ function C.certify(m)
       for i,s in ipairs(o.outputs or {}) do outs[i]=s.serial end
       fs[o.serial]={
         id=o.serial,name=o.name,sort=o.sort,world=o.world.serial,inputs=ins,outputs=outs,
-        realised=m:is_realised(o),structural=m:structural_kind(o),origin=o.origin and o.origin.serial or nil,
+        realised=im:is_realised(o),structural=im:structural_kind(o),origin=o.origin and o.origin.serial or nil,
       }
-      if m:is_realised(o) then
+      if im:is_realised(o) then
         for _,sid in ipairs(ins) do
           local xs=consumers[sid] or {}; consumers[sid]=xs; xs[#xs+1]=o.serial
         end
@@ -142,7 +112,7 @@ function C.certify(m)
   end
 
   local state={
-    schema=C.SCHEMA,root=m.actuality.serial,
+    schema=C.SCHEMA,root=im.actuality.serial,
     worlds=worlds,points=ps,strands=ss,faces=fs,
     producers=producers,consumers=consumers,
   }
