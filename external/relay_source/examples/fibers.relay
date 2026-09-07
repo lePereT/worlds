@@ -1,0 +1,42 @@
+interface Up
+  op up
+end
+
+interface Down
+  op down
+end
+
+interface Missing
+  op missing
+end
+
+resource Counter
+  state CounterState
+  provides Up.up 0 -> 1
+  provides Down.down 1 -> 0
+end
+
+main
+  let a = Counter(0)
+  let b = Counter(0)
+
+  # Independent support: two distinct states may both advance.
+  each(Up.up(a), Up.up(b))
+
+  # Same-resource each must not borrow sibling-produced authority. The branch
+  # fails and fallback runs, leaving a at its pre-expression state.
+  let same_fallback = or_else(each(Down.down(a), Down.down(a)), 77)
+
+  # down has no independent support from state 0, so each falls back.
+  let c = Counter(0)
+  let each_fallback = or_else(each(Down.down(c), Up.up(c)), 88)
+
+  # together is deliberately written in the "wrong" order. up may supply the
+  # intermediate state which makes down possible inside the one transaction.
+  let together_result = together(Down.down(c), Up.up(c))
+
+  # and_then is provisional: up succeeds, Missing does not; fallback sees the
+  # original pre-and_then Counter state rather than the provisional state 1.
+  let d = Counter(0)
+  let rollback = or_else(and_then(Up.up(d), Missing.missing(d)), 99)
+end

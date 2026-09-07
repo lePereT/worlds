@@ -1,0 +1,7 @@
+local W=require('worlds'); local T=require('support')
+local b=W.Geometry.builder(); local root=b:membrane(nil,'root'); local child=b:membrane(root,'child')
+local p=b:point(child,'p'); local s=b:strand(root,{p},'handle'); local g=b:finish()
+T.eq(W.Geometry.kind(root),'membrane'); T.eq(W.Geometry.kind(p),'point'); T.eq(W.Geometry.kind(s),'strand')
+T.eq(W.Geometry.parent(child),root); T.eq(W.Geometry.membrane(p),child); T.eq(W.Geometry.points(s)[1],p)
+local live=W.Operational.from_geometry(g); T.ok(live:contains(s)); T.eq(live:size(),1)
+return T.count()

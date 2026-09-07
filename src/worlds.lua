@@ -1,7 +1,6 @@
-local Geometry=require('worlds.geometry')
-local Attach=require('worlds.attach')
 return {
-  Geometry=Geometry,
-  Attach=Attach,
-  same=Geometry.same,
+  Geometry=require('worlds.geometry'),
+  Cut=require('worlds.cut'),
+  Algebra=require('worlds.algebra'),
+  Operational=require('worlds.operational'),
 }

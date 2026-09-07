@@ -1,0 +1,7 @@
+local W=require('worlds'); local T=require('support')
+local vb=W.Geometry.builder(); local vm=vb:membrane(nil,'v'); local Control=vb:point(vm,'Control'); local Value=vb:point(vm,'Value'); vb:finish()
+local b=W.Geometry.builder(); local root=b:membrane(nil,'root'); local ctl=b:strand(root,{Control}); local live=W.Operational.from_geometry(b:finish())
+local p=W.Geometry.builder(); local pr=p:membrane(nil,'pr'); local fresh=p:membrane(pr,'fresh'); local i=p:strand(pr,{Control}); local o=p:strand(pr,{Control}); local x=p:point(fresh,'x'); local value=p:strand(pr,{Value,x}); p:face(fresh,{i},{o,value},'allocate'); local pat=p:finish()
+T.ok(pat:grounded()); local w=W.Operational.one(live,pat,{strands={[i]=ctl}}); T.ok(w); local _,img=W.Operational.commit(w)
+local fm=img.membranes[fresh]; local fp=img.points[x]; T.ok(fm and fp); T.eq(W.Geometry.parent(fm),root); T.eq(W.Geometry.membrane(fp),fm); T.ok(img.strands[value])
+return T.count()

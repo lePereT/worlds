@@ -1,0 +1,8 @@
+local W=require('worlds'); local T=require('support')
+local vb=W.Geometry.builder(); local vm=vb:membrane(nil,'v'); local Control=vb:point(vm,'Control'); local Arole=vb:point(vm,'A'); local Brole=vb:point(vm,'B'); local Done=vb:point(vm,'Done'); vb:finish()
+local a=W.Geometry.builder(); local am=a:membrane(nil,'A'); local ai=a:strand(am,{Brole}); local ctl=a:strand(am,{Control}); local ao=a:strand(am,{Arole}); a:face(am,{ai,ctl},{ao}); local A=a:finish()
+local b=W.Geometry.builder(); local bm=b:membrane(nil,'B'); local bi=b:strand(bm,{Arole}); local bo=b:strand(bm,{Brole}); local done=b:strand(bm,{Done}); b:face(bm,{bi},{bo,done}); local B=b:finish()
+local g,img=W.Algebra.close({A,B},{{ao,bi},{bo,ai}})
+T.eq(#g:faces(),1); T.eq(#g:strands(),2,'only external Control and Done survive SCC contraction'); local c=img[1].strands[ctl]; local d=img[2].strands[done]; T.ok(c and g:is_input(c)); T.ok(d and g:is_terminal(d)); T.ok(g:grounded())
+local sb=W.Geometry.builder(); local sm=sb:membrane(nil,'root'); local lc=sb:strand(sm,{Control}); local live=W.Operational.from_geometry(sb:finish()); local w=W.Operational.one(live,g,{strands={[c]=lc}}); T.ok(w); local _,out=W.Operational.commit(w); T.ok(out.strands[d])
+return T.count()

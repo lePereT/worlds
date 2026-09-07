@@ -1,0 +1,8 @@
+local W=require('worlds'); local T=require('support')
+local vb=W.Geometry.builder(); local vm=vb:membrane(nil,'v'); local R=vb:point(vm,'R'); vb:finish()
+local b=W.Geometry.builder(); local root=b:membrane(nil,'root'); local s=b:strand(root,{R}); local live=W.Operational.from_geometry(b:finish())
+local p=W.Geometry.builder(); local pm=p:membrane(nil,'p'); local i=p:strand(pm,{R}); local o=p:strand(pm,{R}); p:face(pm,{i},{o}); local pat=p:finish()
+local w1=W.Operational.one(live,pat,{strands={[i]=s}}); local w2=W.Operational.one(live,pat,{strands={[i]=s}}); T.ok(w1 and w2)
+W.Operational.commit(w1)
+local ok=pcall(function() W.Operational.commit(w2) end); T.ok(not ok,'second witness over consumed authority must be stale')
+return T.count()

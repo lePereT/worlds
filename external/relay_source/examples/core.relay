@@ -1,0 +1,29 @@
+interface Reset
+  op reset
+end
+
+effect Ask
+  op ask
+end
+
+resource Cell
+  state CellState
+  provides Reset.reset = 0
+end
+
+resource Counter
+  state CounterState
+  provides Reset.reset = 0
+end
+
+fn identity[T](x) = x
+fn reset[T](x) = Reset.reset(x)
+
+main
+  let c = Cell(7)
+  let same = identity(c)
+  let r = reset(same)
+  handle Ask.ask = 23
+    let answer = Ask.ask(r)
+  end
+end

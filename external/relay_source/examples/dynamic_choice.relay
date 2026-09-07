@@ -1,0 +1,14 @@
+interface Reset
+  op reset
+end
+
+resource ChoiceCell
+  state CellState
+  provides Reset.reset = 0
+  provides Reset.reset = 1
+end
+
+main
+  let c = ChoiceCell(7)
+  let result = Reset.reset(c)
+end

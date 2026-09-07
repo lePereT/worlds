@@ -1,0 +1,7 @@
+local W=require('worlds'); local T=require('support')
+local vb=W.Geometry.builder(); local vm=vb:membrane(nil,'v'); local C=vb:point(vm,'C'); local X=vb:point(vm,'X'); local D=vb:point(vm,'D'); vb:finish()
+local a=W.Geometry.builder(); local am=a:membrane(nil,'A'); local x=a:point(am,'x'); local ai=a:strand(am,{C,x}); local ao=a:strand(am,{X,x}); a:face(am,{ai},{ao},'A'); local A=a:finish()
+local b=W.Geometry.builder(); local bm=b:membrane(nil,'B'); local y=b:point(bm,'y'); local bi=b:strand(bm,{X,y}); local bo=b:strand(bm,{D,y}); b:face(bm,{bi},{bo},'B'); local B=b:finish()
+local g,images=W.Algebra.close({A,B},{{from=ao,to=bi}})
+T.eq(#g:faces(),2); T.eq(#g:membranes(),1,'cut identifies process locality'); T.eq(images[1].points[x],images[2].points[y],'cut unifies provisional identity'); T.ok(g:is_input(images[1].strands[ai])); T.ok(not g:is_terminal(images[1].strands[ao])); T.ok(g:is_terminal(images[2].strands[bo])); T.ok(g:grounded())
+return T.count()

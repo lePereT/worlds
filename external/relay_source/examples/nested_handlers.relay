@@ -1,0 +1,12 @@
+effect Ask
+  op ask
+end
+
+main
+  let x = 1
+  handle Ask.ask = 10
+    handle Ask.ask = 20
+      let answer = Ask.ask(x)
+    end
+  end
+end

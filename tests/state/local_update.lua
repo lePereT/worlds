@@ -1,0 +1,7 @@
+local W=require('worlds'); local T=require('support')
+local vb=W.Geometry.builder(); local vm=vb:membrane(nil,'v'); local RA=vb:point(vm,'A'); local RB=vb:point(vm,'B'); vb:finish()
+local b=W.Geometry.builder(); local root=b:membrane(nil,'root'); local a=b:membrane(root,'a'); local c=b:membrane(root,'c'); local sa=b:strand(a,{RA}); local sc=b:strand(c,{RB}); local live=W.Operational.from_geometry(b:finish())
+local p=W.Geometry.builder(); local pm=p:membrane(nil,'p'); local i=p:strand(pm,{RA}); local o=p:strand(pm,{RA}); p:face(pm,{i},{o}); local pat=p:finish()
+local w=W.Operational.one(live,pat,{strands={[i]=sa}}); T.ok(w); local live2=W.Operational.commit(w)
+T.ok(live2:contains(sc),'unrelated sibling exact authority must be preserved')
+return T.count()

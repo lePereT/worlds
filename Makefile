@@ -11,41 +11,44 @@ ifeq ($(strip $(LUA)),)
 $(error No Lua interpreter found. Tried: $(LUA_CANDIDATES))
 endif
 
-ROOT := $(CURDIR)
-export LUA_PATH := $(ROOT)/src/?.lua;$(ROOT)/src/?/init.lua;;
+.DEFAULT_GOAL := test
 
-.PHONY: all doctor check syntax test torture bench clean tree
+.PHONY: all test check doctor docs tooling architecture laws torture differential whole shape external
 
-all: check test
+all: test
+
+test: check
+
+check: docs tooling architecture laws torture differential whole shape external
 
 doctor:
-	@printf 'Lua:      %s\n' "$(LUA)"
-	@$(LUA) tools/lua-info.lua
-	@printf 'Worlds:   %s\n' "$$(cat VERSION)"
-	@printf 'LUA_PATH: %s\n' "$$LUA_PATH"
+	@printf 'Lua: %s\n' "$(LUA)"
+	@$(LUA) -v
 
-check: syntax
-	@$(LUA) tests/devcontainer_test.lua
+docs:
+	cd tests && $(LUA) docs.lua
 
-syntax:
-	@$(LUA) tests/syntax.lua
+tooling:
+	cd tests && $(LUA) tooling.lua
 
-test:
-	@$(LUA) tools/run-tests.lua tests
+architecture:
+	cd tests && $(LUA) architecture.lua
 
-# Focused higher-Theory stress cases begin at case 37.
+laws:
+	cd tests && $(LUA) run.lua
+
 torture:
-	@set -e; for t in tests/3[7-9]_*.lua tests/4[0-8]_*.lua; do \
-		echo "== $$t =="; $(LUA) "$$t"; \
-	done
+	cd tests && $(LUA) torture/inherited.lua
 
-bench:
-	@$(LUA) tools/run-bench.lua bench
+differential:
+	cd tests && $(LUA) reference/cut_differential.lua
 
-clean:
-	@rm -rf .cache
+whole:
+	cd tests && $(LUA) torture/whole_model.lua
 
-tree:
-	@find . -path './.git' -prune -o -type f -print | sort
+shape:
+	cd tests && $(LUA) shape/structural.lua
 
-export LUA
+external:
+	cd external/geometric_products && $(LUA) test.lua
+	cd external/relay_source && $(LUA) test.lua

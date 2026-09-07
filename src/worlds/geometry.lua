@@ -1,466 +1,179 @@
--- Worlds geometric research kernel
+-- Worlds 0.5.0 -- exact finite open geometry.
 --
--- Geometry is an immutable finite 2-complex inside a forest of membranes:
---   Point  (0-cell) : semantic identity
---   Strand (1-cell) : authority occurrence
---   Face   (2-cell) : causal occurrence
---
--- There is deliberately no actuality flag, transaction object, residual object,
--- virtual cell class, Point equivalence relation, or stored frontier.
+-- Semantic carriers are exactly Membrane, Point, Strand and Face.  Carriers
+-- are immutable opaque Lua objects; object identity is exact identity.  Names
+-- are correspondence/debug data only.  There are no semantic sorts or IDs.
 
-local M = {}
+local M={}
 
-local geometry_state = setmetatable({}, {__mode='k'})
-local builder_state = setmetatable({}, {__mode='k'})
+local STATE=setmetatable({}, {__mode='k'})
+local function immutable() error('Worlds values are immutable',2) end
+local CarrierMT={__newindex=immutable,__metatable='Worlds carrier'}
+local GeometryMT={__newindex=immutable,__metatable='Worlds Geometry'}; GeometryMT.__index=GeometryMT
+local BuilderMT={}; BuilderMT.__index=BuilderMT
 
-local next_id = {m=0, p=0, s=0, f=0}
-local function fresh_id(prefix)
-  next_id[prefix] = next_id[prefix] + 1
-  return prefix .. tostring(next_id[prefix])
+local function new(kind,data,mt)
+  local x=setmetatable({},mt or CarrierMT); data.kind=kind; STATE[x]=data; return x
 end
-
-local function copy_array(xs)
-  local r = {}
-  for i=1,#xs do r[i]=xs[i] end
-  return r
+local function state(x,kind)
+  local s=STATE[x]; if kind then assert(s and s.kind==kind,'expected Worlds '..kind) end; return s
 end
+local function array(xs) local r={} for i=1,#(xs or {}) do r[i]=xs[i] end return r end
+local function setcopy(xs) local r={} for k,v in pairs(xs or {}) do if v then r[k]=true end end return r end
 
-local function copy_set(s)
-  local r={}
-  for k,v in pairs(s) do if v then r[k]=true end end
-  return r
+local function membrane(parent,name)
+  assert(parent==nil or state(parent,'Membrane'),'Membrane parent must be a Membrane or nil')
+  return new('Membrane',{parent=parent,name=name})
 end
-
-local function shallow_map(m)
-  local r={}
-  for k,v in pairs(m) do r[k]=v end
-  return r
+local function point(mem,name)
+  assert(state(mem,'Membrane'),'Point membrane must be a Membrane')
+  return new('Point',{membrane=mem,name=name})
 end
-
-local function readonly_error()
-  error('Worlds Geometry values are immutable', 2)
+local function strand(mem,points,name)
+  assert(state(mem,'Membrane'),'Strand membrane must be a Membrane')
+  for _,p in ipairs(points or {}) do assert(state(p,'Point'),'Strand incidence must contain Points') end
+  return new('Strand',{membrane=mem,points=array(points),name=name})
 end
-
-local GeometryMT = {__newindex=readonly_error}
-GeometryMT.__index = GeometryMT
-local BuilderMT = {}
-BuilderMT.__index = BuilderMT
-
-local function assert_geometry(g)
-  local st=geometry_state[g]
-  assert(st, 'expected Geometry')
-  return st
-end
-
-local function assert_builder(b)
-  local st=builder_state[b]
-  assert(st, 'expected Geometry.Builder')
-  assert(not st.finished, 'builder already finished')
-  return st
-end
-
-local function cell_of(st,id)
-  return st.membranes[id] or st.points[id] or st.strands[id] or st.faces[id]
-end
-
-local function index_state(st)
-  local producer, consumer = {}, {}
-  local point_users = {}
-  local children = {}
-  local local_points, local_strands, local_faces = {}, {}, {}
-
-  for _,mid in ipairs(st.morder) do
-    children[mid] = children[mid] or {}
-    local_points[mid] = local_points[mid] or {}
-    local_strands[mid] = local_strands[mid] or {}
-    local_faces[mid] = local_faces[mid] or {}
-    local m=st.membranes[mid]
-    if m.parent then
-      children[m.parent] = children[m.parent] or {}
-      children[m.parent][#children[m.parent]+1]=mid
-    end
+local function face(mem,inputs,outputs,name)
+  assert(state(mem,'Membrane'),'Face membrane must be a Membrane')
+  local seen={}
+  for _,s in ipairs(inputs or {}) do
+    assert(state(s,'Strand'),'Face inputs must be Strands')
+    assert(not seen[s],'Face consumes the same Strand twice'); seen[s]=true
   end
-  for _,pid in ipairs(st.porder) do
-    local p=st.points[pid]
-    local_points[p.membrane][#local_points[p.membrane]+1]=pid
-    point_users[pid]={}
+  seen={}
+  for _,s in ipairs(outputs or {}) do
+    assert(state(s,'Strand'),'Face outputs must be Strands')
+    assert(not seen[s],'Face produces the same Strand twice'); seen[s]=true
   end
-  for _,sid in ipairs(st.sorder) do
-    local s=st.strands[sid]
-    local_strands[s.membrane][#local_strands[s.membrane]+1]=sid
-    for pos,pid in ipairs(s.points) do
-      point_users[pid][#point_users[pid]+1]={strand=sid,pos=pos}
-    end
-  end
-  for _,fid in ipairs(st.forder) do
-    local f=st.faces[fid]
-    local_faces[f.membrane][#local_faces[f.membrane]+1]=fid
-    local seen={}
-    for _,sid in ipairs(f.inputs) do
-      assert(not seen[sid], 'Face consumes the same Strand twice')
-      seen[sid]=true
-      assert(not consumer[sid], 'a Strand may have at most one consumer')
-      consumer[sid]=fid
-    end
-    seen={}
-    for _,sid in ipairs(f.outputs) do
-      assert(not seen[sid], 'Face produces the same Strand twice')
-      seen[sid]=true
-      assert(not producer[sid], 'a Strand may have at most one producer')
-      producer[sid]=fid
-    end
-  end
-
-  -- Causal acyclicity: producer(F) -> consumer(F) along each Strand.
-  local edges, indeg = {}, {}
-  for _,fid in ipairs(st.forder) do edges[fid]={}; indeg[fid]=0 end
-  for _,sid in ipairs(st.sorder) do
-    local a,b=producer[sid],consumer[sid]
-    if a and b then
-      edges[a][#edges[a]+1]=b
-      indeg[b]=indeg[b]+1
-    end
-  end
-  local q={}
-  for _,fid in ipairs(st.forder) do if indeg[fid]==0 then q[#q+1]=fid end end
-  local qi,n=1,0
-  while qi<=#q do
-    local a=q[qi]; qi=qi+1; n=n+1
-    for _,b in ipairs(edges[a]) do
-      indeg[b]=indeg[b]-1
-      if indeg[b]==0 then q[#q+1]=b end
-    end
-  end
-  assert(n==#st.forder, 'causal Face/Strand incidence must be acyclic')
-
-  st.producer=producer
-  st.consumer=consumer
-  st.point_users=point_users
-  st.children=children
-  st.local_points=local_points
-  st.local_strands=local_strands
-  st.local_faces=local_faces
+  -- Arrays are the compact physical enumeration.  Their order is not semantic.
+  return new('Face',{membrane=mem,inputs=array(inputs),outputs=array(outputs),name=name})
 end
 
-local function validate_state(st)
-  -- Membrane forest.
-  for _,mid in ipairs(st.morder) do
-    local m=st.membranes[mid]
-    if m.parent then assert(st.membranes[m.parent], 'unknown parent membrane') end
-    local seen={}
-    local x=mid
-    while x do
-      assert(not seen[x], 'membrane containment must be acyclic')
-      seen[x]=true
-      x=st.membranes[x] and st.membranes[x].parent or nil
-    end
-  end
-  for _,pid in ipairs(st.porder) do
-    local p=st.points[pid]
-    assert(st.membranes[p.membrane], 'Point has unknown membrane')
-  end
-  for _,sid in ipairs(st.sorder) do
-    local s=st.strands[sid]
-    assert(st.membranes[s.membrane], 'Strand has unknown membrane')
-    for _,pid in ipairs(s.points) do assert(st.points[pid], 'Strand has unknown Point') end
-  end
-  for _,fid in ipairs(st.forder) do
-    local f=st.faces[fid]
-    assert(st.membranes[f.membrane], 'Face has unknown membrane')
-    for _,sid in ipairs(f.inputs) do assert(st.strands[sid], 'Face has unknown input Strand') end
-    for _,sid in ipairs(f.outputs) do assert(st.strands[sid], 'Face has unknown output Strand') end
-  end
-  index_state(st)
-end
-
-local function make_geometry(st)
-  validate_state(st)
-  local g=setmetatable({},GeometryMT)
-  geometry_state[g]=st
-  return g
-end
+function M.kind(x) local s=STATE[x]; return s and string.lower(s.kind) or nil end
+function M.is_membrane(x) local s=STATE[x]; return not not (s and s.kind=='Membrane') end
+function M.is_point(x) local s=STATE[x]; return not not (s and s.kind=='Point') end
+function M.is_strand(x) local s=STATE[x]; return not not (s and s.kind=='Strand') end
+function M.is_face(x) local s=STATE[x]; return not not (s and s.kind=='Face') end
+function M.is_geometry(x) local s=STATE[x]; return not not (s and s.kind=='Geometry') end
+function M.name(x) local s=STATE[x]; return s and s.name or nil end
+function M.parent(x) return state(x,'Membrane').parent end
+function M.membrane(x) local s=STATE[x]; assert(s and (s.kind=='Point' or s.kind=='Strand' or s.kind=='Face'),'expected Point/Strand/Face'); return s.membrane end
+function M.points(x) return array(state(x,'Strand').points) end
+-- Face incidence is a finite set semantically.  These compact arrays are only
+-- enumerations; callers must not attach meaning to their order.
+function M.inputs(x) return array(state(x,'Face').inputs) end
+function M.outputs(x) return array(state(x,'Face').outputs) end
 
 function M.builder()
-  local b=setmetatable({},BuilderMT)
-  builder_state[b]={
-    membranes={}, points={}, strands={}, faces={},
-    morder={}, porder={}, sorder={}, forder={}, finished=false,
-  }
-  return b
+  return setmetatable({
+    membranes={},points={},strands={},faces={},
+    mset={},pset={},sset={},fset={},finished=false,
+  },BuilderMT)
+end
+local function live_builder(b) assert(getmetatable(b)==BuilderMT and not b.finished,'expected unfinished Geometry.Builder'); return b end
+function BuilderMT:membrane(parent,name)
+  live_builder(self); if parent then assert(self.mset[parent],'new membrane parent must belong to this Geometry') end
+  local x=membrane(parent,name); self.membranes[#self.membranes+1]=x; self.mset[x]=true; return x
+end
+function BuilderMT:point(mem,name)
+  live_builder(self); assert(self.mset[mem],'Point membrane must belong to this Geometry')
+  local x=point(mem,name); self.points[#self.points+1]=x; self.pset[x]=true; return x
+end
+function BuilderMT:strand(mem,pts,name)
+  live_builder(self); assert(self.mset[mem],'Strand membrane must belong to this Geometry')
+  -- Point incidence may contain imported exact Points owned by another Geometry.
+  local x=strand(mem,pts or {},name); self.strands[#self.strands+1]=x; self.sset[x]=true; return x
+end
+function BuilderMT:face(mem,ins,outs,name)
+  live_builder(self); assert(self.mset[mem],'Face membrane must belong to this Geometry')
+  for _,s in ipairs(ins or {}) do assert(self.sset[s],'Face input must belong to this Geometry') end
+  for _,s in ipairs(outs or {}) do assert(self.sset[s],'Face output must belong to this Geometry') end
+  local x=face(mem,ins or {},outs or {},name); self.faces[#self.faces+1]=x; self.fset[x]=true; return x
 end
 
-function BuilderMT:membrane(parent, sort, name)
-  local st=assert_builder(self)
-  if parent~=nil then assert(st.membranes[parent], 'parent membrane must already exist') end
-  local id=fresh_id('m')
-  st.membranes[id]={id=id,parent=parent,sort=sort or '_',name=name}
-  st.morder[#st.morder+1]=id
-  return id
-end
+local function validate(b)
+  local producer,consumer={},{}
+  for _,f in ipairs(b.faces) do
+    local fs=state(f,'Face'); local seen={}
+    for _,s in ipairs(fs.inputs) do
+      assert(not seen[s],'Face consumes the same Strand twice'); seen[s]=true
+      assert(not consumer[s],'Strand has more than one consumer'); consumer[s]=f
+    end
+    seen={}
+    for _,s in ipairs(fs.outputs) do
+      assert(not seen[s],'Face produces the same Strand twice'); seen[s]=true
+      assert(not producer[s],'Strand has more than one producer'); producer[s]=f
+    end
+  end
 
-function BuilderMT:point(membrane, sort, name)
-  local st=assert_builder(self)
-  assert(st.membranes[membrane], 'unknown Point membrane')
-  local id=fresh_id('p')
-  st.points[id]={id=id,membrane=membrane,sort=sort or '_',name=name}
-  st.porder[#st.porder+1]=id
-  return id
-end
+  -- Exact causal incidence must be acyclic.  Mutual support is normalised by
+  -- Algebra.close before Geometry construction, so cycles never enter Geometry.
+  local out,indeg={},{ }
+  for _,f in ipairs(b.faces) do out[f]={}; indeg[f]=0 end
+  for _,s in ipairs(b.strands) do
+    local p,c=producer[s],consumer[s]
+    if p and c then out[p][#out[p]+1]=c; indeg[c]=indeg[c]+1 end
+  end
+  local q={}; for _,f in ipairs(b.faces) do if indeg[f]==0 then q[#q+1]=f end end
+  local qi,n=1,0
+  while qi<=#q do
+    local f=q[qi]; qi=qi+1; n=n+1
+    for _,g in ipairs(out[f]) do indeg[g]=indeg[g]-1; if indeg[g]==0 then q[#q+1]=g end end
+  end
+  assert(n==#b.faces,'causal Face/Strand incidence must be acyclic')
 
-function BuilderMT:strand(membrane, sort, points, name)
-  local st=assert_builder(self)
-  assert(st.membranes[membrane], 'unknown Strand membrane')
-  points=points or {}
-  for _,pid in ipairs(points) do assert(st.points[pid], 'unknown Strand Point') end
-  local id=fresh_id('s')
-  st.strands[id]={id=id,membrane=membrane,sort=sort or '_',points=copy_array(points),name=name}
-  st.sorder[#st.sorder+1]=id
-  return id
-end
+  local ingress,egress={},{ }
+  for _,s in ipairs(b.strands) do
+    if not producer[s] then ingress[#ingress+1]=s end
+    if not consumer[s] then egress[#egress+1]=s end
+  end
 
-function BuilderMT:face(membrane, sort, inputs, outputs, name)
-  local st=assert_builder(self)
-  assert(st.membranes[membrane], 'unknown Face membrane')
-  inputs,outputs=inputs or {},outputs or {}
-  for _,sid in ipairs(inputs) do assert(st.strands[sid], 'unknown Face input') end
-  for _,sid in ipairs(outputs) do assert(st.strands[sid], 'unknown Face output') end
-  local id=fresh_id('f')
-  st.faces[id]={id=id,membrane=membrane,sort=sort or '_',inputs=copy_array(inputs),outputs=copy_array(outputs),name=name}
-  st.forder[#st.forder+1]=id
-  return id
+  -- Every Face of an executable process must lie downstream of an ingress.
+  local reached,rq={},{}
+  for _,s in ipairs(ingress) do local c=consumer[s]; if c and not reached[c] then reached[c]=true; rq[#rq+1]=c end end
+  local ri=1
+  while ri<=#rq do
+    local f=rq[ri]; ri=ri+1
+    for _,s in ipairs(state(f,'Face').outputs) do local c=consumer[s]; if c and not reached[c] then reached[c]=true; rq[#rq+1]=c end end
+  end
+  local grounded=true
+  for _,f in ipairs(b.faces) do if not reached[f] then grounded=false; break end end
+  return producer,consumer,ingress,egress,grounded
 end
 
 function BuilderMT:finish()
-  local st=assert_builder(self)
-  st.finished=true
-  local gs={
-    membranes=shallow_map(st.membranes), points=shallow_map(st.points),
-    strands=shallow_map(st.strands), faces=shallow_map(st.faces),
-    morder=copy_array(st.morder), porder=copy_array(st.porder),
-    sorder=copy_array(st.sorder), forder=copy_array(st.forder),
-  }
-  return make_geometry(gs)
+  live_builder(self)
+  local producer,consumer,ingress,egress,grounded=validate(self)
+  self.finished=true
+  return new('Geometry',{
+    membranes=array(self.membranes),points=array(self.points),strands=array(self.strands),faces=array(self.faces),
+    mset=setcopy(self.mset),pset=setcopy(self.pset),sset=setcopy(self.sset),fset=setcopy(self.fset),
+    producer=producer,consumer=consumer,ingress=ingress,egress=egress,grounded=grounded,
+  },GeometryMT)
 end
 
-function GeometryMT:membranes() return copy_array(assert_geometry(self).morder) end
-function GeometryMT:points() return copy_array(assert_geometry(self).porder) end
-function GeometryMT:strands() return copy_array(assert_geometry(self).sorder) end
-function GeometryMT:faces() return copy_array(assert_geometry(self).forder) end
+local function gs(g) return state(g,'Geometry') end
+function GeometryMT:membranes() return array(gs(self).membranes) end
+function GeometryMT:points() return array(gs(self).points) end
+function GeometryMT:strands() return array(gs(self).strands) end
+function GeometryMT:faces() return array(gs(self).faces) end
+function GeometryMT:ingress() return array(gs(self).ingress) end
+function GeometryMT:egress() return array(gs(self).egress) end
+function GeometryMT:owns_membrane(x) return not not gs(self).mset[x] end
+function GeometryMT:owns_point(x) return not not gs(self).pset[x] end
+function GeometryMT:owns_strand(x) return not not gs(self).sset[x] end
+function GeometryMT:owns_face(x) return not not gs(self).fset[x] end
+function GeometryMT:producer(s) assert(self:owns_strand(s),'Strand does not belong to Geometry'); return gs(self).producer[s] end
+function GeometryMT:consumer(s) assert(self:owns_strand(s),'Strand does not belong to Geometry'); return gs(self).consumer[s] end
+function GeometryMT:is_input(s) return self:owns_strand(s) and gs(self).producer[s]==nil end
+function GeometryMT:is_terminal(s) return self:owns_strand(s) and gs(self).consumer[s]==nil end
+function GeometryMT:grounded() return gs(self).grounded end
 
-local function public_cell(c)
-  if not c then return nil end
-  local r={id=c.id,membrane=c.membrane,parent=c.parent,sort=c.sort,name=c.name}
-  if c.points then r.points=copy_array(c.points) end
-  if c.inputs then r.inputs=copy_array(c.inputs) end
-  if c.outputs then r.outputs=copy_array(c.outputs) end
-  return r
-end
-
-function GeometryMT:cell(id) return public_cell(cell_of(assert_geometry(self),id)) end
-function GeometryMT:producer(sid) return assert_geometry(self).producer[sid] end
-function GeometryMT:consumer(sid) return assert_geometry(self).consumer[sid] end
-function GeometryMT:is_input(sid) return assert_geometry(self).producer[sid]==nil end
-function GeometryMT:is_terminal(sid) return assert_geometry(self).consumer[sid]==nil end
-function GeometryMT:parent(mid) local m=assert_geometry(self).membranes[mid]; assert(m,'unknown membrane'); return m.parent end
-function GeometryMT:children(mid) local st=assert_geometry(self); assert(st.membranes[mid],'unknown membrane'); return copy_array(st.children[mid] or {}) end
-
-function GeometryMT:find(kind,name)
-  local st=assert_geometry(self)
-  local order,map
-  if kind=='membrane' then order,map=st.morder,st.membranes
-  elseif kind=='point' then order,map=st.porder,st.points
-  elseif kind=='strand' then order,map=st.sorder,st.strands
-  elseif kind=='face' then order,map=st.forder,st.faces
-  else error('unknown cell kind '..tostring(kind)) end
-  for _,id in ipairs(order) do if map[id].name==name then return id end end
-  return nil
-end
-
-local function select_membranes(st, membranes)
-  local selected,order={},{}
-  for _,mid in ipairs(membranes or {}) do
-    assert(st.membranes[mid], 'unknown selected membrane')
-    if not selected[mid] then selected[mid]=true; order[#order+1]=mid end
-  end
-  return selected,order
-end
-
-local function offers_selected(st, selected)
-  local r={}
-  for _,sid in ipairs(st.sorder) do
-    local strand=st.strands[sid]
-    if selected[strand.membrane] and st.consumer[sid]==nil then r[#r+1]=sid end
-  end
-  return r
-end
-
-local function visible_points_selected(st, selected)
-  local seen,r={},{}
-  for _,pid in ipairs(st.porder) do
-    if selected[st.points[pid].membrane] then seen[pid]=true end
-  end
-  for _,sid in ipairs(offers_selected(st,selected)) do
-    for _,pid in ipairs(st.strands[sid].points) do seen[pid]=true end
-  end
-  for _,pid in ipairs(st.porder) do if seen[pid] then r[#r+1]=pid end end
-  return r
-end
-
--- Selection is not a semantic object. These are pure projections of this
--- Geometry through an explicitly supplied set of membrane occurrences.
-function GeometryMT:offers(membranes)
-  local st=assert_geometry(self)
-  local selected=select_membranes(st,membranes)
-  return offers_selected(st,selected)
-end
-
-function GeometryMT:visible_points(membranes)
-  local st=assert_geometry(self)
-  local selected=select_membranes(st,membranes)
-  return visible_points_selected(st,selected)
-end
-
--- Internal access for attach.lua. Kept out of the public object surface.
-M._state=assert_geometry
-M._make_geometry=make_geometry
-M._selection=select_membranes
-M._offers_selected=offers_selected
-M._visible_points_selected=visible_points_selected
-M._fresh_id=fresh_id
-M._copy_array=copy_array
-M._shallow_map=shallow_map
-
--- Exact geometry isomorphism modulo names of cells not shared by the two values.
--- Shared IDs are exact occurrence anchors; all other IDs may alpha-rename.
-local function kind_data(st)
-  local kind={}
-  for _,id in ipairs(st.morder) do kind[id]='m' end
-  for _,id in ipairs(st.porder) do kind[id]='p' end
-  for _,id in ipairs(st.sorder) do kind[id]='s' end
-  for _,id in ipairs(st.forder) do kind[id]='f' end
-  return kind
-end
-
-local function coarse_signature(st,id,kind)
-  if kind=='m' then
-    local c=st.membranes[id]
-    return table.concat({'m',c.sort,c.parent and '1' or '0',#(st.children[id] or {}),#(st.local_points[id] or {}),#(st.local_strands[id] or {}),#(st.local_faces[id] or {})},'|')
-  elseif kind=='p' then
-    local c=st.points[id]
-    return table.concat({'p',c.sort,#(st.point_users[id] or {})},'|')
-  elseif kind=='s' then
-    local c=st.strands[id]
-    return table.concat({'s',c.sort,#c.points,st.producer[id] and '1' or '0',st.consumer[id] and '1' or '0'},'|')
-  else
-    local c=st.faces[id]
-    return table.concat({'f',c.sort,#c.inputs,#c.outputs},'|')
-  end
-end
-
-local function relation_ok(a,b,sa,sb,map,rmap,ka,kb)
-  local k=ka[a]
-  if k~=kb[b] then return false end
-  local ca=cell_of(sa,a); local cb=cell_of(sb,b)
-  if ca.sort~=cb.sort then return false end
-  local function eqref(x,y)
-    if x==nil or y==nil then return x==y end
-    if map[x] then return map[x]==y end
-    if rmap[y] then return false end
-    return true
-  end
-  if k=='m' then
-    return eqref(ca.parent,cb.parent)
-  elseif k=='p' then
-    return eqref(ca.membrane,cb.membrane)
-  elseif k=='s' then
-    if not eqref(ca.membrane,cb.membrane) then return false end
-    if #ca.points~=#cb.points then return false end
-    for i=1,#ca.points do if not eqref(ca.points[i],cb.points[i]) then return false end end
-    if not eqref(sa.producer[a],sb.producer[b]) then return false end
-    if not eqref(sa.consumer[a],sb.consumer[b]) then return false end
-    return true
-  else
-    if not eqref(ca.membrane,cb.membrane) then return false end
-    if #ca.inputs~=#cb.inputs or #ca.outputs~=#cb.outputs then return false end
-    for i=1,#ca.inputs do if not eqref(ca.inputs[i],cb.inputs[i]) then return false end end
-    for i=1,#ca.outputs do if not eqref(ca.outputs[i],cb.outputs[i]) then return false end end
-    return true
-  end
-end
-
-local function all_ids(st)
-  local r={}
-  for _,x in ipairs(st.morder) do r[#r+1]=x end
-  for _,x in ipairs(st.porder) do r[#r+1]=x end
-  for _,x in ipairs(st.sorder) do r[#r+1]=x end
-  for _,x in ipairs(st.forder) do r[#r+1]=x end
-  return r
-end
-
-function M.same(a,b)
-  local sa,sb=assert_geometry(a),assert_geometry(b)
-  if #sa.morder~=#sb.morder or #sa.porder~=#sb.porder or #sa.sorder~=#sb.sorder or #sa.forder~=#sb.forder then return false end
-  local ka,kb=kind_data(sa),kind_data(sb)
-  local map,rmap={},{}
-
-  -- IDs appearing in both geometries denote the same already-existing occurrence.
-  for id,k in pairs(ka) do
-    if kb[id] then
-      if kb[id]~=k then return false end
-      map[id]=id; rmap[id]=id
-    end
-  end
-  for a0,b0 in pairs(map) do
-    if not relation_ok(a0,b0,sa,sb,map,rmap,ka,kb) then return false end
-  end
-
-  local cand={}
-  local idsA=all_ids(sa)
-  local idsB=all_ids(sb)
-  for _,id in ipairs(idsA) do
-    if not map[id] then
-      local sig=coarse_signature(sa,id,ka[id])
-      local xs={}
-      for _,j in ipairs(idsB) do
-        if not rmap[j] and kb[j]==ka[id] and coarse_signature(sb,j,kb[j])==sig then xs[#xs+1]=j end
-      end
-      if #xs==0 then return false end
-      cand[id]=xs
-    end
-  end
-
-  local function choose_unmapped()
-    local best,bestn=nil,math.huge
-    for _,id in ipairs(idsA) do
-      if not map[id] then
-        local n=0
-        for _,j in ipairs(cand[id]) do
-          if not rmap[j] and relation_ok(id,j,sa,sb,map,rmap,ka,kb) then n=n+1 end
-        end
-        if n<bestn then best,bestn=id,n end
-      end
-    end
-    return best,bestn
-  end
-
-  local function search()
-    local id,n=choose_unmapped()
-    if not id then return true end
-    if n==0 then return false end
-    for _,j in ipairs(cand[id]) do
-      if not rmap[j] and relation_ok(id,j,sa,sb,map,rmap,ka,kb) then
-        map[id]=j; rmap[j]=id
-        local ok=true
-        for x,y in pairs(map) do
-          if not relation_ok(x,y,sa,sb,map,rmap,ka,kb) then ok=false; break end
-        end
-        if ok and search() then return true end
-        map[id]=nil; rmap[j]=nil
-      end
-    end
-    return false
-  end
-  return search()
-end
-
+-- Private hooks shared by the tiny semantic/operational implementation.
+M._state=state
+M._new_membrane=membrane
+M._new_point=point
+M._new_strand=strand
+M._new_face=face
 return M

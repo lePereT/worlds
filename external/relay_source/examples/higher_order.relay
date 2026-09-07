@@ -1,0 +1,20 @@
+interface Reset
+  op reset
+end
+
+interface Normalize
+  op normalize
+end
+
+resource Wrapped
+  state WrappedState
+  provides Normalize.normalize = 0
+  provides Reset.reset via Normalize.normalize
+end
+
+fn reset[T](x) = Reset.reset(x)
+
+main
+  let w = Wrapped(17)
+  let result = reset(w)
+end

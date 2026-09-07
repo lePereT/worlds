@@ -1,0 +1,6 @@
+local W=require('worlds'); local T=require('support')
+local vb=W.Geometry.builder(); local vm=vb:membrane(nil,'v'); local Control=vb:point(vm,'Control'); vb:finish()
+local hb=W.Geometry.builder(); local hr=hb:membrane(nil,'root'); local hc=hb:membrane(hr,'child'); local cid=hb:point(hc,'cid'); local ctl=hb:strand(hr,{Control}); local handle=hb:strand(hr,{cid}); local history=hb:finish(); local boundary=W.Operational.from_geometry(history)
+local p=W.Geometry.builder(); local pr=p:membrane(nil,'pr'); local pc=p:membrane(pr,'pc'); local x=p:point(pc,'x'); local ci=p:strand(pr,{Control}); local co=p:strand(pr,{Control}); local dangling=p:strand(pr,{x}); local out=p:strand(pc,{x}); p:face(pr,{ci},{co,out}); local proc=p:finish()
+local cut=W.Cut.one(proc,{strands={[ci]=ctl,[dangling]=handle}}); T.ok(cut,'structural Cut may establish identity/topology'); T.ok(not W.Algebra.admissible(proc,cut),'causal authority is a distinct geometric admissibility judgement'); T.eq(W.Operational.one(boundary,proc,{strands={[ci]=ctl,[dangling]=handle}}),nil,'execution rejects structurally possible but unauthorised closure')
+return T.count()

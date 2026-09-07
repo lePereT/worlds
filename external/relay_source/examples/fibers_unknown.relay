@@ -1,0 +1,15 @@
+interface A
+  op a
+end
+interface B
+  op b
+end
+resource Loop
+  state LoopState
+  provides A.a via B.b
+  provides B.b via A.a
+end
+main
+  let x = Loop(0)
+  let r = or_else(A.a(x), 123)
+end

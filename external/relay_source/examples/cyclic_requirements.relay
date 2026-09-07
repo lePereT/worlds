@@ -1,0 +1,18 @@
+interface A
+  op a
+end
+
+interface B
+  op b
+end
+
+resource Loop
+  state LoopState
+  provides A.a via B.b
+  provides B.b via A.a
+end
+
+main
+  let x = Loop(1)
+  let result = A.a(x)
+end

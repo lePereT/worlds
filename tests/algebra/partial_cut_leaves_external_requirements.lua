@@ -1,0 +1,12 @@
+local W=require('worlds'); local T=require('support')
+local vb=W.Geometry.builder(); local vm=vb:membrane(nil,'v'); local Control=vb:point(vm,'Control'); local Tmp=vb:point(vm,'Tmp'); local Done=vb:point(vm,'Done'); local Permit=vb:point(vm,'Permit'); vb:finish()
+local p=W.Geometry.builder(); local pm=p:membrane(nil,'p'); local ci=p:strand(pm,{Control}); local x=p:point(pm,'x'); local mid=p:strand(pm,{Tmp,x}); p:face(pm,{ci},{mid}); local P=p:finish()
+local q=W.Geometry.builder(); local qm=q:membrane(nil,'q'); local y=q:point(qm,'y'); local qi=q:strand(qm,{Tmp,y}); local permit=q:strand(qm,{Permit}); local done=q:strand(qm,{Done,y}); q:face(qm,{qi,permit},{done}); local Q=q:finish()
+local PQ,img=W.Algebra.cut(P,Q,{{mid,qi}})
+local cci=img.left.strands[ci]; local cpermit=img.right.strands[permit]; local cdone=img.right.strands[done]
+T.ok(PQ:is_input(cci)); T.ok(PQ:is_input(cpermit),'unmatched Q requirement must remain open'); T.ok(PQ:is_terminal(cdone))
+local sb=W.Geometry.builder(); local sm=sb:membrane(nil,'root'); local ctl=sb:strand(sm,{Control}); local live=W.Operational.from_geometry(sb:finish())
+T.eq(W.Operational.one(live,PQ,{strands={[cci]=ctl}}),nil,'first stage must not commit when later external requirement is absent')
+local sb2=W.Geometry.builder(); local sm2=sb2:membrane(nil,'root'); local ctl2=sb2:strand(sm2,{Control}); local per=sb2:strand(sm2,{Permit}); local live2=W.Operational.from_geometry(sb2:finish())
+local w=W.Operational.one(live2,PQ,{strands={[cci]=ctl2,[cpermit]=per}}); T.ok(w); local _,out=W.Operational.commit(w); T.ok(out.strands[cdone]); T.ok(not live2:contains(ctl2)); T.ok(not live2:contains(per))
+return T.count()
