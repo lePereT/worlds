@@ -1,0 +1,15 @@
+Five-run TexLua medians, same benchmark harness, clean kernel versus the
+immediately preceding boundary-runtime implementation.
+
+case             previous      clean
+rigid100k        0.000860 s    0.000563 s
+broad1000        0.002334 s    0.002222 s
+scarcity5000     0.019286 s    0.018000 s
+cycle7           0.009488 s    0.009184 s
+10P5             0.085318 s    0.076991 s
+
+The clean endpoint-thread quotient also removes an order-dependent boundary
+error in the previous implementation: equality introduced in one sibling
+locality could suppress a required boundary in another sibling when the same
+demands participated in both.  tests/adversarial.lua contains the permanent
+regression in both sibling construction orders.

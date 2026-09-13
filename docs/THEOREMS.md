@@ -2,90 +2,126 @@
 
 **Status: theorem targets and executable evidence; not mathematical proofs.**
 
-The implementation and tests are executable evidence, not mathematical proofs.
-The formal programme should attack these claims directly.
+The implementation and tests are evidence. The intended formalisation should
+state the declarative relations independently and prove the executable kernel
+correct against them.
 
-## T1 Frame preservation
+## T1 Geometry well-formedness
 
-A development consuming exact authority `C` preserves every unrelated egress
-Strand occurrence exactly.
+Builder output has unique producer/consumer incidence, acyclic Face causality,
+exact ingress/egress and the stated causal locality/Point availability law.
 
-Evidence: `tests/authority/frame_law.lua`,
-`tests/cut/unrelated_commit_preserves_witness.lua`, structural benchmarks.
+Evidence: `tests/run.lua`, `tests/adversarial.lua`.
 
-## T2 History/boundary commuting square
+## T2 Boundary fixed point
 
-For every admissible complete Cut, exact closure then egress projection agrees
-with specialised operational execution up to the occurrence image of the
-process.
+`boundary(G)` preserves surviving carriers literally, contains no Face/closed
+causal interior and is idempotent:
 
-Evidence: `tests/state/history_boundary_commuting_square.lua`,
-`tests/state/fresh_identity_history_boundary.lua`, `tests/torture/whole_model.lua`.
+```text
+boundary(boundary(G)) = boundary(G)
+```
 
-## T3 Cut-family coherence
+Evidence: `tests/run.lua`, `tests/history.lua`, live benchmark.
 
-The normal form of one compatible simultaneous Cut family is independent of
-presentation order.
+## T3 Matching judgement well-definedness
 
-Evidence: `tests/algebra/cut_family_order_invariance.lua`,
-`tests/algebra/joint_scc_order_and_lca.lua`.
+The declarative partial matching relation depends only on exact open incidence,
+target causal-development structure and the induced equality/locality laws. It
+is independent of presentation order and of any particular search algorithm.
 
-## T4 Tensor symmetry and composition associativity
+Evidence: `tests/query.lua`, differential suites.
 
-Juxtaposition is permutation-invariant up to exact renaming.  Acyclic wiring
-has the same external boundary and causal shape independent of construction
-parenthesisation.
+## T4 World-side boundary sufficiency
 
-Evidence: `tests/algebra/cut_associativity.lua`,
-`tests/algebra/close_link_laws.lua`, generated whole-model torture.
+For a fixed target/question policy, replacing historical source Geometry by
+`boundary(source)` does not change the exact matching solutions. A retained query
+engine keeps the outgoing source section rather than closed source history.
 
-## T5 Boolean cube independence
+Evidence: `tests/history.lua`, ordinary and selected-section differentials.
 
-`n` mutually independent exact developments induce the Boolean `n`-cube.
-Competing scarce developments do not complete the corresponding higher cell.
+## T5 Ingress quotient correctness
 
-Evidence: `tests/concurrency/cube_compatibility.lua`, including all 120 complete
-5-cube linearisations.
+The endpoint-thread quotient retains exactly the target Membrane equalities
+needed by the matching judgement; proper-descendant equality is neither lost nor
+leaked between sibling branches.
 
-## T6 Mutual-support normalisation
+Evidence: adversarial, nested and branching differential suites.
 
-A closed causal support SCC is one indivisible joint occurrence and the SCC
-condensation remains acyclic.
+## T6 Engine soundness and completeness
 
-Evidence: symmetric/joint SCC algebra tests and structural ring benchmark.
+For every finite Question `Q`, the factor/provenance/Hall engine emits exactly
+`Solutions(Q)`: every `yes` is a lawful exact match satisfying `S,T,R,C,E0`, and
+every such exact solution is eventually enumerated.
 
-## T7 Joint locality
+Evidence: `tests/differential.lua`, `tests/restricted-differential.lua`,
+`tests/partial-differential.lua`, nested/branching differentials.
 
-A joint occurrence resides at the least common enclosing membrane after
-cut-induced membrane equations.
+## T7 Search epistemics
 
-Evidence: LCA algebra tests and generated support rings.
+Finite fuel exhaustion can yield only `more`, never semantic `no`. `no` is
+returned only after exhaustive emptiness of one exact finite Question; `done`
+only after exhaustion following one or more emitted solutions.
 
-## T8 Identity is not authority
+Evidence: native tests and the shape guard.
 
-Point/Membrane identity and structural compatibility alone cannot authorise
-modification of existing locality.
+## T8 join congruence and frame preservation
 
-Evidence: `tests/authority/`.
+Supplied open-boundary equations generate the implemented typed equality closure
+on Strands/Points/Membranes. Unaffected carriers from the first part survive
+literally in the result.
 
-## T9 Boundary-sufficient Theory
+Evidence: native tests plus `tests/historical/close_link_laws.lua` and related
+historical algebra cases through `compat/worlds.lua`.
 
-Any Theory which controls future development decides from current/open candidate
-semantics.  Historical fact must be carried forward explicitly if it matters.
+## T9 Mutual-support normalisation
 
-Evidence: `../tests/theory/`, `../archaeology/THEORY_PORT.md`; this remains a constitutional target
-for arbitrary external Theory implementations.
+The causal quotient of a cyclic SCC is one joint Face, the condensation is
+acyclic, and external open boundary is preserved.
 
-## T10 Structural work
+Evidence: `tests/historical/symmetric_close_cycle_joint.lua`,
+`joint_scc_preserves_external_boundary.lua`, `multiple_joint_sccs.lua`.
 
-Correctness never depends on wall-clock time.  Release tests assert candidate
-steps and semantic shape rather than elapsed time.
+## T10 Joint locality
 
-## Face-incidence permutation invariance
+A joint Face resides at the least common enclosing Membrane of the member Faces
+after induced Membrane equations.
 
-Permuting only the presentation order of the distinct input Strands of a Face,
-or only the presentation order of its distinct output Strands, does not change
-the semantic open process.  In particular, joint-SCC normalisation is invariant
-under Face-incidence, tensor-factor and Cut-family presentation order.
+Evidence: `tests/historical/cross_locality_joint_lca.lua`,
+`joint_scc_order_and_lca.lua`.
 
-Positional meaning belongs in ordered Strand Point incidence or Theory.
+## T11 advance/history commuting result
+
+`advance(world, development, equations)` is exactly boundary projection of the
+ordinary join with `boundary(world)`. Optional `worlds.history` records that
+transition without changing future kernel behaviour.
+
+Evidence: definition of `advance`, `tests/history.lua`.
+
+## T12 Presentation-order invariance
+
+Non-semantic presentation choices — compatible equation-family order and Face
+input/output enumeration order — do not change external causal result except for
+fresh occurrence correspondence where exact materialisation differs.
+
+Evidence: historical algebra suite.
+
+## T13 Question normal-form completeness
+
+Selected-source queries, selected-target queries, optional targets, explicit
+admissibility restrictions and exact seeds are all instances of the single
+Question normal form `Q=(A,B,S,T,R,C,E0)` rather than distinct solve semantics.
+The public engine agrees with brute-force finite relation enumeration on the
+maintained generated suites.
+
+Evidence: `tests/query.lua`, `tests/restricted-differential.lua`,
+`tests/partial-differential.lua`.
+
+## Longer-term theorem programme
+
+Formal work should separate:
+
+1. a mechanised declarative partial matching judgement and finite Question relation, separated from the factorised/Hall engine;
+2. a declarative quotient/normal-form `JoinSpec` from DSU/SCC materialisation;
+3. exact raw Geometry equality from any later support-sensitive observational
+   quotient.

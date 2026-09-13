@@ -1,85 +1,159 @@
-# Worlds 0.5.0
+# Worlds 0.6.0 — geometry kernel and finite matching judgements
 
-This is a clean reimplementation of the Worlds 0.5 whole model from
-its laws and tests.  The research-7 implementation is retained as an independent
-oracle/archaeological checkpoint; this tree does not preserve its internal
-module layout or representation-specific tests.
+Worlds is a small operational geometry in which exact identity, scarce authority,
+causal transformation and locality arise from incidence and open boundary.
 
-## Model
-
-Worlds is nested open causal geometry.
-
-The only semantic carriers are:
-
-- **Membrane** — structural locality;
-- **Point** — exact identity;
-- **Strand** — scarce authority carrying ordered Point incidence;
-- **Face** — causal transformation consuming and producing finite unordered sets of Strand occurrences.
-
-An open Geometry is a process.  Its ingress and egress are derived from
-incidence.  Processes are juxtaposed by tensor and composed by exact scarce
-boundary **Cut**.  Simultaneous cut-induced causal support cycles normalise to
-one joint Face at the least common enclosing membrane.
-
-Actual development additionally requires causal authority: identity and
-structural compatibility alone never authorise modification of existing
-locality.
-
-Current operational state is the exact open egress boundary of completed
-history.  `Operational` is therefore a specialised projection of the algebra,
-not a second semantic model.
-
-## Public API
-
-```lua
-local Worlds = require('worlds')
-
-Worlds.Geometry
-Worlds.Cut
-Worlds.Algebra
-Worlds.Operational
-```
-
-`Geometry`, `Cut` and `Algebra` are the semantic core. `Operational` implements
-boundary execution without retaining closed causal history.
-
-There are deliberately no semantic sorts, numeric IDs, Selection/View objects,
-ambient Point search, membrane authority, transaction snapshots, global epochs,
-or historical runtime state.
-
-## Documentation
-
-The maintained semantic documents live under `docs/`. Start with
-`docs/README.md` for their authority/status map. Test strategy lives beside the
-tests in `tests/README.md`; historical implementation notes live under
-`archaeology/`. The release gate enforces the exact Markdown set so stray design
-notes cannot acquire accidental authority.
-
-## Check
-
-The ordinary entry points both run the complete release gate:
-
-```sh
-make
-make test
-```
-
-The Makefile selects the first available interpreter in this order:
+The release is deliberately split around a small verified centre:
 
 ```text
-luajit -> lua -> lua5.4 -> lua5.3 -> texlua
+verified centre (`worlds._kernel`)
+    exact carriers / Geometry / boundary / join / advance
+             |
+             | read-only observation
+             v
+public edge (`worlds`) + disposable acceleration
+    outgoing structural index / complete solve convenience
+             |
+             v
+finite matching judgement and replaceable query engine
+    Question Q = (A,B,S,T,R,C,E0)
 ```
 
-Override it explicitly when needed, for example:
+Only the verified Geometry centre is operational ontology. The compiled sidecar
+is disposable acceleration derived from already-verified Geometry; a Question
+carries no authority and is not programme state. The centre neither imports nor
+registers acceleration.
 
-```sh
-make LUA=texlua test
-make doctor
+The ordinary convenience surface remains small:
+
+```text
+solve(world, development)  -> complete matching question
+join(parts, equations)     -> Geometry
+boundary(Geometry)         -> future-relevant Geometry
+advance(...)               = boundary(join(...))
 ```
 
-The normal gate contains no timing threshold. It checks documentation/tooling
-discipline, exact semantic laws, independent differential cases, generated
-torture, external clients, and structural work/shape invariants.
+`solve` is definitionally the complete-coverage special case of `worlds.query`.
+It accepts only optional seed equations; specialised finite questions do not add
+flags to the complete matching operation.
 
-LuaJIT is the intended bootstrap implementation. Ordinary Lua and TexLua are
-portable fallbacks, not the performance reference.
+## Geometry kernel
+
+A Geometry contains exact Membranes, Points, scarce Strand occurrences and causal
+Faces. Ingress and egress are derived from incidence. `boundary(G)` keeps exactly
+the future-relevant open authority and the owned structure required to interpret
+it. Surviving carriers are preserved literally.
+
+```text
+boundary(boundary(G)) = boundary(G)
+```
+
+`join(parts,equations)` is the sole geometry-changing operation:
+
+```text
+disjoint union
++ directed open-boundary equations
++ typed equality closure
++ causal SCC quotient
++ locality support
+= Geometry
+```
+
+The first part is the frame. Unaffected frame carriers survive literally; later
+parts are instantiated fresh where they are not glued. Same-Geometry feedback is
+ordinary boundary equality.
+
+## Finite Questions
+
+`worlds.query` asks a finite question about two exact ambient Geometries:
+
+```text
+Q = (A, B, S, T, R, C, E0)
+```
+
+where:
+
+- `A` is the source/world Geometry;
+- `B` is the target/development Geometry;
+- `S` is an exact subset of `egress(A)`;
+- `T` is an exact subset of `ingress(B)`;
+- `R ⊆ T` are targets which must be matched;
+- `C ⊆ S × T` is an optional exact admissibility relation;
+- `E0 ⊆ C` are seeded equations.
+
+A solution is an exact scarce equation set satisfying the Worlds matching
+judgement plus those finite question parameters. The source and target roles are
+kept distinct even when `A == B`.
+
+The complete `W.solve(A,B,seeds)` case is simply:
+
+```text
+S = egress(A)
+T = ingress(B)
+R = T
+C = S × T
+E0 = seeds
+```
+
+Partial application, public views, local execution domains and open internal
+closure therefore become different Questions rather than different kernel
+operations.
+
+See `docs/QUERY.md` for the maintained normal form.
+
+## Matching judgement and engine
+
+Matching is a real judgement and is not reducible to "`join` accepts these
+equations". A target development contributes locality/equality constraints from
+its internal open causal geometry. The query engine implements that judgement by:
+
+1. compiling the source egress into structural rows with exact occurrence fibres;
+2. quotienting target ingress by endpoint-thread locality equalities;
+3. factorising only the irreducible boundary variables;
+4. proving exact scarcity with Hall-style matching; and
+5. enumerating exact Strand allocations only after structural feasibility.
+
+These are algorithms, not semantic carriers. They live outside the verified
+centre in `src/worlds/_kernel.lua` and may be replaced without changing the
+Geometry or Question relations.
+
+The engine retains only the source outgoing section, not closed source history.
+Its ancestry caches, factors, support DAG and Hall structures are disposable.
+
+## `yes`, `no`, `more`, `done`
+
+A retained query distinguishes semantic result from incomplete work:
+
+- `yes` — one constructive exact solution;
+- `no` — the exact finite Question has no solution;
+- `more` — the current work budget has not decided the Question;
+- `done` — at least one solution was emitted and enumeration is exhausted.
+
+`more` is never negative evidence. `no` is always relative to one exact finite
+Question.
+
+## Live computation
+
+Runtime evolution can remain permanently at the boundary fixed point:
+
+```lua
+local q = W.solve(world, development)
+local tag, equations = q:step(1000)
+-- when tag == 'yes':
+world, image = W.advance(world, development, equations)
+```
+
+`advance` is definitionally
+`boundary(join({boundary(world), development}, equations))`. Optional
+`worlds.history` may observe transitions but is never consulted by the kernel.
+
+## Checks
+
+`make full-check` runs the Geometry laws, finite-Question tests, optional-History
+checks, adversarial cases, 10,000 ordinary differential cases, 5,000 selected-
+section differential cases, more than 100,000 optional/admissibility assertions,
+3,000 nested cases, 3,000 branching-locality cases, the historical algebra suite
+and an architectural shape guard.
+
+The shape guard explicitly rejects finite-question/search machinery from the
+Geometry kernel.
