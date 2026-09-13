@@ -2,183 +2,106 @@
 
 **Status: non-authoritative research ledger.**
 
-## Why this clean implementation exists
+Worlds 0.6.0 intentionally keeps this file outside the semantic authority of
+`LAWS.md`. These are questions suggested by the released kernel and by the
+non-authoritative experiments in `../speculation/`.
 
-Research-7 established the whole-model hypothesis through successive
-simplifications.  This tree asks whether the model can be rederived cleanly from
-its laws without carrying the mechanism of discovery.
+## Mathematical classification
 
-The main result so far is positive: the same semantic gate passes with a small
-implementation and a simpler operational representation.
+The raw Face/Strand causal skeleton is close to familiar occurrence-net and
+monogamous acyclic open-hypergraph/string-diagram structures. Point substitution
+has close neighbours in high-level Petri nets/Petri nets with identifiers;
+individual exact Strand occurrences have neighbours in individual-token or
+whole-grain Petri semantics; Membrane hierarchy has neighbours in bigraphical
+and hierarchical graph/net formalisms.
 
-## Compile-time / runtime continuum
+The open question is therefore not whether every ingredient is unprecedented.
+It is whether the complete calculus — exact structural fibres, hierarchical
+locality equations, causal construction law, boundary solve and SCC/LCA join
+normalisation — is equivalent to one established object or represents a useful
+new factorisation/specialisation.
 
-Open geometry can be closed whenever the required information becomes known:
+Concrete comparison targets:
+
+- forget Points/Membranes and characterise the resulting open hypergraph;
+- translate `solve` to modes/bindings of a high-level individual-token net;
+- characterise the equality-closure part of `join` as a pushout or related
+  universal construction if possible;
+- determine whether SCC/LCA normalisation is a known reflection/transaction
+  normal form or the genuinely distinctive part;
+- compare commuting independent developments with occurrence/event/HDA notions.
+
+## Membranes
+
+Membranes currently form a forest with exact parent identity. They participate
+both in structural matching and in the causal-construction law, and joint causal
+support is placed at LCA after quotient.
+
+Questions:
+
+- Which laws truly require a tree rather than only a finite join-semilattice of
+  contexts?
+- Can overlapping contexts be added without destroying the small solve/join
+  calculus?
+- Is the right semantic interpretation locality, support, context bound, or a
+  combination of these?
+- Can the solve-induced Membrane mapping and join-induced Membrane quotient be
+  characterised by a simple universal property?
+
+## Semantic compression
+
+A central research hypothesis is that familiar programming notions such as
+ownership-like authority, conflict, concurrency, interface, generic
+substitution, lifetime and live state are not independent kernel primitives but
+derived views of exact open causal incidence plus structural solving and join.
+
+This should be tested comparatively rather than asserted rhetorically: enumerate
+which notions are primitive/derived/external in Worlds and neighbouring
+formalisms, and prove the derivations where possible.
+
+## Observational equality
+
+Raw exact boundary is future-operational state, but 0.6 does not claim it is the
+coarsest observational state. Fresh allocator choices, scheduler presentation
+and domain symmetry can introduce distinctions an observer may not care about.
+
+A later semantic layer may define support-sensitive contextual equivalence:
 
 ```text
-source -> module compilation -> linking -> whole-program distillation
-       -> startup -> runtime event arrival
+X ~= Y  iff every lawful future observation gives the same result
 ```
 
-The semantics does not change with the time of resolution.  Realise may erase a
-fully resolved relationship, residualise it to a specialised state machine, or
-retain genuinely dynamic Cut search at runtime.
+and study full abstraction of concrete boundary/Theory representations against
+that equivalence.
 
-## Expressive adequacy of the four-carrier geometry
+## Theory and domains
 
-The central long-term question is not whether individual language constructs can
-be encoded, but what class of resource-sensitive computation is faithfully
-presentable using only Membrane, Point, Strand and Face together with Cut,
-closure, causal authority and Theory.
+The kernel intentionally leaves domain interpretation external. Current
+speculative pressure tests include quantum semantics, stochastic/chemical
+reaction systems and resource-sensitive logic. Their purpose is to expose
+missing kernel distinctions or unnecessary assumptions, not to make those
+interpretations part of Worlds 0.6.0.
 
-A useful formal result would characterise the expressive boundary rather than
-merely accumulate examples.  Possible targets include a representation theorem
-for a well-defined finite process class, together with counterexamples showing
-which additional assumptions belong in Theory or require genuinely new
-structure.
+Particularly useful hostile domains include:
 
-This question should remain falsifiable.  If an important systems phenomenon
-cannot be represented without smuggling hidden ontology through imported Points,
-Theory or operational state, that is evidence against the current model rather
-than a reason to rename the hidden mechanism.
+- overlapping biological/locality contexts;
+- irreversible external effects and hardware I/O;
+- distributed partial knowledge and failure;
+- stochastic state and reaction symmetry;
+- quantum coherence/indefinite causal alternatives;
+- logics in which copy/drop permissions are derived rather than structural.
 
-## Correspondence with established process models
+## Formalisation
 
-Worlds has clear neighbours in Petri/occurrence nets, event structures, graph
-rewriting, bigraph-like locality, linear/resource logics and higher-dimensional
-models of concurrency.  The research goal is not to identify Worlds loosely with
-one of them, but to establish precise translations where useful.
+The intended formal path is bottom-up:
 
-Questions include:
+1. finite Geometry and Membrane forest;
+2. a simple declarative exact solve relation;
+3. proof that factorised solve enumerates exactly that relation;
+4. a declarative join quotient/normal form;
+5. proof that DSU/SCC materialisation implements it;
+6. boundary/advance theorems;
+7. only then category/polycategory/open-graph correspondences.
 
-- Which fragments translate faithfully in each direction?
-- What does exact Point identity correspond to?
-- How does scarce Strand authority compare with token/condition semantics?
-- When does Cut/close correspond to pushout-like or net composition?
-- Which commuting cubes correspond to standard independence notions?
-- What extra structure is contributed by membranes and rigid imported Points?
-
-Such correspondences could provide existing theorems, counterexamples and
-terminology without making another formalism part of the kernel implementation.
-
-## Trace and feedback
-
-Same-occurrence self-Cut is deliberately rejected: identifying an open Strand
-with itself does not close a boundary and provides no coherent authority or
-causal account.
-
-If feedback/trace is needed, it should therefore be derived as a distinct law.
-A valid proposal must answer at least:
-
-- which distinct boundary occurrences are hidden or connected;
-- how scarce authority moves;
-- whether new Face incidence is created;
-- how causal acyclicity is preserved or deliberately generalised;
-- what remains observable at the external boundary;
-- how operational execution represents the feedback without retaining hidden
-  closed history.
-
-It is possible that useful feedback belongs in a higher Theory rather than the
-base algebra.  Experiments should establish that rather than assume a traced
-structure because it is mathematically attractive.
-
-## Distributed and observer-relative execution
-
-The current operational model has one exact live boundary for one executing
-semantic world.  Distributed systems pressure the assumption that one observer
-has immediate authoritative knowledge of the whole relevant boundary.
-
-Research questions include whether several agents can maintain partial/local
-boundaries and reconcile them using ordinary exact geometry, and which facts
-must become explicitly observer-relative rather than being forced into a global
-actuality/state notion.
-
-Relevant hostile cases include network partitions, delayed observation,
-distributed ownership transfer, replicated read authority and remote failure.
-The preferred outcome is to preserve the small carrier model and express
-knowledge/observation in Theory or explicit open geometry; adding a hidden global
-history or omniscient scheduler would undermine the operational result.
-
-## Infinite and probabilistic computation
-
-The current kernel is deliberately finitary: a Geometry and a concrete Cut
-query are finite objects.  Long-running execution is represented by unbounded
-fresh finite development while operational state may remain bounded by the live
-boundary.
-
-Two possible extensions should be investigated without changing this base
-prematurely:
-
-- coinductive/infinite semantic observations over an unbounded sequence of
-  finite developments;
-- probabilistic or weighted Theory over alternative admissible developments.
-
-The questions are whether these can live entirely as interpretations over the
-finitary kernel, what notion of equivalence is appropriate, and whether
-`Hit`/`Retry`/`Unknown` requires extension when the question being asked is about
-measure or limit behaviour rather than finite existence.
-
-## Stronger concurrency and non-interference theorems
-
-The current theorem programme covers frame preservation, commuting history and
-boundary, Cut-family coherence, tensor symmetry, Boolean cubes, mutual support
-and boundary-sufficient Theory.  A longer-term goal is a more general account of
-when local developments commute, conflict or remain observationally
-independent.
-
-Possible results include:
-
-- a concurrency theorem relating sequential closures to a simultaneous
-  composite closure;
-- residual/non-interference criteria derived solely from exact boundary
-  authority;
-- higher-dimensional coherence beyond the finite cube tests;
-- sufficient conditions under which independent operational updates may execute
-  in parallel without coordination;
-- compatibility of these results with Theory quotienting.
-
-These theorems matter directly to Relay because they could justify parallel
-compiler/runtime execution without introducing a scheduler order into semantics.
-
-## Formal adequacy of translations
-
-As Relay and other experiments use Worlds, it will become useful to prove that a
-translation preserves and reflects the intended observations rather than merely
-passing tests.
-
-Candidate adequacy results include:
-
-- a small Relay core -> Worlds translation;
-- Worlds -> a simpler reference transition/process semantics;
-- selected established calculi -> Worlds and back;
-- operational boundary execution -> full-history semantics.
-
-The goal is not to formalise every language feature.  A few small, independent
-translations with preservation/reflection theorems would provide a valuable
-check that the executable kernel is not the only authority describing its own
-meaning.
-
-## Current open questions
-
-1. Prove or falsify the history/boundary commuting square.
-2. Prove coherence of simultaneous closure and SCC normalisation.
-3. Characterise the exact algebraic structure of tensor/partial Cut/closure.
-4. Formalise boundary-sufficient Theory and quotient-sensitive attachment.
-5. Pressure-test irreversible external effects, weak memory, atomics, DMA and
-   interrupts without granting closed history hidden authority.
-6. Establish a durable separately compiled artefact representation without
-   requiring global graph canonicalisation.
-7. Determine whether trace/feedback belongs in the kernel algebra, a higher
-   Theory, or is unnecessary for the intended systems domain.
-8. Characterise the expressive adequacy boundary of the four-carrier model.
-9. Establish precise correspondences with at least one established concurrency
-   or rewriting model.
-10. Determine whether distributed/observer-relative execution and probabilistic
-    or infinite observations can remain interpretations over the finitary core.
-
-## Face incidence
-
-Face input/output incidence is semantically set-valued.  The implementation may
-use compact arrays as unordered enumerations; presentation order is not semantic.
-This removes the tensor-order leak in joint-Face SCC contraction without adding
-a canonical semantic ordering.
+No proof assistant or categorical identification is part of the 0.6.0 release
+contract.

@@ -1,0 +1,5 @@
+LUA_PATH='./src/?.lua;;' texlua bench/stress.lua
+boundary-chain-3000x50   0.029974  heap=1554KB  yes
+ancestor-2000x80         0.025001  heap=1022KB  yes
+dense-triangle-50        0.600051  heap=33153KB  yes
+join-frame-50000         0.351407  heap=-2KB  50000

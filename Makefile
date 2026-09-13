@@ -11,44 +11,65 @@ ifeq ($(strip $(LUA)),)
 $(error No Lua interpreter found. Tried: $(LUA_CANDIDATES))
 endif
 
-.DEFAULT_GOAL := test
+.PHONY: test query history adversarial work centre differential restricted partial nested branching historical shape check full-check bench stress live
 
-.PHONY: all test check doctor docs tooling architecture laws torture differential whole shape external
+test:
+	LUA_PATH='./src/?.lua;;' $(LUA) tests/run.lua
 
-all: test
+query:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/query.lua
 
-test: check
+history:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/history.lua
 
-check: docs tooling architecture laws torture differential whole shape external
+adversarial:
+	LUA_PATH='./src/?.lua;;' $(LUA) tests/adversarial.lua
 
-doctor:
-	@printf 'Lua: %s\n' "$(LUA)"
-	@$(LUA) -v
+work:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/work.lua
 
-docs:
-	cd tests && $(LUA) docs.lua
-
-tooling:
-	cd tests && $(LUA) tooling.lua
-
-architecture:
-	cd tests && $(LUA) architecture.lua
-
-laws:
-	cd tests && $(LUA) run.lua
-
-torture:
-	cd tests && $(LUA) torture/inherited.lua
+centre:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/centre.lua
 
 differential:
-	cd tests && $(LUA) reference/cut_differential.lua
+	LUA_PATH='./src/?.lua;./tests/historical/?.lua;;' $(LUA) tests/differential.lua
+restricted:
+	LUA_PATH='./src/?.lua;;' $(LUA) tests/restricted-differential.lua
 
-whole:
-	cd tests && $(LUA) torture/whole_model.lua
+partial:
+	LUA_PATH='./src/?.lua;;' $(LUA) tests/partial-differential.lua
+
+nested:
+	LUA_PATH='./src/?.lua;;' $(LUA) tests/nested-differential.lua
+
+branching:
+	LUA_PATH='./src/?.lua;;' $(LUA) tests/branching-differential.lua
+
+historical:
+	@set -e; for f in tests/historical/*.lua; do \
+	  case "$$f" in *worlds.lua|*support.lua|*prng.lua) continue;; esac; \
+	  LUA_PATH='./compat/?.lua;./tests/historical/?.lua;./src/?.lua;./src/?/init.lua;;' WORLDS_SRC='src/worlds.lua' $(LUA) "$$f"; \
+	done; echo 'PASS historical algebra 15 files'
 
 shape:
-	cd tests && $(LUA) shape/structural.lua
+	$(LUA) tools/check-shape.lua
 
-external:
-	cd external/geometric_products && $(LUA) test.lua
-	cd external/relay_source && $(LUA) test.lua
+check: test query history adversarial work centre shape
+
+full-check: check differential restricted partial nested branching historical
+
+bench:
+	LUA_PATH='./src/?.lua;;' $(LUA) bench/run.lua
+
+stress:
+	LUA_PATH='./src/?.lua;;' $(LUA) bench/stress.lua
+
+live:
+	LUA_PATH='./src/?.lua;;' $(LUA) bench/live.lua 10000
+
+.PHONY: speculation-check
+speculation-check:
+	@set -e; for f in $$(find speculation -name '*.lua' | sort); do \
+	  printf 'speculation: %s\n' "$$f"; \
+	  LUA_PATH='./src/?.lua;./?.lua;;' $(LUA) "$$f"; \
+	done

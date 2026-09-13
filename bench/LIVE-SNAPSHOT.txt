@@ -1,0 +1,4 @@
+LUA_PATH='./src/?.lua;;' texlua bench/live.lua 10000
+live      10000: 0.627330s mem_delta=372.7KB faces=0 strands=1 membranes=1 points=1
+observed  1000: 0.064766s mem_delta=1781.2KB events=1000 faces=0 strands=1
+full      1000: 3.799844s mem_delta=975.9KB faces=1000 strands=1001 membranes=1 points=1

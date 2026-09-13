@@ -1,0 +1,9 @@
+LUA_PATH='./src/?.lua;;' texlua bench/run.lua
+broad-1000 first       0.012090  yes
+broad-1000 cached      0.002000  yes
+shared-unsat-5000      0.008874  no
+odd-C7-K5,5            0.004520  no
+exact-10P5             0.076262  30240
+rigid-100k             0.004757  yes
+boundary-depth3000 first 0.008787  yes
+boundary-depth3000 cached 0.001577  yes

@@ -2,81 +2,145 @@
 
 **Status: maintained explanatory model; `LAWS.md` is authoritative on conflict.**
 
-## 1. Open Geometry
+## 1. Exact open causal incidence
 
-A finite Geometry is a nested open 2-complex.  Ingress is exactly the Strands
-without producers; egress is exactly the Strands without consumers.
+A Worlds Geometry is a finite exact causal incidence structure with four carrier
+kinds:
 
-Names are correspondence data only.  Exact carrier identity is object identity
-in this reference implementation.
+- **Membrane** — hierarchical locality/context;
+- **Point** — exact identity appearing in Strand incidence;
+- **Strand** — one exact scarce occurrence carrying an ordered Point tuple;
+- **Face** — one causal transformation consuming and producing Strands.
 
-## 2. Tensor
+Ingress and egress are derived from producer/consumer incidence. Worlds 0.6.0
+does not claim that this raw structure is a conventional topological or cellular
+2-complex.
 
-`P ⊗ Q` is juxtaposition.  It introduces no interaction and no scheduling order.
+## 2. Matching is a judgement over Geometry
 
-## 3. Cut
+The sacred operational ontology stops at exact Geometry and its open boundary.
+Matching is a judgement over two ambient Geometries, not another kind of
+Geometry and not a family of kernel modes.
 
-A Cut is an exact proof/search relation between open ingress and an explicitly
-supplied finite set of exact offered Strands.  It is injective in Strand
-authority and solves Point equality plus membrane-topology equations induced by
-that wiring.  A closure link always relates two distinct exact Strand
-occurrences.  An occurrence which is simultaneously ingress and egress cannot
-be "closed to itself"; any future trace/feedback operation would require its
-own law rather than a no-op self-identification.
-
-Cut creates nothing and executes nothing.
-
-## 4. Close
-
-`close(parts, links)` simultaneously internalises exact terminal-to-ingress
-wiring and materialises the resulting open Geometry.
-
-Mutual causal support is simultaneity, not an arbitrary serialisation.  Each
-closed support SCC contracts to one joint Face.  Its semantic locality is the
-least common enclosing membrane of its member occurrences after cut-induced
-membrane equations.
-
-## 5. Boundary-relative Point roles
-
-Point behaviour is derived from the boundary being composed:
-
-- an imported Point is rigid exact identity;
-- a local Point occurring on ingress is a variable supplied by the environment;
-- a local Point introduced only downstream is a fresh existential of that
-  complete development.
-
-No Point tag records these roles.
-
-## 6. Causal authority
-
-Structural Cut compatibility is weaker than executable authority.
-
-Existing locality may change only when consumed exact ingress authority
-causally supports that locality.  Merely knowing a Point or Membrane, or merely
-forwarding a Strand, is not modification authority.
-
-## 7. State and execution
-
-For exact history `H`, operational state is `∂⁺H`.
-
-The semantic execution equation is:
+Write:
 
 ```text
-       close
-H ---------------> H'
-|                   |
-egress              egress
-|                   |
-v                   v
-B -------step------> B'
+A ; B |- E match
 ```
 
-`Operational` implements the bottom path directly.  It stores only a set of
-exact live egress Strands and does not retain the closed causal interior.
+when exact source egress occurrences in `A` lawfully realise the selected open
+ingress pattern of `B`. The judgement respects ordered incidence, rigid imported
+Point identity, target-local Point/Membrane substitution, endpoint locality and
+exact source scarcity.
 
-## 8. Theory
+This distinction is real. `join({A,B},E)` may be defined for an equation set even
+when `B` contains causal structure which is not a lawful executable development.
+Matching therefore cannot be reduced to successful quotient materialisation.
 
-Worlds provides exact/intensional structure.  Domain equality, admissibility and
-quotients belong to Theory outside the kernel.  A Theory with authority over
-future execution must be boundary-sufficient: if historical fact matters later,
-its relevant consequence must remain represented on the open boundary.
+## 3. Finite Questions
+
+A finite Question selects which part of that matching judgement is being asked:
+
+```text
+Q = (A, B, S, T, R, C, E0)
+```
+
+where `S` is selected source egress, `T` selected target ingress, `R` the required
+targets, `C` an optional exact admissibility relation, and `E0` seed equations.
+A solution is a lawful exact partial match satisfying those finite parameters.
+
+Questions carry no authority and are not programme state. They are behaviourally
+significant judgement parameters: changing `R` or `C` can change the answer, so
+they must not be described as mere caches or metadata.
+
+The source and target roles remain distinct even when `A == B`. This permits
+same-Geometry internal closure without teaching Geometry about sibling policy.
+
+`W.solve(A,B,seeds)` is only the complete specialisation `S=egress(A)`,
+`T=ingress(B)`, `R=T`, `C=S×T`.
+
+## 4. Replaceable query engine and epistemic result
+
+The current engine compiles the source outgoing section into structural rows with
+exact occurrence fibres, quotients target ingress by endpoint-thread locality,
+factorises irreducible equality variables, proves scarcity with Hall matching and
+only then enumerates exact Strand assignments.
+
+Those structures are not semantic values. They live in `worlds.query_engine` and
+may be replaced while the Question relation remains fixed.
+
+The retained engine separates semantic result from incomplete computation:
+
+- `yes` — one exact solution has been constructively produced;
+- `no` — the finite Question is empty and exhausted;
+- `more` — the configured fuel has not completed the calculation;
+- `done` — at least one solution was emitted and all further alternatives have
+  now been exhausted.
+
+A retained engine state keeps only the exact source outgoing section required by
+the Question, not closed source history.
+
+## 5. join
+
+`join(parts, equations)` is the one operation which changes Geometry.
+Conceptually it performs:
+
+```text
+disjoint Geometry parts
++ directed equations between open occurrences
++ induced Point/Membrane equalities
++ causal SCC normalisation
++ frame-preserving materialisation
+= resulting Geometry
+```
+
+The first part is the existing frame. Exact frame carriers unaffected by the
+composition survive literally. Structure supplied by later parts is instantiated
+where it is not identified with existing frame structure.
+
+A causal cycle created by composition denotes mutual support and is represented
+by one joint Face rather than a chosen serialisation. Its locality is the least
+common enclosing Membrane of its participating Faces after locality equations.
+
+## 6. boundary and live execution
+
+`boundary(G)` projects exact history to the currently open causal frontier. It
+keeps every exact egress occurrence plus only the owned Point/Membrane structure
+needed to interpret those occurrences.
+
+```text
+historical Geometry
+        |
+     boundary
+        v
+live Geometry  -- solve --> equations
+        |                     |
+        +------ advance ------+
+                  |
+                  v
+             live Geometry
+```
+
+Because `advance` immediately returns to `boundary`, persistent live state can be
+bounded by frontier size rather than elapsed history.
+
+## 7. Identity, equality and authority
+
+Worlds exactness should not be confused with universal disequality. Imported
+exact Points are rigid. Local ingress Points/Membranes are structural variables
+and may be identified by solving when the Geometry permits it. Fresh downstream
+structure becomes exact when materialised.
+
+Likewise, knowing an exact Point or Membrane does not reveal or manufacture live
+Strand authority. Causal use of existing local structure is validated through
+input incidence.
+
+## 8. Interpretation outside the kernel
+
+The kernel deliberately does not decide domain-specific equality or dynamics.
+For example, chemistry may quotient permutations of indistinguishable exact
+reactants; a quantum model may attach amplitudes to alternatives; a logic may
+restrict which explicit copy/drop Faces are admissible.
+
+`speculation/` contains such experiments but is not semantic authority for the
+release.

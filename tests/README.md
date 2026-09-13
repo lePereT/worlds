@@ -2,72 +2,80 @@
 
 **Status: maintained test architecture and executable-evidence guide.**
 
-Worlds tests are organised by semantic law rather than development history. The
-semantic laws themselves live in `../docs/LAWS.md`; tests are executable evidence
-for those laws, not a second prose specification.
+The semantic laws live in `../docs/LAWS.md`. Tests are executable evidence, not
+a second prose specification.
 
-## Gate structure
+## Gate
 
-The normal gate is:
+`make full-check` runs:
 
 ```text
-tests/geometry/
-tests/cut/
-tests/algebra/
-tests/authority/
-tests/state/
-tests/concurrency/
-tests/theory/
+tests/run.lua
+    native 0.6 semantics
+
+tests/history.lua
+    optional observer/history independence
+
+tests/adversarial.lua
+    targeted boundary/scarcity/locality regressions
+
+tests/work.lua
+    deterministic complexity/work-budget regression gates
+
+tools/check-shape.lua
+    architectural/source-shape guard
+
+tests/differential.lua
+    10,000 flat cases against independent brute force
+
+tests/nested-differential.lua
+    3,000 nested-locality cases
+
+tests/branching-differential.lua
+    3,000 branching-locality cases
+
+tests/historical/*.lua
+    15 retained algebra cases through compat/worlds.lua
 ```
 
-Additional independent pressure comes from:
+The differential suites are important because they compare the optimised
+boundary/factor solver with deliberately simpler independent enumerations rather
+than merely asserting examples against itself.
 
-- `reference/cut_differential.lua` — brute-force Cut oracle;
-- `torture/inherited.lua` — inherited generated cases;
-- `torture/whole_model.lua` — history/boundary and composition torture;
-- `shape/structural.lua` — work/shape assertions;
-- `../external/geometric_products/` — independent product/resource client;
-- `../external/relay_source/` — independent Relay-source client.
+## Historical compatibility evidence
 
-Obsolete representation tests are not preserved merely for compatibility. When
-an implementation mechanism disappears, tests should move to the law it had been
-trying to establish. For example, the operational model has no membrane tree, so
-current tests assert exact frame preservation rather than tree-node sharing.
+`tests/historical/` and `compat/worlds.lua` preserve selected 0.5 algebra laws as
+regression evidence. They do not define the 0.6 public API and should not be used
+by new clients.
 
-Hostile presentation tests deliberately permute non-semantic order, including
-ordinary and joint Face incidence. Relay transport likewise normalises unordered
-Face incidence before content hashing.
+## Speculation
 
-## Structural work assertions
+`make speculation-check` runs the deliberately non-authoritative experiments in
+`../speculation/`. These are excluded from `full-check`: passing them means only
+that their toy assertions remain executable against the released kernel.
 
-`shape/structural.lua` is part of `make check`. It contains no timing threshold.
-It currently asserts:
+## Benchmarks
 
-- homogeneous `n × n` scarcity finds a first witness in exactly `n` candidate
-  checks and stores no demand×offer matrix;
-- a fixed work budget advances by exactly that many candidate checks;
-- 200 exact historical transitions produce 200 Faces while operational state
-  remains one live Strand;
-- updating one Strand amongst 10,000 unrelated sibling authorities preserves the
-  other 9,999 exact occurrences;
-- a 1,000-part/999-cut assembly materialises to exactly 1,000 Faces, one ingress
-  and one egress;
-- a 64-Face mutual-support ring normalises to one joint Face.
+`make bench`, `make stress` and `make live` are development/performance probes.
+They are not wall-clock correctness gates. Captured release results are recorded
+in `../CHECKS.md` and `../bench/`.
 
-The benchmark target is the **shape of semantic work**, not the speed of a
-particular Lua runtime or machine. Wall-clock probes may be useful during
-implementation work, but they are not correctness or release gates.
+## Work constitution
 
-Garbage-collection regressions similarly test eventual reachability after transient execution frames have ended. They must not depend on an exact number of collection cycles: LuaJIT and the fallback Lua runtimes differ in weak-table and VM-stack collection cadence.
+`work.lua` is a deterministic performance-regression gate.  It does not use
+wall-clock thresholds.  Solver paths are measured in the kernel's own
+`step(fuel)` work units; complete-Question construction is measured in Lua VM
+instruction quanta because it occurs before the fuelled coroutine exists.
 
-## Documentation discipline
+The guarded properties are: indexed rigid lookup independent of unrelated
+source size; symbolic complete-Question construction; persistent query/ancestry
+caches; cached depth work independent of raw membrane depth; and linear early
+scarcity rejection.  The budgets are deliberately loose enough to permit local
+implementation changes while failing changes in asymptotic work.
 
-`docs.lua` is part of the normal gate. It maintains an exact whitelist of
-Markdown files in the release tree, rejects stray top-level design documents,
-and checks the declared authority/status of maintained documents. Adding a new
-Markdown file therefore requires an explicit test change rather than allowing a
-note to acquire accidental authority.
-### Runtime-independent generated cases
 
-Seeded/generated tests use `tests/prng.lua`, not the host runtime's `math.random`. LuaJIT and compatibility Lua runtimes must therefore exercise the same generated cases and report the same assertion counts.
+## Centre/edge architecture
 
+`centre.lua` loads `worlds._kernel` directly and exercises Geometry, `boundary`
+and `join` while asserting that neither disposable acceleration nor the matching
+engine has been loaded. This guards the one-way dependency from edge to centre.
