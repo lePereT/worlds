@@ -1,135 +1,97 @@
-# Finite matching Questions
+# Finite Questions
 
-**Status: normative definition of the finite matching judgement layer.**
+**Status: normative definition of the finite judgement layer.**
 
-This layer is deliberately outside the Worlds operational ontology. A Question
-carries no authority, is not transported programme meaning and does not change
-Geometry. It parameterises one finite judgement about exact open Geometry.
+A Question is outside the Worlds operational ontology. It carries no authority,
+is not transported programme meaning and does not change Geometry. It describes
+one exact finite judgement whose constructive witnesses may be handed directly
+to strict `join`.
 
-## Normal form
+Worlds exposes two precise Question forms.
 
-A Question is:
+## Directional matching
 
 ```text
-Q = (A, B, S, T, R, C, E0)
+Match(A,B; S,T,D,R,C,E0)
 ```
 
 with:
 
 ```text
-A  source/world Geometry
-B  target/development Geometry
-S  subset of egress(A)
-T  subset of ingress(B)
-R  subset of T
-C  subset of S x T
-E0 subset of C
+A   source/world Geometry
+B   target/development Geometry
+S   selected exact egress(A)
+T   selected exact ingress(B)
+D   sources which must occur in domain(E)
+R   targets which must occur in codomain(E)
+C   optional admissibility relation C subset S x T
+E0  seeded exact equations
 ```
 
-`C` is omitted in the API when it is the complete relation `S × T`.
+`D` defaults to the empty set. `R` defaults to `T`. `C` defaults to `S x T`.
+`S`, `T`, `D`, `R`, `C` and `E0` are sets/relations; presentation order is not
+semantic.
 
-`S`, `T`, `R`, `C` and `E0` are mathematical sets/relations. Presentation order
-is not semantic.
-
-The implementation need not materialise a complete set merely to represent it.
-When `S`, `T`, `R` or `C` take their defaults, the Question stores that fact
-symbolically and materialises defensive arrays only if a public accessor asks
-for them. This is an implementation choice and does not alter the normal form.
-
-The roles of `A` and `B` remain distinct when they are the same exact Geometry.
-This is required for same-Geometry questions such as internal sibling closure.
-
-## Matching judgement
-
-Write:
+A solution `E` must satisfy the directional Worlds matching judgement as well as:
 
 ```text
-A ; B |- E match
-```
-
-when the exact equation set `E` is a lawful partial realisation of target ingress
-against source egress. The judgement incorporates the intrinsic Worlds matching
-laws:
-
-- exact source scarcity;
-- at-most-once target closure;
-- Strand arity and ordered Point incidence;
-- rigid imported Point identity;
-- target-local Point/Membrane substitution;
-- endpoint locality equality and ancestry constraints; and
-- the causal-development condition on `B`.
-
-Matching is not defined as mere successful materialisation by `join`. `join`
-answers whether already-chosen open equations produce a lawful quotient Geometry;
-matching additionally answers whether those source occurrences lawfully realise
-the target development pattern.
-
-## Solutions
-
-`E` is a solution of `Q` exactly when:
-
-```text
-A ; B |- E match
-
 E0 subset E
 E subset C
-domain(E) subset S
-codomain(E) subset T
-R subset codomain(E)
+D subset domain(E) subset S
+R subset codomain(E) subset T
 ```
 
-with exact scarcity/target uniqueness supplied by the matching judgement.
+The matching judgement incorporates exact scarcity, target uniqueness, Strand
+arity and ordered Point incidence, rigid imported Point identity, target-local
+Point/Membrane substitution, locality equality/ancestry and the causal-development
+condition on `B`.
 
-An optional target is simply a member of `T \ R`. No `optional_ingress` semantic
-operation exists.
+Matching is intentionally stronger than direct quotient construction. A Geometry
+fragment may be lawfully joined while still being unsuitable as a rooted target
+development pattern.
 
-A disallowed source/target pair is simply absent from `C`. No `forbid` semantic
-operation exists.
-
-## Complete solve
-
-The ordinary Worlds convenience:
-
-```lua
-W.solve(A, B, seeds)
-```
-
-means:
+## Direct finite closure
 
 ```text
-S = egress(A)
-T = ingress(B)
-R = T
-C = S x T
-E0 = seeds
+Close(P; S,T,D,R,C,E0)
 ```
 
-and delegates to the Question judgement.
+where `P` is an ordered finite set of pairwise-disjoint Geometry parts and:
 
-`W.solve` accepts no other policy fields. General questions use
-`require('worlds.query')`.
-
-## API
-
-```lua
-local Q = require('worlds.query')
-
-local question = Q.new(source, target, {
-  sources = selected_source_egress,     -- optional; default all
-  targets = selected_target_ingress,    -- optional; default all
-  required = required_targets,          -- optional; default targets
-  admissible = exact_pairs,             -- optional; default S x T
-  seeds = exact_seed_equations,         -- optional
-})
-
-local search = Q.solve(question)
+```text
+S   selected exact open egress occurrences drawn from P
+T   selected exact open ingress occurrences drawn from P
+D   sources which must occur in domain(E)
+R   targets which must occur in codomain(E)
+C   optional admissibility relation C subset S x T
+E0  seeded exact equations
 ```
 
-The Question value is immutable and keeps its private state in lexical closures. Its public accessors return copies of the finite sets/relations. The specification is closed to `sources`, `targets`, `required`, `admissible` and `seeds`; unknown fields are rejected. All finite collections are dense Lua arrays, so sparse tables fail rather than being interpreted through `#`/`ipairs` truncation.
+Again `D` defaults to empty, `R` defaults to `T`, and `C` defaults to `S x T`.
+The ordering of `P` is exact because it is the ordering subsequently supplied to
+`join`; the finite sections/relations themselves remain mathematical sets.
 
-## Epistemic result
+`E` is a solution exactly when:
 
-The engine returns:
+```text
+E0 subset E
+E subset C
+D subset domain(E) subset S
+R subset codomain(E) subset T
+join(P,E) is lawful Worlds Geometry
+```
+
+This is the judgement used for direct multi-part, bidirectional and same-Geometry
+closure. It is **not** implemented by first creating a disjoint product and then
+asking a same-Geometry matching question; establishing the product first can
+change locality and therefore change the judgement.
+
+`Close` does not impose the directional target-development premise of `Match`.
+That distinction is deliberate.
+
+## One evidence algebra
+
+Both forms return:
 
 ```text
 yes(E)   constructive exact solution
@@ -138,20 +100,66 @@ more     incomplete calculation
 done     enumeration exhausted after one or more yes results
 ```
 
-`no` carries an immutable `Refutation` tied to the exact finite Question that
-was proved empty. The Refutation is positive evidence about that Question; it is
-not Geometry, authority or programme state. It currently retains the exact
-boundary-normal Question and a diagnostic reason. Minimal dependency support and
-incremental invalidation frontiers are deliberately not claimed yet.
+Every public `yes(E)` has one hard guarantee:
 
-## Engine separation
+> strict `join(question:parts(), E)` succeeds and returns lawful Geometry.
 
-`worlds.query_engine` is replaceable implementation machinery. It currently uses
-counted source sections, endpoint-thread quotienting, factor elimination,
-provenance support, Hall feasibility and exact allocation.
+For a Match Question, `parts()` is `{boundary(A),B}`, except same-Geometry Match
+uses `{B}`. For a Close Question it is exactly `P`.
 
-A retained engine state does not retain `A` itself. It retains only the exact
-outgoing source section needed by the Question plus the target development and
-its own calculation.
+`no` carries an immutable `Refutation` tied to the exact Question. `more` is
+never semantic refutation.
 
-Changing the engine must not change `Solutions(Q)`.
+## API
+
+```lua
+local Q = require('worlds.query')
+
+local match = Q.match(world, development, {
+  sources = selected_egress,
+  targets = selected_ingress,
+  required_sources = must_be_consumed, -- optional; default {}
+  required_targets = must_be_closed,   -- optional; default targets
+  admissible = exact_pairs,            -- optional; default S x T
+  seeds = exact_seed_equations,        -- optional
+})
+
+local close = Q.close({part_a, part_b, part_c}, {
+  sources = selected_open_egress,
+  targets = selected_open_ingress,
+  required_sources = must_be_consumed,
+  required_targets = must_be_closed,
+  admissible = exact_pairs,
+  seeds = exact_seed_equations,
+})
+
+local search = Q.solve(close)
+```
+
+The older vague `Question.new` constructor does not exist. The judgement form is
+explicit at its construction site.
+
+The ordinary convenience:
+
+```lua
+W.solve(A,B,seeds)
+```
+
+is the complete Match Question with all source egress selected, all target ingress
+selected and required, complete admissibility, no required sources and the supplied
+seeds.
+
+## Search machinery
+
+`worlds.query_engine` is replaceable acceleration for Match. It uses counted
+source sections, endpoint-thread quotienting, factor elimination, Hall feasibility
+and exact allocation.
+
+`worlds.query_closure_engine` is currently deliberately simple finite enumeration
+for Close. It retains no Geometry and owns no quotient lawfulness. In particular,
+it does not prune on unlawful **partial** quotients: later equations may carry a
+locality needed by the final composite, so that pruning would be unsound.
+
+The public Question wrapper validates every prospective witness against the
+kernel's strict join law before exposing `yes(E)`. Search engines may be replaced
+without changing either `Solutions(Match(...))` or `Solutions(Close(...))`.

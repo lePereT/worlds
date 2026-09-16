@@ -1,4 +1,4 @@
--- Worlds 0.6.0 + quantum contextual-equivalence toy.
+-- Worlds 0.6.1 + quantum contextual-equivalence toy.
 --
 -- Question:
 --   Can "what must remain on the boundary" be characterised universally as

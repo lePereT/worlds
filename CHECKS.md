@@ -1,4 +1,4 @@
-# Worlds 0.6.0 revised split acceptance record
+# Worlds 0.6.1 revised split acceptance record
 
 The tree was checked with TexLua after restoring the original performance shape
 while retaining the finite Question API and replaceable query engine.
@@ -6,27 +6,26 @@ while retaining the finite Question API and replaceable query engine.
 ## Semantic/compatibility gate
 
 ```text
-PASS 0.6.0                         5102 assertions
-PASS query                           71 assertions
+PASS 0.6.1                         5110 assertions
+PASS query                           78 assertions
+PASS closure query                   51 assertions
 PASS optional history               165 assertions
-PASS 0.6.0 adversarial               36 assertions
+PASS 0.6.1 adversarial               36 assertions
 PASS work constitution                39 assertions
 PASS verified centre without acceleration
-PASS shape 0.6.0 centre/edge split
+PASS shape 0.6.1 centre/edge split
 PASS differential10k              10000 assertions
 PASS restricted differential       5000 cases
 PASS partial differential        104510 assertions
 PASS nested differential            3000 cases
 PASS branching differential         3000 cases
+PASS closure differential           2000 cases
 PASS historical algebra               15 files
 ```
 
-`tests/query.lua` covers exact source/target sections, optional targets,
-admissibility, seed immutability/injectivity, exact Refutation evidence and the
-counterexample showing that matching is not merely `join`-definedness.
+`tests/query.lua` covers directional Match sections, symmetric required-source/target coverage, admissibility, seed immutability/injectivity, exact Refutation evidence and the counterexample showing that matching is not merely `join`-definedness. `tests/closure-query.lua` covers direct multi-part and same-Geometry Close judgements, including the invariant that every constructive witness is accepted by strict `join`.
 
-The restricted and partial differentials independently brute-force the public
-Question features against the ordinary matching laws. The historical algebra suite continues to load the public facade through its
+The restricted and partial differentials independently brute-force the public Match features against the ordinary matching laws. `tests/closure-differential.lua` independently compares Close against direct exhaustive finite relation enumeration plus strict `join`. The historical algebra suite continues to load the public facade through its
 compatibility adapter; the authoritative centre/edge separation is checked
 independently by `tests/centre.lua` and `tools/check-shape.lua`.
 

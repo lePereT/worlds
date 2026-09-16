@@ -1,4 +1,4 @@
--- Worlds 0.6.0 verified centre -- exact Geometry, boundary and join.
+-- Worlds 0.6.1 verified centre -- exact Geometry, boundary and join.
 --
 -- This module contains the operational ontology only.  It knows nothing about
 -- query acceleration or matching search.  Live state is the exact open
@@ -99,15 +99,33 @@ local function referenced_by_face(b,f)
   return r
 end
 
--- Builder validation proves Geometry laws.  Trusted join output asks only for
--- the derived causal indices.
-local function index_geometry(b,validate)
+-- Geometry validation is shared by Builder and join.  The private soft path is
+-- used only by the Question engine to reject an exact candidate before yes(E).
+local function index_geometry(b,validate,soft)
+  local function fail(msg)
+    if soft then return nil,msg end
+    error(msg,3)
+  end
   local producer,consumer={},{}
   for _,f in ipairs(b.faces) do
     local seen=validate and {} or nil
-    for _,s in ipairs(inputs(f)) do if validate then assert(not seen[s],'Face consumes Strand twice'); assert(not consumer[s],'Strand has >1 consumer'); seen[s]=true end; consumer[s]=f end
+    for _,s in ipairs(inputs(f)) do
+      if validate then
+        if seen[s] then return fail('Face consumes Strand twice') end
+        if consumer[s] then return fail('Strand has >1 consumer') end
+        seen[s]=true
+      end
+      consumer[s]=f
+    end
     seen=validate and {} or nil
-    for _,s in ipairs(outputs(f)) do if validate then assert(not seen[s],'Face produces Strand twice'); assert(not producer[s],'Strand has >1 producer'); seen[s]=true end; producer[s]=f end
+    for _,s in ipairs(outputs(f)) do
+      if validate then
+        if seen[s] then return fail('Face produces Strand twice') end
+        if producer[s] then return fail('Strand has >1 producer') end
+        seen[s]=true
+      end
+      producer[s]=f
+    end
   end
   local order
   if validate then
@@ -116,7 +134,7 @@ local function index_geometry(b,validate)
     local q={}; for _,f in ipairs(b.faces) do if indeg[f]==0 then q[#q+1]=f end end
     local qi=1; order={}
     while qi<=#q do local f=q[qi]; qi=qi+1; order[#order+1]=f; for _,g in ipairs(out[f]) do indeg[g]=indeg[g]-1; if indeg[g]==0 then q[#q+1]=g end end end
-    assert(#order==#b.faces,'causal Face/Strand incidence must be acyclic')
+    if #order~=#b.faces then return fail('causal Face/Strand incidence must be acyclic') end
   end
   local ingress,egress={},{}
   for _,s in ipairs(b.strands) do if not producer[s] then ingress[#ingress+1]=s end; if not consumer[s] then egress[#egress+1]=s end end
@@ -133,13 +151,17 @@ local function index_geometry(b,validate)
       table.sort(mems,function(a,c) return depth(a)<depth(c) end)
       local usable={}; for x in pairs(available) do if b.mset[x] then usable[x]=true end end
       for _,m in ipairs(mems) do
-        if known[m] then assert(available[m],'existing locality used without causal input incidence')
-        else local p=parent(m); assert(p and usable[p],'fresh locality must descend from causally available locality') end
+        if known[m] then
+          if not available[m] then return fail('existing locality used without causal input incidence') end
+        else
+          local p=parent(m); if not(p and usable[p]) then return fail('fresh locality must descend from causally available locality') end
+        end
         usable[m]=true
       end
       for _,p in ipairs(pts) do
-        if known[p] then assert(available[p],'existing Point used without causal input incidence')
-        else assert(usable[place(p)],'fresh Point must inhabit causally available/fresh locality') end
+        if known[p] then
+          if not available[p] then return fail('existing Point used without causal input incidence') end
+        elseif not usable[place(p)] then return fail('fresh Point must inhabit causally available/fresh locality') end
       end
       for x in pairs(used) do known[x]=true end
     end end
@@ -171,10 +193,11 @@ local function is_boundary_normal(s)
   return true
 end
 
-finish_arrays=function(membranes,points_,strands_,faces_,validate)
+finish_arrays=function(membranes,points_,strands_,faces_,validate,soft)
   local b={membranes=membranes,points=points_,strands=strands_,faces=faces_,mset={},pset={},sset={},fset={}}
   for _,x in ipairs(membranes) do b.mset[x]=true end; for _,x in ipairs(points_) do b.pset[x]=true end; for _,x in ipairs(strands_) do b.sset[x]=true end; for _,x in ipairs(faces_) do b.fset[x]=true end
-  local idx=index_geometry(b,validate)
+  local idx,why=index_geometry(b,validate,soft)
+  if not idx then return nil,why end
   local data={membranes=membranes,points=points_,strands=strands_,faces=faces_,mset=b.mset,pset=b.pset,sset=b.sset,fset=b.fset,producer=idx.producer,consumer=idx.consumer,ingress=idx.ingress,egress=idx.egress,developable=idx.developable,boundary={}}
   local g=new('Geometry',data,GeometryMT)
   data.boundary_normal=is_boundary_normal(data)
@@ -232,7 +255,7 @@ local function lca_mem(reps,mparent)
   local last=nil; for d=1,max do local x=ps[1][d]; if not x then break end; for i=2,#ps do if ps[i][d]~=x then return last end end; last=x end; return last
 end
 
-function W.join(parts,equations)
+local function prepare_join(parts,equations,soft)
   local nparts=DENSE.length(parts,'join parts'); assert(nparts>0,'join expects Geometry parts'); equations=equations or {}; DENSE.length(equations,'join equations')
   local owner={membrane={},point={},strand={},face={}}; local all={membrane={},point={},strand={},face={}}; local partstate={}
   for pi,g in ipairs(parts) do
@@ -243,6 +266,7 @@ function W.join(parts,equations)
     for _,f in ipairs(st.faces) do assert(not owner.face[f],'Geometry parts must be disjoint'); owner.face[f]=pi; all.face[#all.face+1]=f end
   end
   local md,pd,sd=dsu(all.membrane),dsu(all.point),dsu(all.strand); local manchor,panchor={},{}
+  local function reject(msg) if soft then return nil,msg end; error(msg,3) end
   local function set_anchor(which,D,x,a) local r=D:find(x); local old=which[r]; if old and old~=a then return false end; which[r]=a; return true end
   local function union_anchor(which,D,a,b) local ra,rb=D:find(a),D:find(b); if ra==rb then return ra end; local aa,ab=which[ra],which[rb]; if aa and ab and aa~=ab then return nil end; local r=D:union(ra,rb); which[ra]=nil; which[rb]=nil; which[r]=aa or ab; return r end
   local function eq_mem(source,target)
@@ -257,13 +281,33 @@ function W.join(parts,equations)
     return eq_mem(place(source),place(target))
   end
   local function eq_strand(source,target)
-    local so,to=owner.strand[source],owner.strand[target]; assert(so and to,'equation endpoints must belong to joined Geometry'); assert(source~=target,'boundary equation joins distinct open occurrences'); assert(partstate[so].consumer[source]==nil,'from must be open egress'); assert(partstate[to].producer[target]==nil,'to must be open ingress')
-    sd:union(source,target); if not eq_mem(place(source),place(target)) then return false end
-    local a,b=points(source),points(target); if #a~=#b then return false end; for i=1,#a do if owner.point[b[i]] then if not eq_point(a[i],b[i]) then return false end elseif a[i]~=b[i] then return false end end; return true
+    local so,to=owner.strand[source],owner.strand[target]
+    if not(so and to) then return nil,'equation endpoints must belong to joined Geometry' end
+    if source==target then return nil,'boundary equation joins distinct open occurrences' end
+    if partstate[so].consumer[source]~=nil then return nil,'from must be open egress' end
+    if partstate[to].producer[target]~=nil then return nil,'to must be open ingress' end
+    sd:union(source,target); if not eq_mem(place(source),place(target)) then return nil,'inconsistent boundary equation' end
+    local a,b=points(source),points(target); if #a~=#b then return nil,'inconsistent boundary equation' end
+    for i=1,#a do if owner.point[b[i]] then if not eq_point(a[i],b[i]) then return nil,'inconsistent boundary equation' end elseif a[i]~=b[i] then return nil,'inconsistent boundary equation' end end
+    return true
   end
   local from_seen,to_seen={},{}
-  for _,e in ipairs(equations) do local from,to=e.from or e[1],e.to or e[2]; assert(not from_seen[from],'open authority is scarce'); assert(not to_seen[to],'open requirement closes once'); from_seen[from]=true; to_seen[to]=true; assert(eq_strand(from,to),'inconsistent boundary equation') end
+  for _,e in ipairs(equations) do
+    local from,to=e.from or e[1],e.to or e[2]
+    if from_seen[from] then return reject('open authority is scarce') end
+    if to_seen[to] then return reject('open requirement closes once') end
+    from_seen[from]=true; to_seen[to]=true
+    local ok,why=eq_strand(from,to); if not ok then return reject(why) end
+  end
+  return {owner=owner,all=all,partstate=partstate,md=md,pd=pd,sd=sd,manchor=manchor,panchor=panchor}
+end
 
+local function do_join(parts,equations,soft)
+  local prepared,why=prepare_join(parts,equations,soft)
+  if not prepared then return nil,why end
+  local owner,all,partstate=prepared.owner,prepared.all,prepared.partstate
+  local md,pd,sd=prepared.md,prepared.pd,prepared.sd
+  local manchor,panchor=prepared.manchor,prepared.panchor
   local smeta={}; for _,s in ipairs(all.strand) do local r=sd:find(s); local x=smeta[r]; if not x then x={members={}}; smeta[r]=x end; x.members[#x.members+1]=s; local g=partstate[owner.strand[s]]; local p,c=g.producer[s],g.consumer[s]; if p then x.producer=p end; if c then x.consumer=c end end
   local out,inn={},{ }; for _,f in ipairs(all.face) do out[f]={}; inn[f]={} end
   for _,x in pairs(smeta) do local p,c=x.producer,x.consumer; if p and c and not out[p][c] then out[p][c]=true; inn[c][p]=true end end
@@ -284,7 +328,12 @@ function W.join(parts,equations)
   local function pimage(p) return owner.point[p] and pout[pd:find(p)] or p end
 
   local sreps={}; for r in pairs(smeta) do sreps[#sreps+1]=r end
-  local sout={}; for _,r in ipairs(sreps) do local x=smeta[r]; local p,c=x.producer,x.consumer; if not(p and c and group_of[p]==group_of[c] and cyclic[group_of[p]]) then local base=frame_member(x.members,owner.strand); if base then sout[r]=base else local ex=x.members[1]; local ps={}; for i,q in ipairs(points(ex)) do ps[i]=pimage(q) end; sout[r]=strand(mout[md:find(place(ex))],ps,STATE[ex].name) end end end
+  local sout={}; for _,r in ipairs(sreps) do local x=smeta[r]; local p,c=x.producer,x.consumer; if not(p and c and group_of[p]==group_of[c] and cyclic[group_of[p]]) then
+    local base=frame_member(x.members,owner.strand); local can_reuse=base~=nil
+    if can_reuse and mout[md:find(place(base))]~=place(base) then can_reuse=false end
+    if can_reuse then for _,q in ipairs(points(base)) do if pimage(q)~=q then can_reuse=false; break end end end
+    if can_reuse then sout[r]=base else local ex=x.members[1]; local ps={}; for i,q in ipairs(points(ex)) do ps[i]=pimage(q) end; sout[r]=strand(mout[md:find(place(ex))],ps,STATE[ex].name) end
+  end end
   local function simage(s) return sout[sd:find(s)] end
 
   local fout={}; for gi,grp in ipairs(groups) do
@@ -305,10 +354,21 @@ function W.join(parts,equations)
   for _,r in ipairs(pclasses) do local p=pout[r]; if owner.point[p] or panchor[r]==nil then if not seenp[p] then seenp[p]=true; rps[#rps+1]=p; addm(place(p)) end end end
   for _,r in ipairs(sreps) do local s=sout[r]; if s and not seens[s] then seens[s]=true; rss[#rss+1]=s; addm(place(s)) end end
   for _,f in ipairs(all.face) do local x=fout[f]; if x and not seenf[x] then seenf[x]=true; rfs[#rfs+1]=x; addm(place(x)) end end
-  local geom=finish_arrays(rms,rps,rss,rfs,false); local image={}
+  local geom,why=finish_arrays(rms,rps,rss,rfs,true,soft)
+  if not geom then return nil,why end
+  local image={}
   for _,m in ipairs(all.membrane) do image[m]=mout[md:find(m)] end; for _,p in ipairs(all.point) do image[p]=pout[pd:find(p)] end; for _,s in ipairs(all.strand) do image[s]=simage(s) end; for _,f in ipairs(all.face) do image[f]=fout[f] end
   return geom,image
 end
+
+function W.join(parts,equations)
+  return do_join(parts,equations,false)
+end
+
+-- Private judgement support: test one already-enumerated exact candidate against
+-- the same quotient construction and Geometry laws as public join.  This is not
+-- a third public semantic operation; the Question judgement uses it before exposing yes(E).
+PRIVATE.try_join=function(parts,equations) return do_join(parts,equations,true) end
 
 -- Operational evolution returns immediately to the boundary fixed point.
 -- This is definitionally boundary(join({boundary(world), development}, equations));

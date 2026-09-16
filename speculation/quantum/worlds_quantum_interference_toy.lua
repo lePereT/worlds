@@ -1,4 +1,4 @@
--- Worlds 0.6.0 + quantum Theory toy:
+-- Worlds 0.6.1 + quantum Theory toy:
 -- interference, which-path records, coherent erasure, and leaked/persistent records.
 --
 -- Worlds remains exact/classical. Quantum amplitudes are Theory-like side data.

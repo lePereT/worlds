@@ -2,12 +2,12 @@
 
 # Speculation
 
-This directory contains deliberately speculative experiments originally developed while pressure-testing Worlds 0.5.0, and ported as a corpus to Worlds 0.6.0. They are **not** part of the normative Worlds model, release law suite, or proof claims.
+This directory contains deliberately speculative experiments originally developed while pressure-testing Worlds 0.5.0, ported as a corpus to Worlds 0.6.0, and retained against Worlds 0.6.1. They are **not** part of the normative Worlds model, release law suite, or proof claims.
 
 The experiments ask what happens when the same exact Point/Strand/Face/Membrane machinery is interpreted outside its original programming-semantics setting, and when some classical assumptions of the kernel are attacked directly.
 
 
-## 0.6.0 port
+## 0.6.0 port, retained in 0.6.1
 
 The executable experiments now run against the authoritative 0.6 native kernel.
 They do **not** load `compat/worlds.lua`. `speculation/support.lua` is a small

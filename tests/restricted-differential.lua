@@ -6,7 +6,7 @@ local function random(a,b) seed=(1103515245*seed+12345)%2147483648; return a+(se
 local assertions=0
 local function eq(a,b,msg) assertions=assertions+1; assert(a==b,msg or (tostring(a)..' ~= '..tostring(b))) end
 local function count_solve(world,pat,opts)
-  local q=Query.solve(Query.new(world,pat,{sources=opts.egress,targets=opts.ingress})); local n=0
+  local q=Query.solve(Query.match(world,pat,{sources=opts.egress,targets=opts.ingress})); local n=0
   while true do local k=q:step(math.huge); if k=='yes' then n=n+1 elseif k=='done' or k=='no' then return n else error(k) end end
 end
 local function subset(xs)

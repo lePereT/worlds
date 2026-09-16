@@ -1,4 +1,4 @@
--- Worlds 0.6.0 speculative chemistry model
+-- Worlds 0.6.1 speculative chemistry model
 -- Open compartmental reaction networks over exact scarce molecule authority.
 
 package.path = './src/?.lua;./src/?/init.lua;' .. package.path

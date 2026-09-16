@@ -1,4 +1,4 @@
--- Quantising Worlds itself: a kernel-level toy against Worlds 0.6.0.
+-- Quantising Worlds itself: a kernel-level toy against Worlds 0.6.1.
 --
 -- This is deliberately NOT a quantum Theory over one exact Worlds boundary.
 -- Instead it treats exact Worlds alternatives (Cut witnesses / causal geometries)

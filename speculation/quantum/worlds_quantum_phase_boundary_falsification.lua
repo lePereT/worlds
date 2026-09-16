@@ -1,4 +1,4 @@
--- Worlds 0.6.0 + quantum Theory falsification toy:
+-- Worlds 0.6.1 + quantum Theory falsification toy:
 -- Can two distinct pasts have the same exact Worlds live boundary while a
 -- relative quantum phase still changes future interference?
 --

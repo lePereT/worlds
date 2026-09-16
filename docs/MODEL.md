@@ -12,7 +12,7 @@ kinds:
 - **Strand** — one exact scarce occurrence carrying an ordered Point tuple;
 - **Face** — one causal transformation consuming and producing Strands.
 
-Ingress and egress are derived from producer/consumer incidence. Worlds 0.6.0
+Ingress and egress are derived from producer/consumer incidence. Worlds 0.6.1
 does not claim that this raw structure is a conventional topological or cellular
 2-complex.
 
@@ -39,25 +39,22 @@ Matching therefore cannot be reduced to successful quotient materialisation.
 
 ## 3. Finite Questions
 
-A finite Question selects which part of that matching judgement is being asked:
+Finite judgement has two forms:
 
 ```text
-Q = (A, B, S, T, R, C, E0)
+Match(A,B;S,T,D,R,C,E0)
+Close(P;S,T,D,R,C,E0)
 ```
 
-where `S` is selected source egress, `T` selected target ingress, `R` the required
-targets, `C` an optional exact admissibility relation, and `E0` seed equations.
-A solution is a lawful exact partial match satisfying those finite parameters.
+Match is directional realisation of a target development from a source world.
+Close is direct finite closure over ordered disjoint Geometry parts. `D` requires
+source-domain coverage and `R` target-codomain coverage. Both carry exact finite
+admissibility `C` and seeds `E0`; both expose the same evidence algebra.
 
-Questions carry no authority and are not programme state. They are behaviourally
-significant judgement parameters: changing `R` or `C` can change the answer, so
-they must not be described as mere caches or metadata.
+Questions carry no authority and are not programme state. Every constructive
+witness is checked against strict `join` before it is exposed.
 
-The source and target roles remain distinct even when `A == B`. This permits
-same-Geometry internal closure without teaching Geometry about sibling policy.
-
-`W.solve(A,B,seeds)` is only the complete specialisation `S=egress(A)`,
-`T=ingress(B)`, `R=T`, `C=S×T`.
+`W.solve(A,B,seeds)` is the complete Match specialisation.
 
 ## 4. Replaceable query engine and epistemic result
 

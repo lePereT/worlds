@@ -1,4 +1,4 @@
--- Quantum Worlds: sixth kernel-level exploration against Worlds 0.6.0.
+-- Quantum Worlds: sixth kernel-level exploration against Worlds 0.6.1.
 --
 -- Experiments:
 --  16. Fresh allocator identity as nominal/gauge structure. Alternative opaque

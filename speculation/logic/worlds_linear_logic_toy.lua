@@ -1,4 +1,4 @@
--- Worlds 0.6.0 speculative multiplicative-linear-logic/process model.
+-- Worlds 0.6.1 speculative multiplicative-linear-logic/process model.
 -- This models the structural multiplicative/linear skeleton (closer to MILL / a
 -- symmetric monoidal process category) rather than claiming full MLL with par
 -- and negation already derived.

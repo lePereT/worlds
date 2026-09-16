@@ -8,10 +8,10 @@ in the repository.
 
 The maintained documents are:
 
-- `LAWS.md` — **normative semantic laws** for Worlds 0.6.0;
+- `LAWS.md` — **normative semantic laws** for Worlds 0.6.1;
 - `MODEL.md` — maintained explanatory model; if prose conflicts with `LAWS.md`,
   the laws win;
-- `API.md` — maintained public Lua API for 0.6.0;
+- `API.md` — maintained public Lua API for 0.6.1;
 - `QUERY.md` — normative finite matching Question and partial matching judgement;
 - `SHAPE.md` — implementation/representation shape of the clean-boundary kernel;
 - `LIVE.md` — the boundary-only execution result;

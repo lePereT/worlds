@@ -1,6 +1,6 @@
 # Laws
 
-**Status: normative semantic laws for Worlds 0.6.0.**
+**Status: normative semantic laws for Worlds 0.6.1.**
 
 ## Carrier and Geometry
 
@@ -43,17 +43,20 @@
     satisfy two target requirements in one solution. A target ingress closes at
     most once.
 17. Matching is not defined by `join` alone. The target must satisfy the causal
-    development constraints of the matching judgement in addition to the
-    supplied equations being materialisable.
-18. A finite Question is `Q=(A,B,S,T,R,C,E0)` with `S⊆egress(A)`,
-    `T⊆ingress(B)`, `R⊆T`, optional `C⊆S×T`, and seed equations `E0⊆C`.
-19. A solution `E` of `Q` is a lawful match with `E0⊆E`, `E⊆C`, source domain in
-    `S`, target codomain in `T`, and every target in `R` matched.
+    development constraints of the matching judgement, and every constructive
+    `yes(E)` must denote equations whose strict `join` quotient is lawful Geometry.
+18. Finite Questions have two exact forms: `Match(A,B,S,T,D,R,C,E0)` and
+    `Close(P,S,T,D,R,C,E0)`. `D` requires source-domain coverage and `R`
+    target-codomain coverage; `C` is finite admissibility and `E0` exact seeds.
+19. Match solutions satisfy the directional matching judgement and the finite
+    domain/range constraints. Close solutions are exactly finite equation sets
+    satisfying those constraints for which strict `join(P,E)` is lawful Geometry.
 20. Question sets/relations are exact and unordered. Their presentation order
-    cannot create priority.
-21. `W.solve(A,B,seeds)` is only the complete Question with all source egress,
-    all target ingress required and unrestricted admissibility. It accepts no
-    other query policy.
+    cannot create priority. The ordered part list of Close is exact because it is
+    the list subsequently supplied to `join`.
+21. `W.solve(A,B,seeds)` is only the complete Match Question: all source egress
+    selected, all target ingress selected/required, no required sources and
+    unrestricted admissibility. It accepts no other query policy.
 22. `yes` is constructive exact evidence for one Question solution. `no` is
     exhaustive emptiness of that exact finite Question.
 23. `more` is epistemic only: supplied fuel was insufficient to decide or

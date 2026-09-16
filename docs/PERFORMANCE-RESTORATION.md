@@ -1,6 +1,6 @@
 # Performance restoration after the finite-Question split
 
-**Status: implementation note for the revised 0.6.0 tree.**
+**Status: implementation note for the revised 0.6.1 tree.**
 
 The finite Question API remains unchanged. The restoration is an implementation
 change: verified Geometry, finite Question semantics and query acceleration stay

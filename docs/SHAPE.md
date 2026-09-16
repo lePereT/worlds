@@ -1,4 +1,4 @@
-# Shape of Worlds 0.6.0 after the query split
+# Shape of Worlds 0.6.1 after the query split
 
 ## 1. Sacred Geometry kernel
 
@@ -26,16 +26,17 @@ incidence are authoritative.
 
 ## 2. Finite Question judgement
 
-`src/worlds/query_factory.lua` defines the immutable Question normal form:
+`src/worlds/query_factory.lua` defines immutable exact Questions in two forms:
 
 ```text
-Q = (A,B,S,T,R,C,E0)
+Match(A,B;S,T,D,R,C,E0)
+Close(P;S,T,D,R,C,E0)
 ```
 
-It validates exact finite sections and relations, but contains no factor solver,
-Hall matcher or search strategy.
-
-A Question is not Geometry and carries no authority.
+It validates finite sections/relations and guarantees that every public `yes(E)`
+is accepted by strict `join(question:parts(),E)`. It contains no factor solver,
+Hall matcher or direct-closure enumeration strategy. A Question is not Geometry
+and carries no authority.
 
 ## 3. Replaceable query engine
 
@@ -56,5 +57,6 @@ state.
 ## 4. join
 
 `join` remains the single typed-equality and causal-normalisation operation.
-Matching and materialisation are deliberately distinct: successful `join` does
-not by itself prove that an equation set satisfies the target matching judgement.
+Matching and quotient construction are deliberately distinct: successful `join`
+does not by itself prove that an equation set satisfies the target matching
+judgement, while every constructive Question witness is guaranteed join-lawful.

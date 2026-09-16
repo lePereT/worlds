@@ -19,6 +19,12 @@ test:
 query:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/query.lua
 
+closure:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/closure-query.lua
+
+closure-differential:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/closure-differential.lua
+
 history:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/history.lua
 
@@ -54,9 +60,9 @@ historical:
 shape:
 	$(LUA) tools/check-shape.lua
 
-check: test query history adversarial work centre shape
+check: test query closure history adversarial work centre shape
 
-full-check: check differential restricted partial nested branching historical
+full-check: check differential restricted partial nested branching closure-differential historical
 
 bench:
 	LUA_PATH='./src/?.lua;;' $(LUA) bench/run.lua

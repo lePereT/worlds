@@ -1,4 +1,4 @@
--- Worlds 0.6.0 public facade.
+-- Worlds 0.6.1 public facade.
 --
 -- `worlds._kernel` is the small verified centre.  This edge may eagerly build
 -- disposable acceleration for Geometry entering through the public Builder,

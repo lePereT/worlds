@@ -46,7 +46,7 @@ for case=1,1000 do
   local expected=brute(offers,demands,forbidden,seeds)
   local admissible={}
   for _,d in ipairs(demands) do for _,o in ipairs(offers) do if not forbidden[key(o,d)] then admissible[#admissible+1]={from=o,to=d} end end end
-  local q=Query.solve(Query.new(wg,pg,{sources=offers,targets=(case%2==0) and {table.unpack(demands)} or demands,required={},admissible=admissible,seeds=seeds}))
+  local q=Query.solve(Query.match(wg,pg,{sources=offers,targets=(case%2==0) and {table.unpack(demands)} or demands,required_targets={},admissible=admissible,seeds=seeds}))
   local hits=0
   while true do
     local tag,value=q:step(17)

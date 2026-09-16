@@ -107,6 +107,33 @@ do
 end
 
 
+-- Same-Geometry closure must propagate induced Point/Membrane quotients through
+-- surviving frame Strands. This is required when a finite Question selects two
+-- cuts already present in one open Geometry.
+do
+  local a=W.builder(); local am=a:membrane(nil,'producer'); local p=a:point(am,'producer.value'); local so=a:strand(am,{p},'value.out'); local ga=a:finish()
+  local b=W.builder(); local bm=b:membrane(nil,'consumer'); local q=b:point(bm,'consumer.value'); local ti=b:strand(bm,{q},'value.in'); local u=b:strand(bm,{q},'value.out'); b:face(bm,{ti},{u},'use'); local gb=b:finish()
+  local product,pi=W.join({ga,gb},{})
+  local question=Query.match(product,product,{sources={pi[so]},targets={pi[ti]},required_targets={pi[ti]},admissible={{from=pi[so],to=pi[ti]}}})
+  local k,es=decided(Query.solve(question),100); eq(k,'yes'); eq(#es,1)
+  local closed,ci=W.join({product},es)
+  eq(ci[pi[p]],ci[pi[q]],'same-Geometry closure identifies the Point class')
+  eq(W.points(ci[pi[u]])[1],ci[pi[p]],'surviving frame Strand incidence follows the Point quotient')
+
+  local c=W.builder(); local cm=c:membrane(nil,'source.m'); local cs=c:strand(cm,{},'source.out'); local gc=c:finish()
+  local d=W.builder(); local dm=d:membrane(nil,'target.m'); local di=d:strand(dm,{},'target.in'); local residual=d:strand(dm,{},'target.residual'); local gd=d:finish()
+  local product2,p2=W.join({gc,gd},{})
+  local question2=Query.match(product2,product2,{sources={p2[cs]},targets={p2[di]},required_targets={p2[di]},admissible={{from=p2[cs],to=p2[di]}}})
+  local k2,e2=decided(Query.solve(question2),100); eq(k2,'yes')
+  local closed2,c2=W.join({product2},e2)
+  eq(c2[p2[cm]],c2[p2[dm]],'same-Geometry closure identifies the Membrane class')
+  eq(W.membrane(c2[p2[residual]]),c2[p2[cm]],'surviving frame Strand follows the Membrane quotient')
+end
+
+-- Exact candidate lawfulness belongs to Question, not a third public Geometry
+-- probe between matching and join.
+ok(W.materialisable==nil,'materialisable must not be a public Worlds operation')
+
 -- Feedback/self-closure is ordinary boundary equality inside one Geometry.
 do
   local b=W.builder(); local m=b:membrane(nil,'m'); local p=b:point(m,'p')
@@ -237,4 +264,4 @@ do
   ok(not pcall(function() W.solve(g,g,{[2]={from=s,to=s}}) end),'sparse solve seeds must be rejected')
 end
 
-print('PASS 0.6.0',n,'assertions')
+print('PASS 0.6.1',n,'assertions')

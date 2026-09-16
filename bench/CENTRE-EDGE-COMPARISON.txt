@@ -1,4 +1,4 @@
-Worlds 0.6.0 centre/edge dependency reversal
+Worlds 0.6.1 centre/edge dependency reversal
 TexLua, same host, three-run medians; unchanged bench/run.lua
 
 case                      preceding       centre/edge     ratio

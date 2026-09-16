@@ -1,4 +1,4 @@
-# Worlds 0.6.0 — geometry kernel and finite matching judgements
+# Worlds 0.6.1 — geometry kernel and finite Questions
 
 Worlds is a small operational geometry in which exact identity, scarce authority,
 causal transformation and locality arise from incidence and open boundary.
@@ -15,9 +15,11 @@ public edge (`worlds`) + disposable acceleration
     outgoing structural index / complete solve convenience
              |
              v
-finite matching judgement and replaceable query engine
-    Question Q = (A,B,S,T,R,C,E0)
+finite Question judgement and replaceable query engines
+    Match(A,B;S,T,D,R,C,E0) / Close(P;S,T,D,R,C,E0)
 ```
+
+Worlds 0.6.1 tightens the 0.6 line without adding operational ontology: finite Question now distinguishes directional `Match` from direct finite `Close`; every constructive `yes(E)` is guaranteed to be consumable by strict `join`; and `join` validates the resulting quotient against the ordinary Geometry laws. The short-lived public `materialisable` probe is absent because lawfulness belongs to Question rather than a third semantic layer.
 
 Only the verified Geometry centre is operational ontology. The compiled sidecar
 is disposable acceleration derived from already-verified Geometry; a Question
@@ -65,41 +67,24 @@ ordinary boundary equality.
 
 ## Finite Questions
 
-`worlds.query` asks a finite question about two exact ambient Geometries:
+`worlds.query` exposes two exact judgement forms:
 
 ```text
-Q = (A, B, S, T, R, C, E0)
+Match(A,B;S,T,D,R,C,E0)   directional target realisation
+Close(P;S,T,D,R,C,E0)     direct finite closure
 ```
 
-where:
+`D` requires selected source occurrences to be consumed; `R` requires selected
+target occurrences to be closed. `C` is the finite admissibility relation and
+`E0` exact seeds. `Match` retains the stronger causal-development premise on its
+target. `Close` asks directly whether equations over ordered disjoint parts yield
+lawful Geometry; it is not staged through a product Geometry.
 
-- `A` is the source/world Geometry;
-- `B` is the target/development Geometry;
-- `S` is an exact subset of `egress(A)`;
-- `T` is an exact subset of `ingress(B)`;
-- `R ⊆ T` are targets which must be matched;
-- `C ⊆ S × T` is an optional exact admissibility relation;
-- `E0 ⊆ C` are seeded equations.
+Both forms share `yes / no / more / done`, and every `yes(E)` is accepted by
+strict `join(question:parts(),E)`. `W.solve(A,B,seeds)` remains the complete
+Match special case.
 
-A solution is an exact scarce equation set satisfying the Worlds matching
-judgement plus those finite question parameters. The source and target roles are
-kept distinct even when `A == B`.
-
-The complete `W.solve(A,B,seeds)` case is simply:
-
-```text
-S = egress(A)
-T = ingress(B)
-R = T
-C = S × T
-E0 = seeds
-```
-
-Partial application, public views, local execution domains and open internal
-closure therefore become different Questions rather than different kernel
-operations.
-
-See `docs/QUERY.md` for the maintained normal form.
+See `docs/QUERY.md` for the maintained definitions.
 
 ## Matching judgement and engine
 

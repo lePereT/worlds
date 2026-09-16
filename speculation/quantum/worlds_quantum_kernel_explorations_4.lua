@@ -1,4 +1,4 @@
--- Quantum Worlds: fourth kernel-level exploration against Worlds 0.6.0.
+-- Quantum Worlds: fourth kernel-level exploration against Worlds 0.6.1.
 --
 -- Experiments:
 --   9. Build a finite Quantum Cut operator directly from actual Worlds Cut

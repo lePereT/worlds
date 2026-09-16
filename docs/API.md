@@ -1,6 +1,6 @@
 # API
 
-**Status: maintained public Lua API for Worlds 0.6.0.**
+**Status: maintained public Lua API for Worlds 0.6.1.**
 
 ```lua
 local W = require('worlds')
@@ -102,44 +102,39 @@ end
 egress. Its third argument is only an optional array of exact seed equations.
 Named policy fields are rejected.
 
-General finite matching policy belongs to `worlds.query`:
+General finite judgement policy belongs to `worlds.query`:
 
 ```lua
 local Query = require('worlds.query')
 
-local question = Query.new(world, development, {
-  sources = {world_egress_x, world_egress_y},
-  targets = {development_ingress_a, development_ingress_b},
-  required = {development_ingress_a},
-  admissible = {
-    {from = world_egress_x, to = development_ingress_a},
-    {from = world_egress_y, to = development_ingress_b},
-  },
-  seeds = {
-    {from = world_egress_x, to = development_ingress_a},
-  },
+local matching = Query.match(world, development, {
+  sources = selected_world_egress,
+  targets = selected_development_ingress,
+  required_sources = {},
+  required_targets = selected_development_ingress,
+  admissible = exact_pairs,
+  seeds = exact_seed_equations,
 })
 
-local q = Query.solve(question)
+local closure = Query.close({part_a, part_b}, {
+  sources = selected_open_egress,
+  targets = selected_open_ingress,
+  required_sources = must_be_consumed,
+  required_targets = must_be_closed,
+  admissible = exact_pairs,
+  seeds = exact_seed_equations,
+})
+
+local q = Query.solve(closure)
 ```
 
-The mathematical normal form is `Q = (A,B,S,T,R,C,E0)`. `sources`, `targets`, `required`, `admissible` and `seeds` are the complete set of accepted specification fields and denote finite exact sets/relations; unknown fields are rejected. Their presentation order is not semantic, and each finite collection must be supplied as a dense Lua array.
+`Match(A,B;S,T,D,R,C,E0)` is directional target realisation.
+`Close(P;S,T,D,R,C,E0)` is direct finite closure over ordered disjoint Geometry
+parts. In both forms `D` defaults to empty, `R` defaults to selected targets,
+and every `yes(E)` is guaranteed to be consumable by strict
+`join(question:parts(),E)`. The vague `Query.new` constructor is absent.
 
-Targets in `T` but not `R` may remain open. A source/target pair not present in
-`C` is simply outside the Question. There are therefore no `optional_ingress` or
-`forbid` modes in the Geometry kernel.
-
-A retained query distinguishes semantic result from incomplete work:
-
-- `yes` — one constructive exact solution;
-- `no` — the exact finite Question is exhausted with no solution;
-- `more` — the work budget has not yet decided it;
-- `done` — one or more solutions were emitted and enumeration is exhausted.
-
-`step(fuel)` uses work units, not elapsed time. `more` is never semantic
-refutation.
-
-See `QUERY.md` for the matching judgement and complete definition.
+See `QUERY.md` for the exact definitions and evidence semantics.
 
 ## join
 

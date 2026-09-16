@@ -1,5 +1,5 @@
--- Disposable Worlds 0.5 compatibility adapter for Worlds 0.6.0.
--- It executes the authoritative 0.6.0 kernel directly; there is no copied
+-- Disposable Worlds 0.5 compatibility adapter for Worlds 0.6.1.
+-- It executes the authoritative 0.6.1 kernel directly; there is no copied
 -- compatibility implementation.
 local src=os.getenv('WORLDS_SRC') or 'src/worlds.lua'
 local chunk,err=loadfile(src); assert(chunk,err)

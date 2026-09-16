@@ -1,5 +1,5 @@
 -- Quantum Worlds toy experiment
--- Runs against Worlds 0.6.0. Quantum state/observables live in Theory-like
+-- Runs against Worlds 0.6.1. Quantum state/observables live in Theory-like
 -- side data; Worlds itself supplies exact identity, local authority and causality.
 
 package.path = './src/?.lua;./src/?/init.lua;' .. package.path

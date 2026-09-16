@@ -1,4 +1,4 @@
--- Thin native Worlds 0.6.0 harness for speculative experiments.
+-- Thin native Worlds 0.6.1 harness for speculative experiments.
 -- It deliberately uses only the public 0.6 Worlds/Question APIs; this is not
 -- the release compatibility layer and carries no semantic authority.
 package.path='./src/?.lua;./src/?/init.lua;'..package.path
@@ -38,7 +38,7 @@ local function question(world,pattern,opts)
   opts=opts or {}
   local spec={seeds=S.seeds(opts.strands)}
   if opts.offers then spec.sources=opts.offers end
-  return Query.solve(Query.new(world,pattern,spec))
+  return Query.solve(Query.match(world,pattern,spec))
 end
 
 function S.solve_all(world,pattern,opts,budget)

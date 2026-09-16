@@ -2,7 +2,7 @@
 
 **Status: non-authoritative research ledger.**
 
-Worlds 0.6.0 intentionally keeps this file outside the semantic authority of
+Worlds 0.6.1 intentionally keeps this file outside the semantic authority of
 `LAWS.md`. These are questions suggested by the released kernel and by the
 non-authoritative experiments in `../speculation/`.
 
@@ -80,7 +80,7 @@ The kernel intentionally leaves domain interpretation external. Current
 speculative pressure tests include quantum semantics, stochastic/chemical
 reaction systems and resource-sensitive logic. Their purpose is to expose
 missing kernel distinctions or unnecessary assumptions, not to make those
-interpretations part of Worlds 0.6.0.
+interpretations part of Worlds 0.6.1.
 
 Particularly useful hostile domains include:
 
@@ -103,5 +103,5 @@ The intended formal path is bottom-up:
 6. boundary/advance theorems;
 7. only then category/polycategory/open-graph correspondences.
 
-No proof assistant or categorical identification is part of the 0.6.0 release
+No proof assistant or categorical identification is part of the 0.6.1 release
 contract.
