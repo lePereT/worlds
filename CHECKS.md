@@ -11,7 +11,7 @@ PASS query                           78 assertions
 PASS closure query                   51 assertions
 PASS optional history               165 assertions
 PASS 0.6.1 adversarial               36 assertions
-PASS work constitution                39 assertions
+PASS work constitution                57 assertions
 PASS verified centre without acceleration
 PASS shape 0.6.1 centre/edge split
 PASS differential10k              10000 assertions
@@ -61,8 +61,7 @@ on `worlds._compiled` or the query implementation. `src/worlds.lua` is the
 public edge: it wraps Builder completion with disposable index preparation and
 adds the complete `solve` convenience. Query acceleration remains in
 `src/worlds/_compiled.lua`; the finite Question judgement remains in
-`src/worlds/query_factory.lua`; factorisation/Hall/exact allocation remain in
-`src/worlds/query_engine.lua`. `src/worlds/_query.lua` supplies one shared
+`src/worlds/query_factory.lua`; Match factorisation remains in `src/worlds/query_engine.lua`; finite Hall/injective relation search shared by Match and Close lives in `src/worlds/query_relation.lua`. `src/worlds/_query.lua` supplies one shared
 disposable matching instance to both `W.solve` and `worlds.query`.
 
 The shape guard rejects finite-Question/search/acceleration policy from the

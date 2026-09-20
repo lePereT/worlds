@@ -48,7 +48,7 @@ current representation contains:
 - compressed target boundary forest;
 - factor relations with AND/OR provenance;
 - Hall feasibility; and
-- one exact allocator.
+- one Geometry-free finite scarce-relation solver shared by Match and Close.
 
 These structures are disposable. The source Geometry is not retained after
 compilation; only the selected outgoing section survives in retained search

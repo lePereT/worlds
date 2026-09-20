@@ -20,7 +20,7 @@ K=K or require('worlds._kernel').private
 local Compiled=require('worlds._compiled')(K)
 local DENSE=require('worlds._array')
 local MatchEngine=require('worlds.query_engine')(W,K,Compiled)
-local CloseEngine=require('worlds.query_closure_engine')()
+local CloseEngine=require('worlds.query_closure_engine')
 local M={}
 local function immutable() error('Worlds values are immutable',2) end
 local QuestionMT,RefutationMT={},{}
@@ -323,15 +323,15 @@ function M.solve(question)
       source=q.source,target=q.target,
       sources=q.sources and array(q.sources) or nil,
       targets=q.targets and array(q.targets) or nil,
-      required=q.required_targets and array(q.required_targets) or nil,
+      required_targets=q.required_targets and array(q.required_targets) or nil,
       required_all=q.required_all,
       seeds=pairs_copy(q.seeds),
       allowed_by_to=q.allowed_by_to,admissible_all=q.admissible_all,
       full_sources=q.full_sources,full_targets=q.full_targets,
     }
   else
-    raw=CloseEngine.solve{
-      sources=array(q.sources),targets=array(q.targets),required_sources=array(q.required_sources),required=array(q.required_targets),
+    raw=CloseEngine{
+      sources=array(q.sources),targets=array(q.targets),required_sources=array(q.required_sources),required_targets=array(q.required_targets),
       seeds=pairs_copy(q.seeds),allowed_by_to=q.allowed_by_to,admissible_all=q.admissible_all,
     }
   end

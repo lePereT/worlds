@@ -177,4 +177,48 @@ do
   le(second*3,first*2,'broad solve must retain compilation cache across W.solve calls')
 end
 
+-- Close and Match share one finite scarce-relation solver. Hall-deficient support
+-- must be rejected polynomially rather than by enumerating injections, and
+-- mandatory source coverage must not reintroduce optional-target subset search.
+local function close_strands(count,prefix)
+  local b=W.builder(); local m=b:membrane(nil,prefix); local xs={}
+  for i=1,count do xs[i]=b:strand(m,{},prefix..i) end
+  return b:finish(),xs
+end
+
+do
+  for _,size in ipairs({10,20,50}) do
+    local a,sources=close_strands(size,'close-source')
+    local b,targets=close_strands(size,'close-target')
+    local admissible={}
+    for _,to in ipairs(targets) do for i=1,size-1 do admissible[#admissible+1]={from=sources[i],to=to} end end
+    local work,tag=decision_work(Query.solve(Query.close({a,b},{sources=sources,targets=targets,required_targets=targets,admissible=admissible})),4*size*size+100)
+    eq(tag,'no','Close Hall deficiency must refute')
+    le(work,4*size*size+100,'Close Hall deficiency must stay polynomial in support size')
+  end
+end
+
+do
+  for _,size in ipairs({10,20,50}) do
+    local a,sources=close_strands(size,'domain-source')
+    local b,targets=close_strands(size,'domain-target')
+    local work,tag=decision_work(Query.solve(Query.close({a,b},{sources=sources,targets=targets,required_sources=sources,required_targets={}})),3*size*size+100)
+    eq(tag,'yes','Close required-source optional-target case must solve')
+    le(work,3*size*size+100,'Close symmetric domain coverage must avoid subset explosion')
+  end
+end
+
+-- Simultaneous mandatory domain/range is one relation problem, not two public
+-- search modes.  One extra required source must be pulled into an otherwise
+-- complete target matching without factorial fallback.
+do
+  for _,size in ipairs({10,20,50}) do
+    local a,sources=close_strands(size+1,'mixed-source')
+    local b,targets=close_strands(size,'mixed-target')
+    local work,tag=decision_work(Query.solve(Query.close({a,b},{sources=sources,targets=targets,required_sources={sources[#sources]},required_targets=targets})),2*size*size+100)
+    eq(tag,'yes','Close mixed required domain/range must solve')
+    le(work,2*size*size+100,'Close mixed domain/range coverage must remain polynomial')
+  end
+end
+
 print('PASS work constitution',n,'assertions')

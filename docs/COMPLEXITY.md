@@ -58,11 +58,12 @@ If `k` optional targets are genuinely independent, the Question itself may have
 behaviour is then unavoidable unless an observer explicitly quotients those
 solutions.
 
-## Exact allocation
+## Finite scarce relations
 
-Scarcity is output-sensitive. Hall feasibility rejects impossible structural
-supports before exact enumeration, but requesting every exact permutation still
-requires emitting every permutation.
+Match and Close share one Geometry-free relation solver. It covers required target
+and required source vertices with injective exact edges, uses Hall feasibility before
+exact enumeration, and leaves genuinely optional edges output-sensitive. Requesting
+every exact relation still requires emitting every relation.
 
 ## Admissibility
 

@@ -155,10 +155,18 @@ seeds.
 source sections, endpoint-thread quotienting, factor elimination, Hall feasibility
 and exact allocation.
 
-`worlds.query_closure_engine` is currently deliberately simple finite enumeration
-for Close. It retains no Geometry and owns no quotient lawfulness. In particular,
-it does not prune on unlawful **partial** quotients: later equations may carry a
-locality needed by the final composite, so that pruning would be unsound.
+`worlds.query_relation` is the shared Geometry-free finite relation solver. Given
+finite target-to-source support, it enumerates injective relations covering required
+targets and required sources. Required range is allocated first, any still-uncovered
+required domain is allocated symmetrically against optional targets, and only then
+are genuinely optional edges enumerated. Hall feasibility rejects deficient support
+before exact injection search. `worlds.query_closure_engine` therefore only compiles
+Close admissibility into support, removes exact seeds and reconstructs equations.
+
+Close deliberately does **not** prune on unlawful partial quotients: later equations
+may carry a locality needed by the final composite, so that pruning would be
+unsound. Structural support beyond the finite admissibility relation must likewise
+be monotone before it may be used as a search filter.
 
 The public Question wrapper validates every prospective witness against the
 kernel's strict join law before exposing `yes(E)`. Search engines may be replaced

@@ -42,7 +42,11 @@ In particular:
   second evaluator;
 - exact allocation is delayed until structural solving is complete;
 - Hall feasibility rejects impossible scarce lifts before enumeration;
-- optional-ingress queries prove singleton base feasibility before subset search,
+- Match and Close share one Geometry-free finite relation solver rather than maintaining
+  separate injection/subset search;
+- required target and required source coverage are handled symmetrically by that solver,
+  with Hall feasibility before exact enumeration;
+- optional-ingress Match queries prove singleton base feasibility before subset search,
   so unrelated external demands do not create artificial binary dimensions.
 
 ## Live state
@@ -72,8 +76,11 @@ requiring recursive Lua call depth proportional to the demand count.
 `../tests/work.lua` makes the main complexity promises executable.  Search is
 measured in the engine's own `step(fuel)` work units rather than elapsed time.
 It checks that rigid lookup is independent of unrelated source size, scarcity
-rejection stays linear, cached ancestry work is independent of raw depth, and
-query compilation survives repeated `W.solve` calls, and canonicalising two or more complete seed equations does not rebuild a source-position map over unrelated egress.
+rejection stays linear, cached ancestry work is independent of raw depth, query
+compilation survives repeated `W.solve` calls, canonicalising two or more complete
+seed equations does not rebuild a source-position map over unrelated egress, and
+Close Hall deficiency / required-source optional-target search remain polynomial in
+the finite support relation rather than reverting to factorial/subset enumeration.
 
 Complete Question construction precedes the fuelled solve coroutine, so that
 path is guarded separately with Lua VM instruction quanta.  The test compares

@@ -55,7 +55,7 @@ Prove the current executable engine sound and complete for `Solutions(Q)`:
 - factor join/projection preservation;
 - provenance reconstruction correctness;
 - Hall/fibre negative evidence soundness;
-- exact allocation completeness;
+- finite scarce-relation completeness;
 - `more` never implying `no`;
 - retained search not retaining closed source history.
 

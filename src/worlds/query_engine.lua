@@ -24,6 +24,7 @@ K=K or require('worlds._kernel').private
 Compiled=Compiled or require('worlds._compiled')(K)
 local M={}
 local EMPTY={}
+local relation=require('worlds.query_relation')
 local INGRESS=setmetatable({}, {__mode='k'})
 local MCACHE=setmetatable({}, {__mode='k'})
 local function immutable() error('Worlds Query solve state is immutable',2) end
@@ -286,31 +287,13 @@ local function solve_machine(st,initial_fuel)
   local function add_leaf(a,r) if not selected[a] then selected[a]=r; trail[#trail+1]=a end end
   local function rollback(n) while #trail>n do local a=trail[#trail]; trail[#trail]=nil; selected[a]=nil end end
   local function pools() local p={}; for _,a in ipairs(atoms) do local r=selected[a]; for _,d in ipairs(a.demands) do p[d]=r.occurrences end end; return p end
-  local function hall(order,pools_)
-    if #order==0 then return {},nil end
-    local same=pools_[order[1]]; local allsame=true; for i=2,#order do work(); if pools_[order[i]]~=same then allsame=false; break end end
-    if allsame then if #same<#order then return nil,{kind='fibre-capacity',required=#order,available=#same} end; local p={}; for i,d in ipairs(order) do p[d]=same[i] end; return p,nil end
-    local owner,preferred={},{}
-    for _,rootd in ipairs(order) do
-      local queue,qi={rootd},1; local seenD={[rootd]=true}; local seenO={}; local prev={}; local free=nil
-      while qi<=#queue and not free do local d=queue[qi]; qi=qi+1; for _,o in ipairs(pools_[d]) do work(); if not seenO[o] then seenO[o]=true; prev[o]=d; local held=owner[o]; if not held then free=o; break elseif not seenD[held] then seenD[held]=true; queue[#queue+1]=held end end end end
-      if not free then return nil,{kind='hall-deficiency',demands=seenD,occurrences=seenO} end
-      local o=free; while o do local d=prev[o]; local old=preferred[d]; preferred[d]=o; owner[o]=d; o=old end
-    end
-    return preferred,nil
-  end
   local hits=0
   local function allocate(pools_)
-    local order=array(demands); table.sort(order,function(a,b) return #pools_[a]<#pools_[b] end)
-    local preferred,proof=hall(order,pools_); if not preferred then return false,proof end
-    local used,ass,frames={}, {}, {}; local dep=1; frames[1]={first=true,next=1}
-    while dep>0 do
-      local d=order[dep]; local f=frames[dep]; local pool=pools_[d]; local picked=nil
-      while true do work(); local o; if f.first then f.first=false; o=preferred[d] else while f.next<=#pool do local x=pool[f.next]; f.next=f.next+1; if x~=preferred[d] then o=x; break end end end; if not o then break end; if not used[o] then picked=o; break end end
-      if picked then ass[d]=picked; used[picked]=true; if dep==#order then local es={}; for _,x in ipairs(demands) do es[#es+1]={from=ass[x],to=x} end; hits=hits+1; emit('yes',es); ass[d]=nil; used[picked]=nil else dep=dep+1; frames[dep]={first=true,next=1} end
-      else frames[dep]=nil; dep=dep-1; if dep>0 then local pd=order[dep]; local po=ass[pd]; if po then ass[pd]=nil; used[po]=nil end end end
-    end
-    return true
+    local ok,proof=relation{targets=demands,pools=pools_,required_targets=demands,work=work,emit=function(ass)
+      local es={}; for _,x in ipairs(demands) do es[#es+1]={from=ass[x],to=x} end
+      hits=hits+1; emit('yes',es)
+    end}
+    return ok,proof
   end
   local pending={node=root}; local choices={}; local lastproof=nil
   local function backtrack() while #choices>0 do local c=choices[#choices]; rollback(c.trail); pending=c.pending; if c.next<=#c.node.alts then local x=c.node.alts[c.next]; c.next=c.next+1; pending={node=x,next=pending}; return true end; choices[#choices]=nil end; return false end
@@ -394,7 +377,7 @@ function M.solve(spec)
   if spec.required_all then
     return ordinary_solve{surface=surface,pattern=tc,target=spec.target,targets=targets,seeds=spec.seeds or EMPTY,cache_full_targets=spec.full_targets,allowed_by_to=spec.allowed_by_to,admissible_all=spec.admissible_all,done=false}
   end
-  local required=spec.required or EMPTY
+  local required=spec.required_targets or EMPTY
   local mandatory={}; for _,d in ipairs(required) do mandatory[d]=true end; for _,e in ipairs(spec.seeds) do mandatory[e.to or e[2]]=true end
   local all_required=true; for _,d in ipairs(targets) do if not mandatory[d] then all_required=false; break end end
   local st={surface=surface,pattern=tc,target=spec.target,targets=targets,seeds=spec.seeds or EMPTY,cache_full_targets=spec.full_targets,allowed_by_to=spec.allowed_by_to,admissible_all=spec.admissible_all,mandatory=mandatory,done=false}
