@@ -1,9 +1,14 @@
-# Worlds 0.6.1 — geometry kernel and finite Questions
+# Worlds 0.6.2 — geometry kernel
 
 Worlds is a small operational geometry in which exact identity, scarce authority,
-causal transformation and locality arise from incidence and open boundary.
+causal transformation and locality arise from incidence and open boundary. It is
+deliberately centred on a small verified kernel, with matching and search kept at
+a replaceable public edge.
 
-The release is deliberately split around a small verified centre:
+`docs/LAWS.md` is the semantic authority. The public API and operational laws are
+kept deliberately small.
+
+The implementation is split around a verified centre:
 
 ```text
 verified centre (`worlds._kernel`)
@@ -18,8 +23,6 @@ public edge (`worlds`) + disposable acceleration
 finite Question judgement and replaceable query engines
     Match(A,B;S,T,D,R,C,E0) / Close(P;S,T,D,R,C,E0)
 ```
-
-Worlds 0.6.1 tightens the 0.6 line without adding operational ontology: finite Question now distinguishes directional `Match` from direct finite `Close`; every constructive `yes(E)` is guaranteed to be consumable by strict `join`; and `join` validates the resulting quotient against the ordinary Geometry laws. The short-lived public `materialisable` probe is absent because lawfulness belongs to Question rather than a third semantic layer.
 
 Only the verified Geometry centre is operational ontology. The compiled sidecar
 is disposable acceleration derived from already-verified Geometry; a Question
@@ -99,8 +102,7 @@ its internal open causal geometry. The query engine implements that judgement by
 5. enumerating exact Strand allocations only after structural feasibility.
 
 These are algorithms, not semantic carriers. They live outside the verified
-centre in `src/worlds/_kernel.lua` and may be replaced without changing the
-Geometry or Question relations.
+centre and may be replaced without changing the Geometry or Question relations.
 
 The engine retains only the source outgoing section, not closed source history.
 Its ancestry caches, factors, support DAG and Hall structures are disposable.
@@ -132,13 +134,21 @@ world, image = W.advance(world, development, equations)
 `boundary(join({boundary(world), development}, equations))`. Optional
 `worlds.history` may observe transitions but is never consulted by the kernel.
 
+## Research and speculation
+
+Non-authoritative research notes and executable experiments live under `docs/`
+and `speculation/`. The incidence atlas studies derived structure already present
+in the four-carrier geometry; the quantum/classical correspondence note explores
+whether quantum, probabilistic and classical process semantics can arise over the
+same exact substrate. These documents are research material only and do not
+enlarge the kernel, API or semantic laws. See `docs/INCIDENCE-ATLAS.md`,
+`docs/QUANTUM-CLASSICAL-CORRESPONDENCE.md` and `speculation/README.md`.
+
 ## Checks
 
-`make full-check` runs the Geometry laws, finite-Question tests, optional-History
-checks, adversarial cases, 10,000 ordinary differential cases, 5,000 selected-
-section differential cases, more than 100,000 optional/admissibility assertions,
-3,000 nested cases, 3,000 branching-locality cases, the historical algebra suite
-and an architectural shape guard.
+`make full-check` runs the Geometry law, finite-Question, differential and
+historical compatibility checks. `make speculation-check` runs the
+non-authoritative research corpus, including the modern incidence experiments.
 
-The shape guard explicitly rejects finite-question/search machinery from the
+The shape guard continues to reject finite-question/search machinery from the
 Geometry kernel.

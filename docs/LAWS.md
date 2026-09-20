@@ -1,6 +1,6 @@
 # Laws
 
-**Status: normative semantic laws for Worlds 0.6.1.**
+**Status: normative semantic laws for Worlds 0.6.2.**
 
 ## Carrier and Geometry
 

@@ -264,4 +264,7 @@ do
   ok(not pcall(function() W.solve(g,g,{[2]={from=s,to=s}}) end),'sparse solve seeds must be rejected')
 end
 
-print('PASS 0.6.1',n,'assertions')
+local version_file=assert(io.open('VERSION','r'))
+local version=assert(version_file:read('*l'))
+version_file:close()
+print('PASS '..version,n,'assertions')

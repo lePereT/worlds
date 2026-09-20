@@ -1,6 +1,6 @@
 # API
 
-**Status: maintained public Lua API for Worlds 0.6.1.**
+**Status: maintained public Lua API for Worlds 0.6.2.**
 
 ```lua
 local W = require('worlds')

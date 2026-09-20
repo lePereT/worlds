@@ -125,3 +125,50 @@ Formal work should separate:
 2. a declarative quotient/normal-form `JoinSpec` from DSU/SCC materialisation;
 3. exact raw Geometry equality from any later support-sensitive observational
    quotient.
+
+## 0.6.2 research theorem targets
+
+The following targets arise from the expanded non-authoritative incidence
+experiments. They are not additional release claims.
+
+### T14 Matching decomposition
+
+Characterise the declarative matching judgement as a dependent substitution over
+owned Point/Membrane context, coupled to injective allocation of exact Strand
+occurrences. Imported Points should act as rigid constants; local distinct
+variables should carry no implicit disequality.
+
+Evidence: `speculation/modern/latent_structures.lua` plus the maintained
+query/differential suites.
+
+### T15 Structural-row / exact-fibre factorisation
+
+For a fixed instantiated context, prove that structurally identical live Strands
+form finite exact occurrence fibres and that unconstrained allocation of `k`
+distinct demands from a fibre of size `n` yields the falling factorial
+`n!/(n-k)!`, while preserving exact member identity under causal consumption.
+
+Evidence: `speculation/modern/latent_structures.lua`.
+
+### T16 Join image transport
+
+State the largest useful class of joins for which image transport commutes with
+carrier kind, placement and ordered Point incidence; characterise separately the
+identification, rematerialisation and annihilation introduced by congruence and
+SCC contraction. Determine the law for composing image transport across staged
+joins.
+
+Evidence: `speculation/modern/join_structures.lua`.
+
+### T17 Factor-incidence realisation
+
+For an appropriate class of external Theories, characterise when face-free
+Point-Strand incidence may serve as a factor/configuration presentation and a
+Face eliminating an internal Point is sound exactly when the Theory validates
+the corresponding boundary consequence.
+
+This target deliberately ranges beyond the current kernel theorem programme. It
+should not be formalised until a small Theory contract has settled.
+
+Evidence: `speculation/modern/factor_incidence.lua` and
+`speculation/modern/theory_algebras.lua`.

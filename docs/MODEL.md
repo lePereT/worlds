@@ -12,7 +12,7 @@ kinds:
 - **Strand** — one exact scarce occurrence carrying an ordered Point tuple;
 - **Face** — one causal transformation consuming and producing Strands.
 
-Ingress and egress are derived from producer/consumer incidence. Worlds 0.6.1
+Ingress and egress are derived from producer/consumer incidence. Worlds 0.6.2
 does not claim that this raw structure is a conventional topological or cellular
 2-complex.
 

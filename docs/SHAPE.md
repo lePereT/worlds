@@ -1,4 +1,4 @@
-# Shape of Worlds 0.6.1 after the query split
+# Shape of Worlds 0.6.2 after the query split
 
 ## 1. Sacred Geometry kernel
 

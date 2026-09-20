@@ -1,7 +1,14 @@
-# Worlds 0.6.1 revised split acceptance record
+# Worlds 0.6.2 research-release acceptance record
 
-The tree was checked with TexLua after restoring the original performance shape
-while retaining the finite Question API and replaceable query engine.
+Worlds 0.6.2 changes documentation and the non-authoritative research/speculation
+programme only. The `src/` and `compat/` trees are byte-for-byte identical to
+0.6.1, the public API is unchanged, and the normative law text differs only in
+the release-number status line.
+
+The unchanged implementation was checked with TexLua using the complete 0.6.1
+semantic/performance corpus. Several test banners therefore still print `0.6.1`;
+that is deliberate evidence that the executable corpus itself was not rewritten
+for this documentation-only release.
 
 ## Semantic/compatibility gate
 
@@ -112,10 +119,56 @@ thresholds; `tests/work.lua` remains the deterministic performance gate.
 ## Speculation corpus check
 
 `make speculation-check` executes every Lua file under `speculation/`, including
-`speculation/support.lua`. The support harness now expresses historical
-`opts.offers` restrictions through the public finite Question API (`sources`)
-rather than solving the complete boundary and post-filtering witnesses. All
-twelve speculative experiments pass with that path, and the support module also
-loads and executes successfully as a standalone Lua chunk. The speculation
-corpus remains non-authoritative: this gate checks API compatibility and the
-experiments' own assertions only.
+`speculation/support.lua` and the helper module used by the quantum/classical
+experiments. The revised 0.6.2 tree contains 40 executable Lua chunks. The
+complete historical corpus still passes, including the older quantum pressure
+tests and adversarial experiments.
+
+The modern incidence programme now contributes 679 explicit assertions:
+
+```text
+factor incidence                         90
+latent structures                       106
+join structures                         132
+membrane cross-axis                       8
+quantum two-layer                        10
+theory algebras                          34
+quantum atlas                            86
+quantum/classical correspondence        213
+                                      -----
+                                        679
+```
+
+The seven `speculation/modern/quantum_atlas/` attacks cover contextual overlap,
+permutation symmetry over exact occurrence fibres, interference over exact
+histories and observational boundary classes, phase/transport, copyability,
+monoidal process semantics and the hostile locality case which warns against
+reifying global quantum state as scarce authority.
+
+The ten `speculation/modern/quantum_classical/` experiments cover
+boundary/partial-trace decoherence, stochastic fixed sectors, copyable classical
+structure, environment-selected pointer bases, membrane-separated redundant
+records, local classical contextual islands, decoherent-history probability,
+Hong-Ou-Mandel distinguishability, deterministic path-sum emergence and a finite
+stationary-phase least-action toy. Their synthesis and falsifiers are recorded in
+`docs/QUANTUM-CLASSICAL-CORRESPONDENCE.md`.
+
+All modern experiments are dependency-free Lua/TeX Lua. They have no Python,
+SymPy, CAS or external numerical dependency. Where a non-trivial expected
+algebraic relation is required, the script compares against an explicit
+pre-determined relation or computes only small local arithmetic inside the test.
+
+The speculation corpus remains non-authoritative: this gate checks API
+compatibility and the experiments' own assertions only. The quantum/classical
+experiments do not promote `boundary` to physical decoherence, derive the Born
+rule, solve measurement or establish a derivation of classical mechanics.
+
+## Source-identity gate
+
+A recursive file comparison against the packaged 0.6.1 source confirms that
+`src/` and `compat/` are unchanged. `docs/API.md` and `docs/LAWS.md` differ from
+0.6.1 only in their release-number status lines. The 0.6.2 Makefile now selects
+an available Lua interpreter in the order LuaJIT, generic Lua, versioned Lua,
+then TexLua, while retaining explicit `make LUA=...` override support. The main
+test runner reads its displayed release number from `VERSION` rather than
+hard-coding it.
