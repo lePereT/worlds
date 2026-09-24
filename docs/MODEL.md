@@ -12,7 +12,7 @@ kinds:
 - **Strand** — one exact scarce occurrence carrying an ordered Point tuple;
 - **Face** — one causal transformation consuming and producing Strands.
 
-Ingress and egress are derived from producer/consumer incidence. Worlds 0.6.2
+Ingress and egress are derived from producer/consumer incidence. Worlds 0.6.3
 does not claim that this raw structure is a conventional topological or cellular
 2-complex.
 
@@ -99,7 +99,33 @@ A causal cycle created by composition denotes mutual support and is represented
 by one joint Face rather than a chosen serialisation. Its locality is the least
 common enclosing Membrane of its participating Faces after locality equations.
 
-## 6. boundary and live execution
+## 6. Construction witness and Presentation
+
+Geometry remains the sole composite value carrying programme authority and
+causal structure.  0.6.3 adds two edge values around it.
+
+A **Construction** is an immutable witness of one ordinary `join`
+materialisation: its ordered parts, normalised equations, resulting Geometry and
+exact carrier image.  The image is construction-relative identity transport; it
+does not imply that endpoints produced by different materialisation paths have
+literally identical carriers.
+
+A **Presentation** is a finite ordered view of selected exact open Strand
+occurrences relative to one ambient Geometry.  It owns no carrier and has no
+causal force.  Presentation order and multiplicity may therefore express a
+client-facing boundary convention without adding Points, Strands or Faces to the
+programme.
+
+A Presentation may be transported only through an actual Construction which has
+its ambient Geometry as an exact part.  Coordinates are mapped pointwise through
+the construction image and residualised to those images which remain open.
+Transport does not invent authority.
+
+This is deliberately weaker than a dimensional/ranked-complex API.  The current
+research contains native face-free structures, higher coherence and inter-World
+relations which are not yet captured by one production notion of rank.
+
+## 7. boundary and live execution
 
 `boundary(G)` projects exact history to the currently open causal frontier. It
 keeps every exact egress occurrence plus only the owned Point/Membrane structure
@@ -121,7 +147,7 @@ live Geometry  -- solve --> equations
 Because `advance` immediately returns to `boundary`, persistent live state can be
 bounded by frontier size rather than elapsed history.
 
-## 7. Identity, equality and authority
+## 8. Identity, equality and authority
 
 Worlds exactness should not be confused with universal disequality. Imported
 exact Points are rigid. Local ingress Points/Membranes are structural variables
@@ -132,7 +158,7 @@ Likewise, knowing an exact Point or Membrane does not reveal or manufacture live
 Strand authority. Causal use of existing local structure is validated through
 input incidence.
 
-## 8. Interpretation outside the kernel
+## 9. Interpretation outside the kernel
 
 The kernel deliberately does not decide domain-specific equality or dynamics.
 For example, chemistry may quotient permutations of indistinguishable exact

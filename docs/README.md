@@ -8,12 +8,11 @@ in the repository.
 
 The maintained documents are:
 
-- `LAWS.md` — **normative semantic laws** for Worlds 0.6.2; the law text is
-  unchanged from 0.6.1;
+- `LAWS.md` — **normative semantic laws** for Worlds 0.6.3;
 - `MODEL.md` — maintained explanatory model; if prose conflicts with `LAWS.md`,
   the laws win;
-- `API.md` — maintained public Lua API for 0.6.2; the API is unchanged from
-  0.6.1;
+- `API.md` — maintained public Lua API for 0.6.3, including the optional
+  `worlds.construction` and `worlds.presentation` edge modules;
 - `QUERY.md` — normative finite matching Question and partial matching judgement;
 - `SHAPE.md` — implementation/representation shape of the clean-boundary kernel;
 - `LIVE.md` — the boundary-only execution result;
@@ -23,7 +22,7 @@ The maintained documents are:
 - `VERIFICATION.md` — formal verification obligations;
 - `RESEARCH.md` — explicitly non-authoritative research programme;
 - `INCIDENCE-ATLAS.md` — explicitly non-authoritative atlas of latent structures
-  exposed by 0.6.2 experiments;
+  exposed by the incidence experiments;
 - `QUANTUM-CLASSICAL-CORRESPONDENCE.md` — explicitly non-authoritative early
   research note on quantum semantics and possible emergent classical sectors.
 

@@ -8,6 +8,8 @@ local query=read('src/worlds/query_engine.lua')
 local closure=read('src/worlds/query_closure_engine.lua')
 local relation=read('src/worlds/query_relation.lua')
 local compiled=read('src/worlds/_compiled.lua')
+local construction=read('src/worlds/construction.lua')
+local presentation=read('src/worlds/presentation.lua')
 
 -- Sacred Geometry centre: no finite-question policy or acceleration/search
 -- implementation.  It exports only public semantics plus a private read-only
@@ -42,6 +44,23 @@ assert(facade:match('function W%.solve'),'complete-query convenience must live a
 assert(facade:match("require%('worlds%._query'%)"),'public solve must delegate to the disposable query edge')
 assert(queryedge:match("require%('worlds%.query_factory'%)"),'shared query edge must construct the matching implementation')
 assert(querypublic:match("require%('worlds%._query'%)%.public"),'worlds.query must share the same disposable query instance as W.solve')
+
+assert(not facade:match("worlds%.construction"),'main facade must not import Construction')
+assert(not facade:match("worlds%.presentation"),'main facade must not import Presentation')
+
+-- Construction/Presentation are semantic edge values, not alternate kernel
+-- operations. Construction delegates to ordinary join; Presentation owns only
+-- copied references and residualises solely through a Construction image.
+assert(construction:match("require%('worlds'%)"),'Construction must delegate to public Worlds join')
+assert(construction:match('W%.join%(ps,es%)'),'Construction must perform ordinary join')
+assert(not construction:match("worlds%._kernel"),'Construction must not reach into the verified centre')
+assert(not construction:match('do_join'),'Construction must not duplicate join implementation')
+assert(not construction:match("setmetatable({}, {__mode='k'})"),'Construction state must be closure-owned rather than a weak registry')
+assert(presentation:match("require%('worlds%.construction'%)"),'Presentation transport must require an actual Construction')
+assert(presentation:match('construction:image%(s%)'),'Presentation transport must use exact construction image')
+assert(not presentation:match('W%.join'),'Presentation must not change Geometry')
+assert(not presentation:match('W%.builder'),'Presentation must not manufacture carriers')
+assert(not presentation:match("setmetatable({}, {__mode='k'})"),'Presentation state must be closure-owned rather than a weak registry')
 
 -- Private compilation is acceleration only: no finite-Question policy belongs
 -- here, no callback points back into Geometry construction, and all state is
@@ -93,4 +112,4 @@ assert(query:match('coroutine%.create'),'retained query engine missing')
 assert(query:match('function M%.complete'),'complete hot-path constructor missing')
 assert(query:match('function M%.solve'),'replaceable query engine missing')
 assert(not query:match('relay%.'),'Worlds Query must remain Relay-neutral')
-print('PASS shape 0.6.1 centre/edge split')
+print('PASS shape 0.6.3 centre/edge split')

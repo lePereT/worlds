@@ -126,7 +126,7 @@ Formal work should separate:
 3. exact raw Geometry equality from any later support-sensitive observational
    quotient.
 
-## 0.6.2 research theorem targets
+## Incidence research theorem targets
 
 The following targets arise from the expanded non-authoritative incidence
 experiments. They are not additional release claims.
@@ -158,7 +158,13 @@ identification, rematerialisation and annihilation introduced by congruence and
 SCC contraction. Determine the law for composing image transport across staged
 joins.
 
-Evidence: `speculation/modern/join_structures.lua`.
+0.6.3 promotes only the exact construction image and pointwise Presentation
+transport as maintained laws.  The stronger classification/composition theorem
+remains open.
+
+Evidence: `speculation/modern/join_structures.lua`, the maintained
+`tests/construction.lua`, and the between-Worlds construction-groupoid
+experiments.
 
 ### T17 Factor-incidence realisation
 

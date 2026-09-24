@@ -13,6 +13,12 @@ a second prose specification.
 tests/run.lua
     native 0.6 semantics
 
+tests/construction.lua
+    immutable exact join-materialisation witness and image transport
+
+tests/presentation.lua
+    ordered non-authoritative open-boundary views and residual transport
+
 tests/history.lua
     optional observer/history independence
 

@@ -2,8 +2,9 @@
 
 # Speculation
 
-Worlds 0.6.2 makes no implementation or API change, but substantially revises the
-speculation programme.
+Worlds 0.6.3 keeps the verified Geometry centre unchanged and promotes only
+Construction and Presentation at the semantic edge.  The substantially richer
+dimensional/inter-World work below remains speculation.
 
 Earlier experiments often treated quantum phase, tensor cycles, overlapping
 contexts and symbolic elimination as pressure for a larger Geometry. The newer
@@ -32,7 +33,7 @@ The corpus has no Python/SymPy dependency. Experiments which mention a known
 symbolic elimination result compare against a pre-determined result rather than
 calling an external CAS.
 
-## Modern 0.6.2 programme
+## Modern programme
 
 The primary current experiments live under `modern/`.
 
@@ -60,6 +61,20 @@ The primary current experiments live under `modern/`.
 These experiments are intentionally small. Their purpose is to falsify
 interpretations of the existing kernel, not to establish production domain
 libraries.
+
+### Dimensional laboratory and shadows
+
+`modern/dimensional_lab/` is the current broad pressure programme.  It includes
+cross-domain rank/configuration experiments plus `shadows/`, where fixed lower
+shadows are held constant while higher fillings, causal polarity, Membrane
+support and exact construction history vary.  `shadows/fibre_census/` studies
+the topology of those realisation fibres and the causal-spine support law;
+`shadows/between_worlds/` tests structural deformation, causal meta-rewrite,
+construction-image coherence, provenance and symmetry between exact Worlds.
+
+These experiments motivate the 0.6.3 production split but are **not** production
+semantics.  In particular they do not establish public W1/W3 types, a canonical
+rank, a canonical inter-World adjacency or a higher-cell carrier.
 
 ## Updated reading of tensors and elimination
 

@@ -1,6 +1,6 @@
 # API
 
-**Status: maintained public Lua API for Worlds 0.6.2.**
+**Status: maintained public Lua API for Worlds 0.6.3.**
 
 ```lua
 local W = require('worlds')
@@ -168,6 +168,88 @@ boundary(join({boundary(world), development}, equations))
 
 It is definitionally the ordinary `boundary` and `join` operations, not a
 separate execution path.
+
+
+## Construction witness
+
+```lua
+local Construction = require('worlds.construction')
+
+local c = Construction.join(parts, equations)
+local ps = c:parts()
+local es = c:equations()
+local result = c:result()
+local mapped = c:image(source_carrier)
+
+Construction.is_construction(c)
+```
+
+A Construction is immutable evidence of one exact `join` materialisation.
+`Construction.join(P,E)` performs the ordinary `W.join(P,E)` operation; it does
+not introduce another Geometry-changing primitive or composition algorithm.
+The stored parts are the ordered exact Geometry values supplied to that join,
+the stored equations are a normalised immutable copy, and `image(x)` exposes the
+exact construction-relative carrier image returned by the kernel.
+
+Accessor arrays are copies.  The image table itself is not exposed.
+
+## Presentation
+
+```lua
+local Presentation = require('worlds.presentation')
+
+local p = Presentation.new(g, {
+  {s1, s2},
+  {s3},
+})
+
+local first = p:row(1)
+local rows = p:rows()
+local g0 = p:ambient()
+
+Presentation.is_presentation(p)
+```
+
+A Presentation is an immutable ordered, non-authoritative view of selected exact
+open Strand occurrences relative to one exact ambient Geometry.  Every
+coordinate must be a Strand owned by the ambient Geometry and open there (no
+producer or no consumer).  Rows and coordinate arrays must be dense, but rows
+may be empty and coordinates may be omitted or repeated.
+
+Row order, coordinate order and multiplicity are semantics of the Presentation
+only.  They do not alter Geometry, grant authority, impose causal order or make
+hidden authority public.  Multiple different Presentations may describe the
+same Geometry.
+
+### Presentation transport
+
+```lua
+local residual = p:transport(c)
+```
+
+`c` must be a Worlds Construction and `p:ambient()` must be exactly one of
+`c:parts()`.  Transport maps every coordinate pointwise through `c:image` and
+retains it exactly when the image is a Strand which remains open in
+`c:result()`.  Row order and coordinate multiplicity are preserved; mapped
+coordinates which become internal or disappear under causal SCC normalisation
+are omitted from the residual Presentation.
+
+Transport performs no matching, joining, sequencing or completion.  In
+particular:
+
+```lua
+Presentation.new(g, {
+  {arg},
+  {},
+})
+```
+
+states only that the second presented row is empty.  If a programme requires
+completion authority, Geometry must contain a genuine Strand carrying it.
+
+Presentation is an in-memory relative view.  Persistent package formats must
+encode their own ambient-relative exact coordinates and reconstruct a
+Presentation after import.
 
 ## Optional history
 

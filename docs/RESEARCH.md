@@ -1,10 +1,11 @@
 # Research
 
-**Status: non-authoritative research ledger for Worlds 0.6.2.**
+**Status: non-authoritative research ledger for Worlds 0.6.3.**
 
-Worlds 0.6.2 changes no kernel law, public API or implementation. This research
-ledger records a substantial change in interpretation after sustained pressure
-from Relay and from the speculative corpus.
+Worlds 0.6.3 leaves the verified Geometry kernel unchanged and promotes only
+Construction and Presentation at the semantic edge.  This ledger records the
+substantially richer non-authoritative research programme which motivated that
+small production boundary.
 
 The default research move is now **subtractive**: before adding a carrier,
 relation or more permissive membrane structure, first ask whether the required
@@ -14,7 +15,7 @@ join congruence, frame preservation and identity transport.
 
 See `INCIDENCE-ATLAS.md` for the current inventory.
 
-## Central 0.6.2 hypothesis
+## Central incidence hypothesis
 
 A growing class of domains appears to decompose into three layers:
 
@@ -270,6 +271,42 @@ Questions:
 - is frame/template polarity a known substitution/context construction?
 - can boundary be characterised as a reflection or support-closing projection?
 
+## Dimensional shadows and the space between Worlds
+
+The newest experiments deliberately hold lower structure fixed and ask how much
+exact structure remains above it.  They are concentrated under
+`speculation/modern/dimensional_lab/` and its `shadows/` subprogramme.
+
+Several observations now survive broad hostile pressure:
+
+- face-free rank-1-like configuration structures can exist intrinsically rather
+  than only as reductions of causal Geometry;
+- an ordinary Worlds Face cannot act as a causally neutral higher coherence
+  filler, because attaching a Face necessarily polarises its incident Strands;
+- fixed lower shadows can admit large fibres of exact causal/support/construction
+  realisations with non-trivial higher homology under explicit local-move probes;
+- Membrane support is resolved relative to causal support: the causal spine is
+  reusable while off-spine branches behave as exclusive locality resources;
+- those support fibres exhibit a strong commutation/Salvetti-like signal, but the
+  topology depends on which inter-World moves are admitted, so the set of Worlds
+  alone does not determine a canonical higher space;
+- actual `join` construction images provide a privileged source-relative
+  correspondence between exact-distinct materialisation outcomes, and this
+  coherence survives causal SCC contraction;
+- forgetting exact provenance reintroduces symmetry/isotropy, suggesting that
+  any eventual moduli object may need groupoid-like rather than set-like
+  semantics.
+
+These observations are exactly why 0.6.3 does **not** expose `rank`, W1/W3 types,
+higher cells or arbitrary inter-World adjacency.  Production recognises only the
+parts which are already intrinsic and operationally required: exact construction
+transport and non-authoritative boundary presentation.
+
+The open question is whether a future theory should treat higher structure as a
+new carrier inside one World, as structured relations among exact Worlds, or as
+a richer combination of incidence rank, causal direction, support and
+construction provenance.
+
 ## Mathematical classification
 
 The raw Face/Strand causal skeleton remains close to occurrence-net,
@@ -301,7 +338,7 @@ ownership-like authority, conflict, concurrency, interface, generic
 substitution, lifetime, live state, reusable presentations and freshness are not
 independent kernel primitives but derived views of the four-carrier geometry.
 
-The stronger 0.6.2 question is whether important mathematical notions such as
+The stronger question is whether important mathematical notions such as
 factor scope, hidden-variable elimination and realisation order also separate
 naturally along existing incidences rather than requiring new ontology.
 
@@ -345,5 +382,5 @@ When formalisation begins, the likely bottom-up route is:
 6. lawful Theory reindexing/projection interfaces;
 7. only then broader categorical or proof-theoretic classifications.
 
-No proof assistant or categorical identification is part of the 0.6.2 release
-contract.
+No proof assistant, dimensional ontology or categorical identification is part
+of the 0.6.3 release contract.

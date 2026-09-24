@@ -1,4 +1,4 @@
-# Shape of Worlds 0.6.2 after the query split
+# Shape of Worlds 0.6.3
 
 ## 1. Sacred Geometry kernel
 
@@ -21,8 +21,8 @@ convenience and may eagerly prepare disposable indexes for Builder output. No
 selected-section, optional-target, admissibility, factorisation or scarcity-
 search policy is represented in the verified centre.
 
-Geometry is the sole composite semantic value. Exact carrier identity and open
-incidence are authoritative.
+Geometry is the sole composite value carrying programme authority and causal
+structure. Exact carrier identity and open incidence are authoritative.
 
 ## 2. Finite Question judgement
 
@@ -60,3 +60,19 @@ state.
 Matching and quotient construction are deliberately distinct: successful `join`
 does not by itself prove that an equation set satisfies the target matching
 judgement, while every constructive Question witness is guaranteed join-lawful.
+
+## 5. Semantic edge values
+
+`src/worlds/construction.lua` and `src/worlds/presentation.lua` sit outside the
+verified centre and outside the replaceable query engine.
+
+`worlds.construction` calls the ordinary public `join` exactly once and retains
+its ordered parts, normalised equations, result and exact image in immutable
+private state. It owns no quotient or matching algorithm.
+
+`worlds.presentation` stores only an exact ambient Geometry plus copied arrays of
+selected open Strand references. Its sole derived operation is residual transport
+through a `worlds.construction` value. It cannot create or consume Geometry.
+
+The main `require('worlds')` facade does not import or re-export either module.
+Clients opt into these edge values explicitly.

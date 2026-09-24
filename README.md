@@ -1,154 +1,171 @@
-# Worlds 0.6.2 — geometry kernel
+# Worlds 0.6.3 — exact construction transport and presented boundaries
 
 Worlds is a small operational geometry in which exact identity, scarce authority,
-causal transformation and locality arise from incidence and open boundary. It is
-deliberately centred on a small verified kernel, with matching and search kept at
-a replaceable public edge.
+causal transformation and locality arise from incidence and open boundary.
 
-`docs/LAWS.md` is the semantic authority. The public API and operational laws are
-kept deliberately small.
+Worlds 0.6.3 is an additive edge release.  The verified Geometry centre is
+unchanged.  No carrier kind, causal law, `boundary`, `join`, `advance`, Question
+or matching rule changes.
 
-The implementation is split around a verified centre:
-
-```text
-verified centre (`worlds._kernel`)
-    exact carriers / Geometry / boundary / join / advance
-             |
-             | read-only observation
-             v
-public edge (`worlds`) + disposable acceleration
-    outgoing structural index / complete solve convenience
-             |
-             v
-finite Question judgement and replaceable query engines
-    Match(A,B;S,T,D,R,C,E0) / Close(P;S,T,D,R,C,E0)
-```
-
-Only the verified Geometry centre is operational ontology. The compiled sidecar
-is disposable acceleration derived from already-verified Geometry; a Question
-carries no authority and is not programme state. The centre neither imports nor
-registers acceleration.
-
-The ordinary convenience surface remains small:
-
-```text
-solve(world, development)  -> complete matching question
-join(parts, equations)     -> Geometry
-boundary(Geometry)         -> future-relevant Geometry
-advance(...)               = boundary(join(...))
-```
-
-`solve` is definitionally the complete-coverage special case of `worlds.query`.
-It accepts only optional seed equations; specialised finite questions do not add
-flags to the complete matching operation.
-
-## Geometry kernel
-
-A Geometry contains exact Membranes, Points, scarce Strand occurrences and causal
-Faces. Ingress and egress are derived from incidence. `boundary(G)` keeps exactly
-the future-relevant open authority and the owned structure required to interpret
-it. Surviving carriers are preserved literally.
-
-```text
-boundary(boundary(G)) = boundary(G)
-```
-
-`join(parts,equations)` is the sole geometry-changing operation:
-
-```text
-disjoint union
-+ directed open-boundary equations
-+ typed equality closure
-+ causal SCC quotient
-+ locality support
-= Geometry
-```
-
-The first part is the frame. Unaffected frame carriers survive literally; later
-parts are instantiated fresh where they are not glued. Same-Geometry feedback is
-ordinary boundary equality.
-
-## Finite Questions
-
-`worlds.query` exposes two exact judgement forms:
-
-```text
-Match(A,B;S,T,D,R,C,E0)   directional target realisation
-Close(P;S,T,D,R,C,E0)     direct finite closure
-```
-
-`D` requires selected source occurrences to be consumed; `R` requires selected
-target occurrences to be closed. `C` is the finite admissibility relation and
-`E0` exact seeds. `Match` retains the stronger causal-development premise on its
-target. `Close` asks directly whether equations over ordered disjoint parts yield
-lawful Geometry; it is not staged through a product Geometry.
-
-Both forms share `yes / no / more / done`, and every `yes(E)` is accepted by
-strict `join(question:parts(),E)`. `W.solve(A,B,seeds)` remains the complete
-Match special case.
-
-See `docs/QUERY.md` for the maintained definitions.
-
-## Matching judgement and engine
-
-Matching is a real judgement and is not reducible to "`join` accepts these
-equations". A target development contributes locality/equality constraints from
-its internal open causal geometry. The query engine implements that judgement by:
-
-1. compiling the source egress into structural rows with exact occurrence fibres;
-2. quotienting target ingress by endpoint-thread locality equalities;
-3. factorising only the irreducible boundary variables;
-4. proving exact scarcity with Hall-style matching; and
-5. enumerating exact Strand allocations only after structural feasibility.
-
-These are algorithms, not semantic carriers. They live outside the verified
-centre and may be replaced without changing the Geometry or Question relations.
-
-The engine retains only the source outgoing section, not closed source history.
-Its ancestry caches, factors, support DAG and Hall structures are disposable.
-
-## `yes`, `no`, `more`, `done`
-
-A retained query distinguishes semantic result from incomplete work:
-
-- `yes` — one constructive exact solution;
-- `no` — the exact finite Question has no solution;
-- `more` — the current work budget has not decided the Question;
-- `done` — at least one solution was emitted and enumeration is exhausted.
-
-`more` is never negative evidence. `no` is always relative to one exact finite
-Question.
-
-## Live computation
-
-Runtime evolution can remain permanently at the boundary fixed point:
+The release adds two deliberately small public edge modules:
 
 ```lua
-local q = W.solve(world, development)
-local tag, equations = q:step(1000)
--- when tag == 'yes':
-world, image = W.advance(world, development, equations)
+local Construction = require('worlds.construction')
+local Presentation = require('worlds.presentation')
 ```
 
-`advance` is definitionally
-`boundary(join({boundary(world), development}, equations))`. Optional
-`worlds.history` may observe transitions but is never consulted by the kernel.
+`Construction` makes the existing exact image returned by `join` into an
+immutable witness that can safely be passed between components.  `Presentation`
+is an ordered, non-authoritative view of selected exact open Strand occurrences
+relative to one ambient Geometry.  It gives clients somewhere to put boundary
+presentation structure without thickening that structure into causal Geometry.
 
-## Research and speculation
+The main API remains unchanged:
 
-Non-authoritative research notes and executable experiments live under `docs/`
-and `speculation/`. The incidence atlas studies derived structure already present
-in the four-carrier geometry; the quantum/classical correspondence note explores
-whether quantum, probabilistic and classical process semantics can arise over the
-same exact substrate. These documents are research material only and do not
-enlarge the kernel, API or semantic laws. See `docs/INCIDENCE-ATLAS.md`,
-`docs/QUANTUM-CLASSICAL-CORRESPONDENCE.md` and `speculation/README.md`.
+```lua
+local W = require('worlds')
+```
+
+## Verified centre
+
+The operational ontology remains:
+
+```text
+Membrane
+Point
+Strand
+Face
+Geometry
+
+boundary
+join
+advance
+```
+
+`join(parts,equations)` remains the sole Geometry-changing primitive.  The first
+part remains the frame; exact unaffected frame carriers survive literally;
+later-part carriers materialise as required; and causal SCCs normalise to one
+joint Face exactly as before.
+
+The release does **not** add W1/W2/W3 types, rank, higher cells, cuts, a new
+composition algorithm or a second execution semantics.
+
+## Construction
+
+```lua
+local Construction = require('worlds.construction')
+
+local c = Construction.join(parts, equations)
+local result = c:result()
+local mapped = c:image(source_carrier)
+```
+
+`Construction.join(P,E)` performs the ordinary `W.join(P,E)` operation and
+retains immutable access to:
+
+```text
+ordered parts
+normalised equations
+result Geometry
+exact construction-relative carrier image
+```
+
+Construction carries no programme authority.  It is a witness of one exact
+materialisation, not another way to compose Geometry.
+
+The image is important because exact identity after construction depends on the
+actual materialisation path.  It also records the kernel's existing many-to-one
+Face image under causal SCC contraction and the disappearance of cyclic Strand
+authority.
+
+## Presentation
+
+```lua
+local Presentation = require('worlds.presentation')
+
+local p = Presentation.new(body, {
+  {arg1, arg2},
+  {result},
+})
+```
+
+A Presentation is a finite ordered family of rows of selected exact **open
+Strand occurrences** relative to one exact ambient Geometry.
+
+It is not Geometry.  It owns no carrier, grants no authority and imposes no
+causal order.  Rows, coordinate order and multiplicity are presentation
+semantics only.  Any number of different Presentations may describe the same
+Geometry.
+
+Coordinates may be omitted, repeated and arranged in empty rows.  This permits a
+client to expose public ports while leaving hidden authority ordinary Geometry.
+An empty row has no completion meaning.
+
+### Residual transport
+
+```lua
+local p2 = p:transport(c)
+```
+
+The Presentation ambient must be one of `c:parts()` by exact Geometry identity.
+Each coordinate is mapped pointwise through `c:image`.  Mapped Strands are
+retained, in the same row order and with the same multiplicity, exactly when they
+remain open in `c:result()`.  Coordinates which become internal or are
+annihilated disappear.
+
+Transport therefore supports residual public presentations without causal
+wrappers.  It never creates completion or any other authority.
+
+Presentation is intentionally an in-memory relative view.  If an enclosing
+format such as Relay needs durable presentations, that format must encode enough
+ambient-relative exact coordinates to reconstruct the Presentation after import.
+
+## Why 0.6.3 stops here
+
+The non-authoritative research programme has become substantially richer since
+0.6.2.  It now includes exact incidence reductions, intrinsic rank-1-like
+structures, higher coherence examples, fixed-shadow realisation fibres,
+Membrane/causal-spine topology and coherent correspondences between exact-distinct
+construction outcomes.
+
+Those experiments are preserved under `speculation/modern/dimensional_lab/`,
+including `shadows/`, `fibre_census/` and `between_worlds/`.
+
+They strongly motivate separating presentation, causal Geometry and exact
+construction transport, but they do **not** yet justify production W1/W3 types,
+a ranked-complex API, a canonical inter-World deformation relation or a higher
+cell carrier.  0.6.3 therefore promotes only what repeated experiments already
+require while leaving the dimensional interpretation free to evolve.
+
+## Questions and live computation
+
+The finite judgement API remains in `worlds.query`:
+
+```text
+Match(A,B;S,T,D,R,C,E0)
+Close(P;S,T,D,R,C,E0)
+```
+
+`W.solve(A,B,seeds)` remains the complete Match convenience.  `advance` remains
+definitionally:
+
+```text
+boundary(join({boundary(world), development}, equations))
+```
+
+Optional `worlds.history` observes execution only and is never consulted by the
+kernel.
 
 ## Checks
 
-`make full-check` runs the Geometry law, finite-Question, differential and
-historical compatibility checks. `make speculation-check` runs the
-non-authoritative research corpus, including the modern incidence experiments.
+```sh
+make full-check
+make speculation-check
+```
 
-The shape guard continues to reject finite-question/search machinery from the
-Geometry kernel.
+`full-check` includes maintained Construction and Presentation tests in addition
+to the unchanged Geometry, Question, differential and historical suites.
+`speculation-check` runs the non-authoritative research corpus separately.
+
+See `docs/LAWS.md` for normative semantics and `CHECKS.md` for the captured
+release acceptance record.

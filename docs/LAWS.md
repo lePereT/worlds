@@ -1,11 +1,11 @@
 # Laws
 
-**Status: normative semantic laws for Worlds 0.6.2.**
+**Status: normative semantic laws for Worlds 0.6.3.**
 
 ## Carrier and Geometry
 
 1. The semantic carrier kinds are Membrane, Point, Strand and Face; Geometry is
-   the sole composite semantic value.
+   the sole composite value carrying programme authority and causal structure.
 2. Carrier identity is exact object identity. Names are correspondence/debugging
    data only.
 3. Membranes form a finite parent forest. A Point, Strand or Face inhabits one
@@ -109,3 +109,24 @@
 40. Raw exact Geometry is not claimed to be a minimal observational quotient.
     Any stronger extensional/full-abstraction claim requires an explicitly
     stated observation/Theory equivalence.
+
+## Construction witnesses and presentations
+
+41. `Construction.join(parts,E)` performs exactly the existing `join(parts,E)`
+    materialisation and records its exact construction data. Construction is not
+    another Geometry-changing primitive.
+42. A Construction carrier image is exact and construction-relative. Exact
+    carrier identities from different materialisation paths need not coincide.
+43. A Presentation is a finite ordered family of rows of exact open Strand
+    occurrences relative to one exact ambient Geometry. It is not Geometry and
+    carries no programme authority.
+44. Presentation row order, coordinate order and multiplicity are presentation
+    semantics only. They impose no causal order or scarcity law on the ambient
+    Geometry.
+45. Any number of Presentations may describe one exact Geometry. Inclusion,
+    omission or repetition of a Strand in a Presentation neither grants,
+    consumes nor removes authority.
+46. Transport through a Construction maps Presentation coordinates pointwise
+    through the exact construction image, retaining in order and with
+    multiplicity precisely those mapped Strands which remain open in the result.
+    Transport creates no carrier or causal authority.
