@@ -1,0 +1,10 @@
+local W=require('worlds')
+local D=require('speculation.theory.occurrence_relative.development')
+local T=require('speculation.theory.occurrence_relative.theory')
+return function()
+  local b=W.builder();local m=b:membrane(nil,'linear closure');local r=b:strand(m,{},'root');local c=b:strand(m,{},'capture');local k=T.evar('closure');local st=D.state(b:finish(),{T.fact('capture',k,r,c)})
+  local q=W.builder();local qm=q:membrane(nil,'invoke once');local ri=q:strand(qm,{},'r');local ci=q:strand(qm,{},'c');local out=q:strand(qm,{},'out');q:face(qm,{ri,ci},{out},'invoke');local K=T.var('K');local rule=D.rule(q:finish(),{requires={T.fact('capture',K,ri,ci)},retracts={T.fact('capture',K,ri,ci)}})
+  local prepared=assert(D.prepare(st,rule,{{from=r,to=ri},{from=c,to=ci}}));local next,d=D.commit(st,prepared);assert(next,d);assert(next:count('capture')==0,'one-shot invocation retained recurrence')
+  local again,why=D.commit(next,prepared);assert(not again and why=='stale-exact-authority','spent governed operation remained reusable')
+  return 'linear captured behaviour is one-shot because exact authority is consumed, not because Theory carries a callable grade'
+end

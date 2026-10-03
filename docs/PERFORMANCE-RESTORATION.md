@@ -14,7 +14,7 @@ verified exact Geometry centre (`worlds._kernel`)
         |
         | private read-only observation
         v
-public edge (`worlds`) / rebuildable acceleration (`worlds._compiled`)
+public edge (`worlds`) / rebuildable acceleration (`worlds._index`)
         |  outgoing structural fibres
         |  open-boundary positions, lazily where needed
         v
@@ -24,7 +24,7 @@ finite Question judgement (`worlds.query_factory`)
 replaceable search engine (`worlds.query_engine`)
 ```
 
-`worlds._compiled` is not public API and contributes no Geometry identity,
+`worlds._index` is not public API and contributes no Geometry identity,
 authority or matching policy. Its contents can be discarded and reconstructed
 from verified Geometry.
 

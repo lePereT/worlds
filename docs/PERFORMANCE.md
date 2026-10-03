@@ -22,7 +22,7 @@ model beside the kernel.
 The revised implementation separates the verified centre from disposable
 acceleration. `worlds._kernel` owns exact Geometry and exposes an internal
 read-only observation capability; it does not import, register or call
-`worlds._compiled`. The public `worlds` edge may eagerly prepare rebuildable
+`worlds._index`. The public `worlds` edge may eagerly prepare rebuildable
 outgoing indexes after Builder completion so first-query work remains bounded.
 Those indexes contain no Question policy and contribute nothing to Geometry
 identity.

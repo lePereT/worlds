@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.5 — small centre, disposable edge
+
+- Split the exact Geometry centre from local/live acceleration.
+- Unified query-source and live-boundary indexing in one disposable cache.
+- Collapsed retained Realisation and direct Construction into one exact join witness.
+- Keep `advance` as a derived public operation with exact fast refinements.
+- Make Membrane quotients remain forests and Construction images commute with surviving parent/placement incidence.
+
 ## 0.6.4 — real-time mechanics and deterministic work ratchets
 
 Worlds 0.6.4 preserves the 0.6.3 ontology and judgement laws. The release is a

@@ -1,0 +1,14 @@
+local W=require('worlds')
+local D=require('speculation.theory.occurrence_relative.development')
+local T=require('speculation.theory.occurrence_relative.theory')
+return function()
+  local b=W.builder();local m=b:membrane(nil,'state');local token=b:strand(m,{},'token');local flag=b:strand(m,{},'flag');local k=T.evar('k');local st=D.state(b:finish(),{T.fact('enabled',k,flag)})
+  local q=W.builder();local qm=q:membrane(nil,'guarded');local ti=q:strand(qm,{},'token.in');local out=q:strand(qm,{},'out');q:face(qm,{ti},{out},'guarded');local K=T.var('K');local F=T.var('F');local guarded=D.rule(q:finish(),{requires={T.fact('enabled',K,F)}})
+  local prepared=assert(D.prepare(st,guarded,{{from=token,to=ti}}))
+  local r=W.builder();local rm=r:membrane(nil,'disable');local fi=r:strand(rm,{},'flag.in');r:face(rm,{fi},{},'disable');local disable=D.rule(r:finish(),{requires={T.fact('enabled',K,fi)},retracts={T.fact('enabled',K,fi)}})
+  local s1,d=D.apply(st,disable,{{from=flag,to=fi}});assert(s1,d)
+  assert(s1.geometry:owns_strand(token),'guarded exact authority was accidentally consumed')
+  local final,why=D.commit(s1,prepared)
+  assert(not final and why=='unsatisfied-theory-requirement','prepared candidate survived invalidated Theory premise')
+  return 'prepared exact authority is insufficient when its non-scarce Theory premise has become false'
+end

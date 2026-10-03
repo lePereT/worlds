@@ -1,8 +1,8 @@
 # Research
 
-**Status: non-authoritative research ledger for Worlds 0.6.4.**
+**Status: non-authoritative research ledger for Worlds 0.6.5.**
 
-Worlds 0.6.4 leaves the verified Geometry laws unchanged and promotes only
+Worlds 0.6.5 leaves the verified Geometry laws unchanged and promotes only
 Construction and Presentation at the semantic edge.  This ledger records the
 substantially richer non-authoritative research programme which motivated that
 small production boundary.

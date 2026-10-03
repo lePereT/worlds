@@ -1,71 +1,81 @@
-# Worlds 0.6.4 — real-time performance and work-ratchet release
+# Worlds 0.6.5 — small centre, fast disposable edge
 
-Worlds is a small operational geometry in which exact identity, scarce authority, causal transformation and
-locality arise from incidence and open boundary.
+Worlds is a small operational geometry in which exact identity, scarce authority,
+causal transformation and locality arise from incidence and open boundary.
 
-This release keeps the 0.6.3 ontology and judgement laws while locking in the performance programme
-needed by Relay and real-time Fibers. The implementation now treats authentic Worlds values as certified immutable
-in-process objects, retains exact judgement evidence instead of recomputing it, and makes common live evolution
-proportional to the changed region where practical.
+0.6.5 keeps the real-time engineering earned in 0.6.4, but makes the
+implementation shape match the calculus again.
 
-The public centre remains:
+## Geometric centre
 
-```lua
-local W = require('worlds')
+`src/worlds/_centre.lua` owns only the exact carriers, Geometry validation,
+`boundary`, `join`, and Construction images.
 
--- ontology: Membrane / Point / Strand / Face / Geometry
--- operations: boundary / join / advance
+```text
+Membrane  Point  Strand  Face
+             ↓
+          Geometry
+
+boundary   join
 ```
 
-`join(parts, equations)` is still the reference Geometry composition law. `advance` is semantically
-`boundary(join(...))`; specialised paths are implementation accelerations checked against that definition.
+`join(parts,equations)` is the sole Geometry-changing law. `boundary` removes
+closed causal history while preserving exact future-relevant authority and its
+locality support.
 
-## Trusted in-process contract
+`advance` is deliberately derived at the public edge:
 
-Worlds validates new semantic claims, not immutable facts that it has already certified. Arrays exchanged with
-cooperating clients are borrowed read-only views rather than defensive copies. Callers must not mutate borrowed
-state while Worlds retains it. Private object state uses weak-key registries.
-
-See `docs/TRUST.md`.
-
-## Performance shape
-
-The implementation now avoids several forms of repeated mechanical work:
-
-- successful Questions retain their strict-join realisation for later Construction/commit use;
-- identity constructions are identity work;
-- DSU state is allocated only for carriers that need it;
-- Construction images use dense or sparse representation according to the shape where each is cheaper;
-- short-lived trusted developments use `W.development_builder()` and are validated once at `finish()`;
-- exact client tokens can be minted without performing a quotient join;
-- prepared live boundaries support frame-aware matching and local `advance`;
-- persistent boundary sections/disposable indexes preserve unchanged live structure across local evolution;
-- Close search rejects structurally impossible support pairs monotonically before deeper search.
-
-None of these structures is programme authority. They may be discarded and reconstructed from the exact Geometry.
-
-## Deterministic work ratchets
-
-Performance acceptance is based on work done, not elapsed time. `tests/work.lua` protects finite Question/search
-complexity in solver fuel quanta; `tests/mechanical-work.lua` protects allocation/materialisation/locality mechanics.
-The latter includes constant-work borrowed observations and identity joins, retained-realisation reuse, one-pass trusted
-development validation, and local indexed advance over a 10,000-Strand live frontier. Wall-clock files under `bench/`
-remain development evidence only.
-
-## Construction and Presentation
-
-```lua
-local Construction = require('worlds.construction')
-local Presentation = require('worlds.presentation')
+```text
+boundary(join({boundary(world), development}, equations))
 ```
 
-Construction is exact transport evidence for one materialisation; Presentation is ordered, non-authoritative ABI
-structure over selected exact open Strand occurrences. They remain deliberately outside the ontology.
+## Disposable acceleration
 
-## Validation
+The centre imports no cache, persistent sequence, local join, live delta or
+query engine.
 
-`make LUA=texlua full-check` is the release semantic/differential/work gate. `make LUA=texlua speculation-check` runs
-the broader experimental corpus. `CHECKS.md` records the current performance and regression shape.
+The edge contains three small mechanical modules:
 
-The current paired Fibers checkpoint reaches historical V1-class small Channel performance while retaining
-Worlds-based transactional laws, providing an application-shaped validation of this kernel profile.
+- `_fast.lua` — exact local-frame and single-Face refinements;
+- `_index.lua` — one rebuildable cache shared by query compilation and live boundaries;
+- `_persistent.lua` — persistent sequence/set mechanics for local boundary edits.
+
+A fast path either returns an exact result or `fallback`; the reference centre
+remains the specification. All acceleration can be discarded and rebuilt from
+Geometry.
+
+## Finite judgement
+
+Questions remain outside programme state. Matching/search may use counted
+incidence, factorisation, Hall feasibility and other disposable algorithms, but
+every constructive answer is checked by strict `join` before publication.
+
+A direct materialisation and a successful Question now retain the same exact
+`Construction` witness. `Realisation` remains only as compatibility API
+terminology, not as another value kind.
+
+## Trusted in-process performance
+
+Authentic Worlds values are certified immutable in-process objects. Borrowed
+arrays are read-only by contract rather than defensively copied. Short-lived
+developments may use `development_builder()`, and exact client tokens may be
+minted without quotient construction.
+
+These are implementation policies, not new semantic concepts.
+
+## Optional edge utilities
+
+`worlds.presentation` and `worlds.history` remain optional descriptive and
+observational libraries. Neither owns Geometry or authority.
+
+## Verification
+
+```sh
+make full-check
+```
+
+runs the semantic, adversarial, work-ratchet and differential gates. The
+Extended-Theory hostile lab in `speculation/theory/occurrence_relative` adds 48
+cross-domain pressures, including generated Construction-image incidence checks.
+
+See `docs/SHAPE.md`, `docs/LAWS.md`, `docs/PERFORMANCE.md`, and `docs/TRUST.md`.

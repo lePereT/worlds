@@ -1,0 +1,504 @@
+-- Worlds 0.6.5 verified centre -- exact Geometry, boundary and join.
+--
+-- This module contains the operational ontology only.  It knows nothing about
+-- query acceleration or matching search.  Live state is the exact open
+-- boundary; join is the sole geometry-changing operation and advance returns
+-- immediately to boundary normal form.  History is optional observation outside
+-- this centre.
+
+local W={}
+local PRIVATE={}
+local STATE=setmetatable({}, {__mode='k'})
+local DENSE=require('worlds._array')
+local Persistent=require('worlds._persistent')
+local EMPTY={}
+local function immutable() error('Worlds values are immutable',2) end
+local CarrierMT={__newindex=immutable,__metatable='Worlds carrier'}
+local GeometryMT={__newindex=immutable,__metatable='Worlds Geometry'}; GeometryMT.__index=GeometryMT
+local IMAGE_STATE=setmetatable({}, {__mode='k'})
+local ImageMT={__newindex=immutable,__metatable='Worlds construction image'}
+local finish_arrays
+
+local function new(kind,data,mt) local x=setmetatable({},mt or CarrierMT); data.kind=kind; STATE[x]=data; return x end
+local function expect(x,kind) local s=STATE[x]; assert(s and s.kind==kind,'expected Worlds '..kind); return s end
+local function dsu()
+  -- Untouched carriers are implicit singleton classes.  State is allocated only
+  -- when an equation actually joins two classes.
+  local p,rank={},{}
+  local X={}
+  function X:find(x)
+    local q=p[x]; if not q then return x end
+    while q~=p[q] do p[q]=p[p[q]]; q=p[q] end
+    local r=q; q=x
+    while p[q] and p[q]~=r do local n=p[q]; p[q]=r; q=n end
+    return r
+  end
+  function X:union(a,b)
+    a,b=self:find(a),self:find(b); if a==b then return a end
+    if not p[a] then p[a]=a; rank[a]=0 end
+    if not p[b] then p[b]=b; rank[b]=0 end
+    if rank[a]<rank[b] then a,b=b,a end
+    p[b]=a; if rank[a]==rank[b] then rank[a]=rank[a]+1 end
+    return a
+  end
+  return X
+end
+
+-- Exact carrier identity owns exact spatial ancestry.  Geometry membership can
+-- change under boundary projection; parent/depth/level-ancestor cannot.
+local function parent(m) return STATE[m].parent end
+local function place(x) return STATE[x].membrane end
+local function points(s) return STATE[s].points end
+local function inputs(f) return STATE[f].inputs end
+local function outputs(f) return STATE[f].outputs end
+local function depth(m) return STATE[m].depth end
+
+local function membrane(p,name)
+  return new('Membrane',{parent=p,depth=p and depth(p)+1 or 1,name=name})
+end
+local function point(m,name) return new('Point',{membrane=m,name=name}) end
+local function strand(m,ps,name) return new('Strand',{membrane=m,points=ps,name=name}) end
+local function face(m,ins,outs,name) return new('Face',{membrane=m,inputs=ins,outputs=outs,name=name}) end
+
+function W.kind(x) local s=STATE[x]; return s and string.lower(s.kind) or nil end
+function W.name(x) local s=STATE[x]; return s and s.name or nil end
+function W.parent(m) return expect(m,'Membrane').parent end
+function W.membrane(x) local s=STATE[x]; assert(s and (s.kind=='Point' or s.kind=='Strand' or s.kind=='Face'),'expected Point/Strand/Face'); return s.membrane end
+function W.points(s) return expect(s,'Strand').points end
+function W.inputs(f) return expect(f,'Face').inputs end
+function W.outputs(f) return expect(f,'Face').outputs end
+function W.is_geometry(x) local s=STATE[x]; return not not(s and s.kind=='Geometry') end
+
+local function image_domain_has(st,x)
+  local xs=STATE[x]; if not xs then return false end
+  local field=xs.kind=='Membrane' and 'mset' or xs.kind=='Point' and 'pset' or xs.kind=='Strand' and 'sset' or xs.kind=='Face' and 'fset'
+  if not field then return false end
+  for _,g in ipairs(st.parts) do if STATE[g][field][x] then return true end end
+  return false
+end
+ImageMT.__index=function(self,x)
+  local st=IMAGE_STATE[self]; if not st then return nil end
+  if st.full then return st.full[x] end
+  local y=st.changed[x]; if y~=nil then return y end
+  if st.consumed[x] then return nil end
+  if image_domain_has(st,x) then return x end
+  return nil
+end
+local function image_value(parts,changed,consumed,full)
+  local x=setmetatable({},ImageMT); IMAGE_STATE[x]={parts=parts,changed=changed or {},consumed=consumed or {},full=full}; return x
+end
+function W.is_image(x) return not not IMAGE_STATE[x] end
+
+local function builder(trusted)
+  local membranes,points_,strands_,faces_={},{},{},{}
+  local mset,sset={},{}
+  local finished=false
+  local methods={}
+  local function live() assert(not finished,'builder already finished') end
+  function methods:membrane(p,name)
+    live(); if p then assert(mset[p],'parent must belong to Geometry') end
+    local x=membrane(p,name); membranes[#membranes+1]=x; mset[x]=true; return x
+  end
+  function methods:point(m,name)
+    live(); assert(mset[m],'Point membrane must belong to Geometry')
+    local x=point(m,name); points_[#points_+1]=x; return x
+  end
+  function methods:strand(m,ps,name)
+    live(); ps=ps or {}
+    if not trusted then
+      assert(mset[m],'Strand membrane must belong to Geometry'); DENSE.length(ps,'Strand points')
+      for _,p in ipairs(ps) do local x=STATE[p]; assert(x and x.kind=='Point','Strand incidence expects Point') end
+    end
+    local x=strand(m,ps,name); strands_[#strands_+1]=x; sset[x]=true; return x
+  end
+  function methods:face(m,ins,outs,name)
+    live(); ins,outs=ins or {},outs or {}
+    if not trusted then
+      assert(mset[m],'Face membrane must belong to Geometry'); DENSE.length(ins,'Face inputs'); DENSE.length(outs,'Face outputs')
+      for _,s in ipairs(ins) do assert(sset[s],'Face input must belong to Geometry') end
+      for _,s in ipairs(outs) do assert(sset[s],'Face output must belong to Geometry') end
+    end
+    local x=face(m,ins,outs,name); faces_[#faces_+1]=x; return x
+  end
+  function methods:finish()
+    live(); finished=true
+    return finish_arrays(membranes,points_,strands_,faces_,true)
+  end
+  return setmetatable({}, {__index=methods,__newindex=immutable,__metatable='Worlds builder'})
+end
+function W.builder() return builder(false) end
+
+local function local_mem_chain(set,m,into)
+  while m and set[m] do if into[m] then return end; into[m]=true; m=parent(m) end
+end
+local function strand_local_carriers(b,s,into)
+  local_mem_chain(b.mset,place(s),into)
+  for _,p in ipairs(points(s)) do if b.pset[p] then into[p]=true; local_mem_chain(b.mset,place(p),into) end end
+end
+local function referenced_by_face(b,f)
+  local r={}; local_mem_chain(b.mset,place(f),r)
+  for _,s in ipairs(outputs(f)) do strand_local_carriers(b,s,r) end
+  return r
+end
+
+-- Geometry validation is shared by Builder and join.  The private soft path is
+-- used only by the Question engine to reject an exact candidate before yes(E).
+local function index_geometry(b,validate,soft)
+  local function fail(msg)
+    if soft then return nil,msg end
+    error(msg,3)
+  end
+  local producer,consumer={},{}
+  for _,f in ipairs(b.faces) do
+    local seen=validate and {} or nil
+    for _,s in ipairs(inputs(f)) do
+      if validate then
+        if seen[s] then return fail('Face consumes Strand twice') end
+        if consumer[s] then return fail('Strand has >1 consumer') end
+        seen[s]=true
+      end
+      consumer[s]=f
+    end
+    seen=validate and {} or nil
+    for _,s in ipairs(outputs(f)) do
+      if validate then
+        if seen[s] then return fail('Face produces Strand twice') end
+        if producer[s] then return fail('Strand has >1 producer') end
+        seen[s]=true
+      end
+      producer[s]=f
+    end
+  end
+  local order
+  if validate then
+    local out,indeg={},{}; for _,f in ipairs(b.faces) do out[f]={}; indeg[f]=0 end
+    for _,s in ipairs(b.strands) do local p,c=producer[s],consumer[s]; if p and c then out[p][#out[p]+1]=c; indeg[c]=indeg[c]+1 end end
+    local q={}; for _,f in ipairs(b.faces) do if indeg[f]==0 then q[#q+1]=f end end
+    local qi=1; order={}
+    while qi<=#q do local f=q[qi]; qi=qi+1; order[#order+1]=f; for _,g in ipairs(out[f]) do indeg[g]=indeg[g]-1; if indeg[g]==0 then q[#q+1]=g end end end
+    if #order~=#b.faces then return fail('causal Face/Strand incidence must be acyclic') end
+  end
+  local ingress,egress={},{}
+  for _,s in ipairs(b.strands) do if not producer[s] then ingress[#ingress+1]=s end; if not consumer[s] then egress[#egress+1]=s end end
+  local reached,rq={},{}; for _,s in ipairs(ingress) do local c=consumer[s]; if c and not reached[c] then reached[c]=true; rq[#rq+1]=c end end
+  local ri=1; while ri<=#rq do local f=rq[ri]; ri=ri+1; for _,s in ipairs(outputs(f)) do local c=consumer[s]; if c and not reached[c] then reached[c]=true; rq[#rq+1]=c end end end
+  local developable=true; for _,f in ipairs(b.faces) do if not reached[f] then developable=false; break end end
+
+  if validate then
+    local known={}; for _,s in ipairs(ingress) do strand_local_carriers(b,s,known) end
+    for _,f in ipairs(order) do if reached[f] then
+      local available={}; for _,s in ipairs(inputs(f)) do strand_local_carriers(b,s,available) end
+      local used=referenced_by_face(b,f); local mems,pts={},{}
+      for x in pairs(used) do if b.mset[x] then mems[#mems+1]=x elseif b.pset[x] then pts[#pts+1]=x end end
+      table.sort(mems,function(a,c) return depth(a)<depth(c) end)
+      local usable={}; for x in pairs(available) do if b.mset[x] then usable[x]=true end end
+      for _,m in ipairs(mems) do
+        if known[m] then
+          if not available[m] then return fail('existing locality used without causal input incidence') end
+        else
+          local p=parent(m); if not(p and usable[p]) then return fail('fresh locality must descend from causally available locality') end
+        end
+        usable[m]=true
+      end
+      for _,p in ipairs(pts) do
+        if known[p] then
+          if not available[p] then return fail('existing Point used without causal input incidence') end
+        elseif not usable[place(p)] then return fail('fresh Point must inhabit causally available/fresh locality') end
+      end
+      for x in pairs(used) do known[x]=true end
+    end end
+  end
+  return {producer=producer,consumer=consumer,ingress=ingress,egress=egress,developable=developable}
+end
+
+-- Boundary normality is a Geometry fact, not a query-index fact.  The centre
+-- computes only the locality closure needed by its own boundary law; structural
+-- grouping and postings remain disposable acceleration outside this module.
+local function boundary_closure(s)
+  local keepm,keepp={},{}
+  local function keep_membrane(m)
+    while m and s.mset[m] and not keepm[m] do keepm[m]=true; m=parent(m) end
+  end
+  for _,x in Persistent.iter(s.egress) do
+    keep_membrane(place(x))
+    for _,p in ipairs(points(x)) do
+      if s.pset[p] and not keepp[p] then keepp[p]=true; keep_membrane(place(p)) end
+    end
+  end
+  return keepm,keepp
+end
+local function is_boundary_normal(s)
+  if #s.faces~=0 or Persistent.length(s.egress)~=Persistent.length(s.strands) then return false end
+  local keepm,keepp=boundary_closure(s)
+  for _,m in Persistent.iter(s.membranes) do if not keepm[m] then return false end end
+  for _,p in Persistent.iter(s.points) do if not keepp[p] then return false end end
+  return true
+end
+
+finish_arrays=function(membranes,points_,strands_,faces_,validate,soft)
+  local b={membranes=membranes,points=points_,strands=strands_,faces=faces_,mset={},pset={},sset={},fset={}}
+  for _,x in ipairs(membranes) do b.mset[x]=true end; for _,x in ipairs(points_) do b.pset[x]=true end; for _,x in ipairs(strands_) do b.sset[x]=true end; for _,x in ipairs(faces_) do b.fset[x]=true end
+  local idx,why=index_geometry(b,validate,soft)
+  if not idx then return nil,why end
+  local data={membranes=membranes,points=points_,strands=strands_,faces=faces_,mset=b.mset,pset=b.pset,sset=b.sset,fset=b.fset,producer=idx.producer,consumer=idx.consumer,ingress=idx.ingress,egress=idx.egress,developable=idx.developable}
+  local g=new('Geometry',data,GeometryMT)
+  data.boundary_normal=is_boundary_normal(data)
+  return g
+end
+function GeometryMT:membranes() return Persistent.array(STATE[self].membranes) end
+function GeometryMT:points() return Persistent.array(STATE[self].points) end
+function GeometryMT:strands() return Persistent.array(STATE[self].strands) end
+function GeometryMT:faces() return Persistent.array(STATE[self].faces) end
+function GeometryMT:ingress() return Persistent.array(STATE[self].ingress) end
+function GeometryMT:egress() return Persistent.array(STATE[self].egress) end
+function GeometryMT:is_developable() return not not STATE[self].developable end
+function GeometryMT:owns_membrane(x) return not not STATE[self].mset[x] end
+function GeometryMT:owns_point(x) return not not STATE[self].pset[x] end
+function GeometryMT:owns_strand(x) return not not STATE[self].sset[x] end
+function GeometryMT:owns_face(x) return not not STATE[self].fset[x] end
+function GeometryMT:producer(s) local g=STATE[self]; assert(g.sset[s],'Strand must belong to Geometry'); return g.producer[s] end
+function GeometryMT:consumer(s) local g=STATE[self]; assert(g.sset[s],'Strand must belong to Geometry'); return g.consumer[s] end
+function GeometryMT:is_input(s) local g=STATE[self]; return not not g.sset[s] and g.producer[s]==nil end
+function GeometryMT:is_terminal(s) local g=STATE[self]; return not not g.sset[s] and g.consumer[s]==nil end
+
+-- The live projection preserves exact outgoing authority and only the owned
+-- locality closure needed to interpret it.  No causal history survives.
+function W.boundary(g)
+  local s=expect(g,'Geometry'); if s.boundary_normal then return g end; if s.live then return s.live end
+  local keepm,keepp=boundary_closure(s)
+  local membranes,points_={},{}; local mset,pset,sset={},{},{}
+  for _,m in Persistent.iter(s.membranes) do if keepm[m] then membranes[#membranes+1]=m; mset[m]=true end end
+  for _,p in Persistent.iter(s.points) do if keepp[p] then points_[#points_+1]=p; pset[p]=true end end
+  local strands_=s.egress; for _,x in ipairs(strands_) do sset[x]=true end
+  local data={membranes=membranes,points=points_,strands=strands_,faces=EMPTY,mset=mset,pset=pset,sset=sset,fset=EMPTY,producer=EMPTY,consumer=EMPTY,ingress=strands_,egress=strands_,developable=true,boundary_normal=true}
+  local live=new('Geometry',data,GeometryMT)
+  s.live=live; return live
+end
+
+-- Join ----------------------------------------------------------------------
+
+local function kosaraju(faces_,out,inn)
+  local seen,finish={},{}
+  for _,root in ipairs(faces_) do if not seen[root] then seen[root]=true; local stack={{v=root,i=1}}
+    while #stack>0 do local f=stack[#stack]; if not f.ns then f.ns={}; for n in pairs(out[f.v] or {}) do f.ns[#f.ns+1]=n end end; local n=f.ns[f.i]
+      if n then f.i=f.i+1; if not seen[n] then seen[n]=true; stack[#stack+1]={v=n,i=1} end else finish[#finish+1]=f.v; stack[#stack]=nil end
+    end
+  end end
+  local comp,groups={},{}
+  for i=#finish,1,-1 do local root=finish[i]; if not comp[root] then local id=#groups+1; local g={}; groups[id]=g; comp[root]=id; local q={root}; local qi=1
+    while qi<=#q do local v=q[qi]; qi=qi+1; g[#g+1]=v; for n in pairs(inn[v] or {}) do  if not comp[n] then comp[n]=id; q[#q+1]=n end end end
+  end end
+  local cyclic={}; for id,g in ipairs(groups) do cyclic[id]=#g>1 or not not((out[g[1]] or {})[g[1]]) end
+  return groups,comp,cyclic
+end
+local function lca_mem(reps,mparent)
+  local function path_(x) local a={}; while x do a[#a+1]=x; x=mparent[x] end; local r={}; for i=#a,1,-1 do r[#r+1]=a[i] end; return r end
+  local ps,max={},0; for _,r in ipairs(reps) do local p=path_(r); ps[#ps+1]=p; if #p>max then max=#p end end
+  local last=nil; for d=1,max do local x=ps[1][d]; if not x then break end; for i=2,#ps do if ps[i][d]~=x then return last end end; last=x end; return last
+end
+
+local function prepare_join(parts,equations,soft,trusted_arrays)
+  local nparts=trusted_arrays and #parts or DENSE.length(parts,'join parts'); assert(nparts>0,'join expects Geometry parts'); equations=equations or {}; if not trusted_arrays then DENSE.length(equations,'join equations') end
+  local owner={membrane={},point={},strand={},face={}}; local all={membrane={},point={},strand={},face={}}; local partstate={}
+  for pi,g in ipairs(parts) do
+    local st=expect(g,'Geometry'); partstate[pi]=st
+    for _,m in Persistent.iter(st.membranes) do assert(not owner.membrane[m],'Geometry parts must be disjoint'); owner.membrane[m]=pi; all.membrane[#all.membrane+1]=m end
+    for _,p in Persistent.iter(st.points) do assert(not owner.point[p],'Geometry parts must be disjoint'); owner.point[p]=pi; all.point[#all.point+1]=p end
+    for _,s in Persistent.iter(st.strands) do assert(not owner.strand[s],'Geometry parts must be disjoint'); owner.strand[s]=pi; all.strand[#all.strand+1]=s end
+    for _,f in ipairs(st.faces) do assert(not owner.face[f],'Geometry parts must be disjoint'); owner.face[f]=pi; all.face[#all.face+1]=f end
+  end
+  local md,pd,sd=dsu(),dsu(),dsu(); local manchor,panchor={},{}
+  local function reject(msg) if soft then return nil,msg end; error(msg,3) end
+  local function set_anchor(which,D,x,a) local r=D:find(x); local old=which[r]; if old and old~=a then return false end; which[r]=a; return true end
+  local function union_anchor(which,D,a,b) local ra,rb=D:find(a),D:find(b); if ra==rb then return ra end; local aa,ab=which[ra],which[rb]; if aa and ab and aa~=ab then return nil end; local r=D:union(ra,rb); which[ra]=nil; which[rb]=nil; which[r]=aa or ab; return r end
+  local function eq_mem(source,target)
+    while true do local so,to=owner.membrane[source],owner.membrane[target]; if not to then return source==target end
+      if so then if not union_anchor(manchor,md,source,target) then return false end else if not set_anchor(manchor,md,target,source) then return false end end
+      local tp=parent(target); if not(tp and owner.membrane[tp]) then return true end; source,target=parent(source),tp; if not source then return false end
+    end
+  end
+  local function eq_point(source,target)
+    local so,to=owner.point[source],owner.point[target]; if not to then return source==target end
+    if so then if not union_anchor(panchor,pd,source,target) then return false end else if not set_anchor(panchor,pd,target,source) then return false end end
+    return eq_mem(place(source),place(target))
+  end
+  local function eq_strand(source,target)
+    local so,to=owner.strand[source],owner.strand[target]
+    if not(so and to) then return nil,'equation endpoints must belong to joined Geometry' end
+    if source==target then return nil,'boundary equation joins distinct open occurrences' end
+    if partstate[so].consumer[source]~=nil then return nil,'from must be open egress' end
+    if partstate[to].producer[target]~=nil then return nil,'to must be open ingress' end
+    sd:union(source,target); if not eq_mem(place(source),place(target)) then return nil,'inconsistent boundary equation' end
+    local a,b=points(source),points(target); if #a~=#b then return nil,'inconsistent boundary equation' end
+    for i=1,#a do if owner.point[b[i]] then if not eq_point(a[i],b[i]) then return nil,'inconsistent boundary equation' end elseif a[i]~=b[i] then return nil,'inconsistent boundary equation' end end
+    return true
+  end
+  local from_seen,to_seen={},{}
+  for _,e in ipairs(equations) do
+    local from,to=e.from or e[1],e.to or e[2]
+    if from_seen[from] then return reject('open authority is scarce') end
+    if to_seen[to] then return reject('open requirement closes once') end
+    from_seen[from]=true; to_seen[to]=true
+    local ok,why=eq_strand(from,to); if not ok then return reject(why) end
+  end
+  return {owner=owner,all=all,partstate=partstate,md=md,pd=pd,sd=sd,manchor=manchor,panchor=panchor}
+end
+
+local function do_join(parts,equations,soft,trusted_arrays)
+  local prepared,why=prepare_join(parts,equations,soft,trusted_arrays)
+  if not prepared then return nil,why end
+  local owner,all,partstate=prepared.owner,prepared.all,prepared.partstate
+  local md,pd,sd=prepared.md,prepared.pd,prepared.sd
+  local manchor,panchor=prepared.manchor,prepared.panchor
+  local smeta={}; for _,s in ipairs(all.strand) do local r=sd:find(s); local x=smeta[r]; if not x then x={members={}}; smeta[r]=x end; x.members[#x.members+1]=s; local g=partstate[owner.strand[s]]; local p,c=g.producer[s],g.consumer[s]; if p then x.producer=p end; if c then x.consumer=c end end
+  local out,inn={},{ }; for _,f in ipairs(all.face) do out[f]={}; inn[f]={} end
+  for _,x in pairs(smeta) do local p,c=x.producer,x.consumer; if p and c and not out[p][c] then out[p][c]=true; inn[c][p]=true end end
+  local groups,group_of,cyclic=kosaraju(all.face,out,inn)
+
+  local mclasses,members={},{}; for _,m in ipairs(all.membrane) do local r=md:find(m); if not members[r] then members[r]={}; mclasses[#mclasses+1]=r end; members[r][#members[r]+1]=m end
+  local mparent={}; for _,r in ipairs(mclasses) do local pr=nil; for _,m in ipairs(members[r]) do local p=parent(m); if p and owner.membrane[p] then local rr=md:find(p); if rr~=r then pr=rr end elseif p and not owner.membrane[p] then manchor[r]=manchor[r] or m end end; mparent[r]=pr end
+  -- The induced Membrane quotient must still be a forest.  Identifying a
+  -- Membrane with one of its strict descendants would otherwise leave a cycle
+  -- in the quotient parent relation.  Such a boundary equation is structurally
+  -- inconsistent; do not let materialisation hide it by reusing stale frame
+  -- incidence.
+  do
+    local mark={}
+    local function visit(r)
+      if mark[r]==1 then return false end
+      if mark[r]==2 then return true end
+      mark[r]=1
+      local p=mparent[r]
+      if p and not visit(p) then return false end
+      mark[r]=2
+      return true
+    end
+    for _,r in ipairs(mclasses) do
+      if not visit(r) then
+        if soft then return nil,'inconsistent boundary equation' end
+        error('inconsistent boundary equation',3)
+      end
+    end
+  end
+  local mout={}; local function frame_member(xs,own) for _,x in ipairs(xs) do if own[x]==1 then return x end end end
+  local function frame_membrane_with_parent(xs,p)
+    for _,x in ipairs(xs) do if owner.membrane[x]==1 and parent(x)==p then return x end end
+  end
+  local function mat_mem(r)
+    if mout[r] then return mout[r] end
+    local a=manchor[r]; if a and not owner.membrane[a] then mout[r]=a; return a end
+    local pr=mparent[r]; local p=pr and mat_mem(pr) or nil
+    -- Reuse a frame Membrane only when its literal parent incidence already
+    -- matches the quotient parent.  If a parent class has been identified, the
+    -- child is structurally affected and must be rematerialised (or another
+    -- compatible frame member may be reused).
+    local base=frame_membrane_with_parent(members[r],p)
+    if base then mout[r]=base; return base end
+    local ex=members[r][1]; local x=membrane(p,STATE[ex].name); mout[r]=x; return x
+  end
+  for _,r in ipairs(mclasses) do mat_mem(r) end
+
+  local pclasses,pmembers={},{}; for _,p in ipairs(all.point) do local r=pd:find(p); if not pmembers[r] then pmembers[r]={}; pclasses[#pclasses+1]=r end; pmembers[r][#pmembers[r]+1]=p end
+  local pout={}; for _,r in ipairs(pclasses) do
+    local a=panchor[r]
+    if a and not owner.point[a] then pout[r]=a else
+      local base=nil
+      for _,x in ipairs(pmembers[r]) do if owner.point[x]==1 and mout[md:find(place(x))]==place(x) then base=x; break end end
+      if base then pout[r]=base else local ex=pmembers[r][1]; pout[r]=point(mout[md:find(place(ex))],STATE[ex].name) end
+    end
+  end
+  local function pimage(p) return owner.point[p] and pout[pd:find(p)] or p end
+
+  local sreps={}; for r in pairs(smeta) do sreps[#sreps+1]=r end
+  local sout={}; for _,r in ipairs(sreps) do local x=smeta[r]; local p,c=x.producer,x.consumer; if not(p and c and group_of[p]==group_of[c] and cyclic[group_of[p]]) then
+    local base=frame_member(x.members,owner.strand); local can_reuse=base~=nil
+    if can_reuse and mout[md:find(place(base))]~=place(base) then can_reuse=false end
+    if can_reuse then for _,q in ipairs(points(base)) do if pimage(q)~=q then can_reuse=false; break end end end
+    if can_reuse then sout[r]=base else local ex=x.members[1]; local ps={}; for i,q in ipairs(points(ex)) do ps[i]=pimage(q) end; sout[r]=strand(mout[md:find(place(ex))],ps,STATE[ex].name) end
+  end end
+  local function simage(s) return sout[sd:find(s)] end
+
+  local fout={}; for gi,grp in ipairs(groups) do
+    if cyclic[gi] then
+      local locs={}; for _,f in ipairs(grp) do locs[#locs+1]=md:find(place(f)) end; local joint=lca_mem(locs,mparent)
+      local ins,outs_,si,so={},{},{},{}; local function add(xs,seen,x) if x and not seen[x] then seen[x]=true; xs[#xs+1]=x end end
+      for _,f in ipairs(grp) do for _,s in ipairs(inputs(f)) do add(ins,si,simage(s)) end; for _,s in ipairs(outputs(f)) do add(outs_,so,simage(s)) end end
+      local jf=face(mout[joint],ins,outs_,'joint'); for _,f in ipairs(grp) do fout[f]=jf end
+    else
+      local f=grp[1]; local can_reuse=owner.face[f]==1 and mout[md:find(place(f))]==place(f); if can_reuse then for _,s in ipairs(inputs(f)) do if simage(s)~=s then can_reuse=false; break end end end; if can_reuse then for _,s in ipairs(outputs(f)) do if simage(s)~=s then can_reuse=false; break end end end
+      if can_reuse then fout[f]=f else local ins,outs_={},{}; for i,s in ipairs(inputs(f)) do ins[i]=simage(s) end; for i,s in ipairs(outputs(f)) do outs_[i]=simage(s) end; fout[f]=face(mout[md:find(place(f))],ins,outs_,STATE[f].name) end
+    end
+  end
+
+  local rms,rps,rss,rfs={},{},{},{}; local seenm,seenp,seens,seenf={},{},{},{}
+  local function addm(m) if not m or seenm[m] then return end; local path_={}; while m and not seenm[m] do path_[#path_+1]=m; m=parent(m) end; for i=#path_,1,-1 do local x=path_[i]; seenm[x]=true; rms[#rms+1]=x end end
+  for _,r in ipairs(mclasses) do addm(mout[r]) end
+  for _,r in ipairs(pclasses) do local p=pout[r]; if owner.point[p] or panchor[r]==nil then if not seenp[p] then seenp[p]=true; rps[#rps+1]=p; addm(place(p)) end end end
+  for _,r in ipairs(sreps) do local s=sout[r]; if s and not seens[s] then seens[s]=true; rss[#rss+1]=s; addm(place(s)) end end
+  for _,f in ipairs(all.face) do local x=fout[f]; if x and not seenf[x] then seenf[x]=true; rfs[#rfs+1]=x; addm(place(x)) end end
+  local geom,why=finish_arrays(rms,rps,rss,rfs,true,soft)
+  if not geom then return nil,why end
+  -- Small joins are cheaper with an explicit image table.  Large/frame-local
+  -- joins retain the sparse identity-by-default image so unchanged authority
+  -- does not become O(frame) retained state.
+  local carrier_count=#all.membrane+#all.point+#all.strand+#all.face
+  if carrier_count<=4096 then
+    local full={}
+    for _,m in ipairs(all.membrane) do full[m]=mout[md:find(m)] end
+    for _,p in ipairs(all.point) do full[p]=pout[pd:find(p)] end
+    for _,s in ipairs(all.strand) do full[s]=simage(s) end
+    for _,f in ipairs(all.face) do full[f]=fout[f] end
+    return geom,image_value(parts,nil,nil,full)
+  end
+  local changed,consumed={},{}
+  local function note(x,y) if y==nil then consumed[x]=true elseif y~=x then changed[x]=y end end
+  for _,m in ipairs(all.membrane) do note(m,mout[md:find(m)]) end
+  for _,p in ipairs(all.point) do note(p,pout[pd:find(p)]) end
+  for _,s in ipairs(all.strand) do note(s,simage(s)) end
+  for _,f in ipairs(all.face) do note(f,fout[f]) end
+  return geom,image_value(parts,changed,consumed)
+end
+
+local function identity_join(parts,equations,trusted_arrays)
+  equations=equations or {}
+  local nparts=trusted_arrays and #parts or DENSE.length(parts,'join parts')
+  local nequations=trusted_arrays and #equations or DENSE.length(equations,'join equations')
+  if nparts==1 and nequations==0 then
+    local g=parts[1]; expect(g,'Geometry'); return g,image_value(parts)
+  end
+end
+
+function W.join(parts,equations)
+  local g,image=identity_join(parts,equations,false); if g then return g,image end
+  return do_join(parts,equations,false,false)
+end
+
+-- Private judgement support: test one already-enumerated exact candidate against
+-- the same quotient construction and Geometry laws as public join.  This is not
+-- a third public semantic operation; the Question judgement uses it before exposing yes(E).
+PRIVATE.try_join=function(parts,equations)
+  local g,image=identity_join(parts,equations,true); if g then return g,image end
+  return do_join(parts,equations,true,true)
+end
+
+PRIVATE.parent=parent
+PRIVATE.place=place
+PRIVATE.points=points
+PRIVATE.inputs=inputs
+PRIVATE.outputs=outputs
+PRIVATE.name=function(x) local st=STATE[x]; return st and st.name or nil end
+PRIVATE.new_strand=strand
+PRIVATE.new_face=face
+PRIVATE.image=image_value
+PRIVATE.mint_point=function(m,name) expect(m,'Membrane'); return point(m,name) end
+PRIVATE.development_builder=function() return builder(true) end
+PRIVATE.depth=depth
+PRIVATE.geometry=function(g) return expect(g,'Geometry') end
+PRIVATE.make_geometry=function(data) return new('Geometry',data,GeometryMT) end
+PRIVATE.make_boundary=function(data)
+  data.faces=EMPTY; data.fset=EMPTY; data.producer=EMPTY; data.consumer=EMPTY
+  data.ingress=data.strands; data.egress=data.strands; data.developable=true; data.boundary={}; data.boundary_normal=true
+  return new('Geometry',data,GeometryMT)
+end
+
+return {public=W,private=PRIVATE}

@@ -10,9 +10,10 @@ by strict `join(parts, E)` without constructing a staging product.
 
 `cuts_internal.lua` exercises the distinct same-Geometry case. It first establishes
 a product Geometry deliberately, then asks `Query.close({product}, ...)` to close
-selected cuts inside that already-existing Geometry. This is not asserted to be
-equivalent to direct multi-part closure; locality establishment can make the two
-judgements differ.
+selected cuts inside that already-existing Geometry. This is not definitionally the same judgement as direct multi-part closure: one
+asks about an already-materialised Geometry and the other about the original
+disjoint parts. Particular examples may agree or differ according to the exact
+locality and incidence already established.
 
 The experiments deliberately create no `Cut` carrier. A cut is a temporary Lua
 selection of existing ingress/egress Strand occurrences. The semantic operations

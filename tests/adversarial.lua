@@ -170,4 +170,4 @@ do
   eq(decided(W.solve(world,pat(true))),'no')
 end
 
-print('PASS 0.6.4 adversarial',n,'assertions')
+print('PASS 0.6.5 adversarial',n,'assertions')

@@ -2,8 +2,7 @@
 
 # Speculation
 
-Worlds 0.6.4 keeps the verified Geometry centre and 0.6.3 semantic laws unchanged and promotes only
-Construction and Presentation at the semantic edge.  The substantially richer
+Worlds 0.6.5 keeps the verified Geometry laws small while moving acceleration back to a disposable edge. Construction remains exact materialisation evidence; Presentation remains optional descriptive utility.  The substantially richer
 dimensional/inter-World work below remains speculation.
 
 Earlier experiments often treated quantum phase, tensor cycles, overlapping
@@ -32,6 +31,17 @@ make speculation-check
 The corpus has no Python/SymPy dependency. Experiments which mention a known
 symbolic elimination result compare against a pre-determined result rather than
 calling an external CAS.
+
+## Theory programme
+
+`theory/` contains experiments about the scope and laws of Theory itself rather
+than new Geometry. The current `theory/occurrence_relative/` hostile lab asks
+whether non-scarce Theory may refer directly to exact Points, Strands,
+Membranes and Faces, with exact rebasing through Construction and projection
+without retained history. It deliberately keeps authority, causality, support
+and scarcity in Geometry.
+
+See `theory/README.md`.
 
 ## Modern programme
 

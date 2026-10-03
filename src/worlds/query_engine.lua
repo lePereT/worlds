@@ -21,7 +21,7 @@
 return function(W,K,Compiled)
 assert(type(W)=='table' and type(W.join)=='function' and type(W.boundary)=='function','Worlds Query engine requires exact Worlds kernel')
 K=K or require('worlds._kernel').private
-Compiled=Compiled or require('worlds._compiled')(K)
+Compiled=Compiled or require('worlds._index')(K)
 local M={}
 local EMPTY={}
 local relation=require('worlds.query_relation')

@@ -14,13 +14,13 @@
 -- Search strategy lives in replaceable engines outside the verified centre.
 local QSTATE=setmetatable({}, {__mode='k'})
 local RSTATE=setmetatable({}, {__mode='k'})
-local ZSTATE=setmetatable({}, {__mode='k'})
+local Construction=require('worlds._construction')
 local EVIDENCE=setmetatable({}, {__mode='k'})
 return function(W,K)
 assert(type(W)=='table' and type(W.is_geometry)=='function','Worlds Question requires exact Worlds kernel')
-K=K or require('worlds._kernel').private
-local Compiled=require('worlds._compiled')(K)
-local Boundary=require('worlds._boundary')(K)
+K=K or require('worlds._edge').private
+local Index=require('worlds._index')(K)
+local Compiled=Index
 local DENSE=require('worlds._array')
 local Persistent=require('worlds._persistent')
 local MatchEngine=require('worlds.query_engine')(W,K,Compiled)
@@ -29,30 +29,17 @@ local M={}
 local function immutable() error('Worlds values are immutable',2) end
 local QuestionMT={__newindex=immutable,__metatable='Worlds Question'}; QuestionMT.__index=QuestionMT
 local RefutationMT={__newindex=immutable,__metatable='Worlds Refutation'}; RefutationMT.__index=RefutationMT
-local RealisationMT={__newindex=immutable,__metatable='Worlds Realisation'}; RealisationMT.__index=RealisationMT
 local SPEC={sources=true,targets=true,required_sources=true,required_targets=true,admissible=true,seeds=true}
 local function question_state(x) return type(x)=='table' and QSTATE[x] or nil end
 local function refutation_state(x) return type(x)=='table' and RSTATE[x] or nil end
-local function realisation_state(x) return type(x)=='table' and ZSTATE[x] or nil end
 local function question_value(st)
   local x=setmetatable({},QuestionMT); QSTATE[x]=st; return x
 end
 local function refutation_value(st)
   local x=setmetatable({},RefutationMT); RSTATE[x]=st; return x
 end
-local function realisation_value(st)
-  local x=st.public
-  if x then return x end
-  x=setmetatable({},RealisationMT); ZSTATE[x]=st; st.public=x; return x
-end
-local function retain_realisation(st) EVIDENCE[st.equations]=st; return st end
-local function realisation_boundary(st)
-  if st.boundary~=nil then return st.boundary or nil end
-  if st.source and K.geometry(st.source).boundary_normal then
-    st.boundary=Boundary.after(st.source,st.result)
-  else st.boundary=false end
-  return st.boundary or nil
-end
+local function retain_realisation(x) EVIDENCE[x:equations()]=x; return x end
+local function realisation_boundary(x) return x:boundary() end
 local function membership(xs) local set={}; for _,x in ipairs(xs or {}) do set[x]=true end; return set end
 local function canonical_subset(pos,selected,label)
   if selected==nil then return nil,true end
@@ -142,11 +129,12 @@ local function wrap_solve(raw,question,deferred)
     end
     local parts=join_parts(q)
     local geometry,image_or_why,source_position
-    if q.form=='match' and not q.internal and Boundary.has(q.source) then source_position=function(from) return Boundary.position(q.source,'strand',from) end end
+    if q.form=='match' and not q.internal and Index.has_boundary(q.source) then source_position=function(from) return Index.boundary_position(q.source,'strand',from) end end
     if source_position then geometry,image_or_why=K.try_match_join(q.source,q.target,equations,source_position)
     else geometry,image_or_why=K.try_join(parts,equations) end
     if not geometry then return nil,image_or_why end
-    return {parts=parts,equations=equations,result=geometry,image=image_or_why,source=(q.form=='match' and not q.internal and Boundary.has(q.source)) and q.source or nil}
+    local source=(q.form=='match' and not q.internal and Index.has_boundary(q.source)) and q.source or nil
+    return Construction.new{parts=parts,equations=equations,result=geometry,image=image_or_why,boundary_fn=source and function() return Index.boundary_after(source,geometry) end or nil}
   end
   local function no(reason)
     final_no=refutation(public_question(),reason)
@@ -179,20 +167,21 @@ local function wrap_solve(raw,question,deferred)
   return solve
 end
 
-function M.is_realisation(x) return realisation_state(x)~=nil end
-function RealisationMT:parts() return assert(realisation_state(self),'Worlds Realisation required').parts end
-function RealisationMT:equations() return assert(realisation_state(self),'Worlds Realisation required').equations end
-function RealisationMT:result() return assert(realisation_state(self),'Worlds Realisation required').result end
-function RealisationMT:image(carrier) return assert(realisation_state(self),'Worlds Realisation required').image[carrier] end
-function RealisationMT:boundary() return realisation_boundary(assert(realisation_state(self),'Worlds Realisation required')) end
-function M.realisation_image(x) return assert(realisation_state(x),'Worlds Realisation required').image end
-function M.realisation_boundary(x) return realisation_boundary(assert(realisation_state(x),'Worlds Realisation required')) end
-function M.realisation_for(parts,equations)
-  local st=EVIDENCE[equations]
-  if not st or #parts~=#st.parts then return nil end
-  for i=1,#parts do if parts[i]~=st.parts[i] then return nil end end
-  return realisation_value(st)
+function M.is_construction(x) return Construction.is(x) end
+function M.construction_image(x) return Construction.image_table(x) end
+function M.construction_boundary(x) assert(Construction.is(x),'Worlds Construction required'); return x:boundary() end
+function M.construction_for(parts,equations)
+  local x=EVIDENCE[equations]
+  if not x then return nil end
+  local ps=x:parts(); if #parts~=#ps then return nil end
+  for i=1,#parts do if parts[i]~=ps[i] then return nil end end
+  return x
 end
+-- 0.6.4 compatibility names: same Construction value, no second witness kind.
+M.is_realisation=M.is_construction
+M.realisation_image=M.construction_image
+M.realisation_boundary=M.construction_boundary
+M.realisation_for=M.construction_for
 
 function M.is_refutation(x) return refutation_state(x)~=nil end
 function RefutationMT:question() return assert(refutation_state(self),'Worlds Refutation required').question end
@@ -419,17 +408,18 @@ local function complete_solve(source,target,seeds)
   return wrap_solve(raw,nil,{kernel=W,form='match',source=qsource,target=target,seeds=normal,internal=internal,parts=internal and {target} or {qsource,target}})
 end
 
-local function take_realisation_state(parts,equations)
-  local st=EVIDENCE[equations]
-  if not st or #parts~=#st.parts then return nil end
-  for i=1,#parts do if parts[i]~=st.parts[i] then return nil end end
+local function take_realisation(parts,equations)
+  local x=EVIDENCE[equations]
+  if not x then return nil end
+  local ps=x:parts(); if #parts~=#ps then return nil end
+  for i=1,#parts do if parts[i]~=ps[i] then return nil end end
   EVIDENCE[equations]=nil
-  return st
+  return x
 end
 
 return M,{
   complete_solve=complete_solve,
-  take_realisation=take_realisation_state,
+  take_realisation=take_realisation,
   realisation_boundary=realisation_boundary,
 }
 end

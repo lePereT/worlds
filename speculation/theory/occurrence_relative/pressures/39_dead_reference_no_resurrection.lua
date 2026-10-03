@@ -1,0 +1,9 @@
+local W=require('worlds')
+local D=require('speculation.theory.occurrence_relative.development')
+local T=require('speculation.theory.occurrence_relative.theory')
+return function()
+  local b=W.builder();local m=b:membrane(nil,'state');local dead=b:strand(m,{},'to consume');local live=b:strand(m,{},'survivor');local st=D.state(b:finish(),{T.fact('related',dead,live)})
+  local q=W.builder();local qm=q:membrane(nil,'consume');local i=q:strand(qm,{},'in');q:face(qm,{i},{},'consume');local next,d=D.apply(st,D.rule(q:finish(),{}),{{from=dead,to=i}});assert(next,d)
+  assert(next.geometry:owns_strand(live),'survivor vanished');assert(next:count('related')==0,'fact mentioning annihilated occurrence survived projection')
+  return 'annihilated carrier references disappear; occurrence-relative Theory cannot resurrect closed authority'
+end

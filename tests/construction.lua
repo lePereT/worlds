@@ -95,4 +95,42 @@ do
   fails(function() Construction.join({}, {}) end,'join expects Geometry parts')
 end
 
+
+-- Frame reuse is legal only when parent/placement incidence survives the
+-- quotient literally.  Identifying a frame parent must therefore rematerialise
+-- a surviving child (and its local Point/Strand) under the chosen parent image
+-- rather than leaving stale ancestry behind.
+do
+  local b=W.builder()
+  local source_root=b:membrane(nil,'parent-image.source')
+  local target_root=b:membrane(nil,'parent-image.target')
+  local child=b:membrane(target_root,'parent-image.child')
+  local p=b:point(child,'parent-image.p')
+  local source=b:strand(source_root,{},'parent-image.source.s')
+  local target=b:strand(target_root,{},'parent-image.target.s')
+  local survivor=b:strand(child,{p},'parent-image.survivor')
+  local g=b:finish()
+  local c=Construction.join({g},{{from=source,to=target}})
+  local merged=assert(c:image(source)); eq(merged,c:image(target),'joined roots share one image')
+  local cs=assert(c:image(survivor)); local cm=W.membrane(cs)
+  eq(W.parent(cm),W.membrane(merged),'surviving child is reparented through the quotient image')
+  local cp=assert(c:image(p)); eq(W.membrane(cp),cm,'local Point placement follows rematerialised child')
+  eq(W.points(cs)[1],cp,'surviving Strand ordered Point incidence follows Point image')
+end
+
+
+-- Identifying a Membrane with one of its strict descendants cannot produce a
+-- finite parent forest.  Reject the boundary equation rather than hiding the
+-- quotient cycle behind stale frame incidence or recursing during materialisation.
+do
+  local b=W.builder()
+  local root=b:membrane(nil,'cycle.root')
+  local child=b:membrane(root,'cycle.child')
+  local grandchild=b:membrane(child,'cycle.grandchild')
+  local target=b:strand(root,{},'cycle.target')
+  local source=b:strand(grandchild,{},'cycle.source')
+  local g=b:finish()
+  fails(function() Construction.join({g},{{from=source,to=target}}) end,'inconsistent boundary equation')
+end
+
 print('PASS construction',n,'assertions')

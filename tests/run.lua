@@ -354,4 +354,4 @@ do
   ok(not pcall(function() W.advance(world,dev,{[2]={from=source,to=input}}) end),'sparse advance equations must be rejected before a local fast path can accept them')
 end
 
-print('PASS 0.6.4',n,'assertions')
+print('PASS 0.6.5',n,'assertions')

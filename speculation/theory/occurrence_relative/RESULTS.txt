@@ -1,0 +1,14 @@
+PASS X01 carrier-relative Theory            carrier-relative Theory refers to Point/Strand/Membrane/Face without granting authority
+PASS X02 governance split/merge             split/merge pairing is template Theory, not post-result grouping bookkeeping
+PASS X03 factored independent edits         alpha-only Theory existentials preserve same-root record pairing while independent member authorities revise independently
+PASS X04 support remains Geometry           hidden support ancestry remains ordinary Geometry; extended Theory needs no Region/support signature
+PASS X05 recursion remains Geometry         recursive feedback stays exact open Geometry; no reachability/LCA Theory summary is needed
+PASS X06 full validation before hiding      Theory validates the complete construction before hiding; consumed incoherence cannot vanish into an empty boundary
+PASS X07 fixed-size renewal                 128 renewals leave one current relation and two live authorities: no hidden history chain
+PASS X08 derived transition observation     the effect-like answer is a query over complete before/after Theory, not retained effect state
+PASS X09 overlap conflict                   overlap/conflict is derived from occurrence-relative facts; no effect/conflict carrier is stored
+PASS X10 fresh Theory existentials          Theory-local existentials freshen per construction without becoming Worlds authority or global identity
+PASS X11 exact rebase through SCC           arbitrary carrier references rebase through the actual Worlds quotient, including SCC Face contraction
+PASS X12 no Theory self-justification       requirements are checked only against prior current Theory; consequences cannot self-justify their operation
+PASS X13 exact staleness dominates          Theory description never substitutes equal-looking authority: exact Worlds staleness remains authoritative
+extended theory lab: 13/13 pressures passed

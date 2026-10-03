@@ -253,13 +253,17 @@ do
     local live=W.boundary(g); ok(live:owns_strand(x.auth),'unselected exact authority should remain literally open')
 
     local src2,cuts2,y=transfer_source(); local hand,hc,hx=handoff_target()
-    local tag2=close_cuts({src2,hand},{cuts2.control,cuts2.authority,hc.control,hc.authority},{
+    local tag2,g_product=close_cuts({src2,hand},{cuts2.control,cuts2.authority,hc.control,hc.authority},{
         {from=y.control,to=hx.control},{from=y.auth,to=hx.auth},
     })
-    eq(tag2,'no','establishing the disjoint product first may make a later internal Handoff closure unlawful')
+    eq(tag2,'yes','an already-established product may close the same exact Handoff when its current locality permits it')
+    local live_product=W.boundary(g_product)
+    ok(not live_product:owns_strand(y.auth),'product-first selected authority cut must consume caller occurrence')
+    ok(egress_named(live_product,'authority.out')~=nil,'product-first target may expose fresh authority through ordinary Geometry')
 
-    -- The direct judgement is different: locality is established by the closure itself,
-    -- not before it. This is exactly why Query.close(parts, ...) must exist.
+    -- Direct multi-part closure remains a distinct judgement form: it asks about the
+    -- original disjoint parts rather than a previously materialised product. This
+    -- example is intentionally lawful by both routes; no Cut/Handoff type is needed.
     local q=Q.close({src2,hand},{
         sources={y.control,y.auth}, targets={hx.control,hx.auth},
         required_sources={y.control,y.auth}, required_targets={hx.control,hx.auth},
