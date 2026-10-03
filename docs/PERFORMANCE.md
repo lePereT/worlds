@@ -22,7 +22,7 @@ model beside the kernel.
 The revised implementation separates the verified centre from disposable
 acceleration. `worlds._kernel` owns exact Geometry and exposes an internal
 read-only observation capability; it does not import, register or call
-`worlds._index`. The public `worlds` edge may eagerly prepare rebuildable
+`worlds._compiled`. The public `worlds` edge may eagerly prepare rebuildable
 outgoing indexes after Builder completion so first-query work remains bounded.
 Those indexes contain no Question policy and contribute nothing to Geometry
 identity.
@@ -141,3 +141,12 @@ ratchets require that:
 
 These are release correctness gates. Wall-clock benchmark snapshots remain
 non-portable development evidence and are not pass/fail thresholds.
+
+## 0.6.5 centre/edge rule
+
+Performance code is allowed to be clever; programme meaning is not.  The verified
+centre contains the reference Geometry laws only.  `_fast`, `_boundary`,
+`_persistent`, `_compiled`, and query engines are disposable accelerators whose
+results are differentially checked against strict `join` / `boundary`.  A fast
+path may decline with `fallback`; it may never define a new lawful result.
+

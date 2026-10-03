@@ -70,7 +70,8 @@ end
 local function node_get(x,i)
   while x and not x.leaf do
     local n=size(x.left)
-    if i<=n then x=x.left else i=i-n; x=x.right end
+    if i<=n then x=x.left else i=i-n
+    x=x.right end
   end
   return x and x.base[x.a+i-1] or nil
 end

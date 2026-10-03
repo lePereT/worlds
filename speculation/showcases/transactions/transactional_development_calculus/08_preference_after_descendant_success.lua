@@ -1,0 +1,10 @@
+local H=require('speculation.showcases.transactions.transactional_development_calculus.common')
+local ok,eq,count=H.counter()
+ local C=H.C
+local left=C.or_else(C.always(true),C.always(false))
+local only_false=H.branch({{false,'ok'}})
+local p=C.bind(left,only_false)
+ eq(#p:family().items,1)
+ eq(H.out_value(p,1),'ok')
+ eq(#p:family().edges,0)
+print('PASS td 08: failed preferred ancestor leaves no preference residue ('..count()..')')

@@ -1,12 +1,56 @@
 # Changelog
 
-## 0.6.5 — small centre, disposable edge
+## 0.6.6 — Construction correspondence and Lua 5.1 compatibility
 
-- Split the exact Geometry centre from local/live acceleration.
-- Unified query-source and live-boundary indexing in one disposable cache.
-- Collapsed retained Realisation and direct Construction into one exact join witness.
-- Keep `advance` as a derived public operation with exact fast refinements.
-- Make Membrane quotients remain forests and Construction images commute with surviving parent/placement incidence.
+### Construction evidence
+
+- `Construction:correspondence()` exposes immutable, non-authoritative evidence
+  of the exact quotient established by the ordinary join materialisation.
+- Source classes remain available even when the identified class is later
+  annihilated and has no result carrier.
+- Correspondences compose across staged constructions with genuinely fresh
+  later parts and support source-relative endpoint mating.
+- `Construction:image` is unchanged and remains the simple surviving-carrier
+  projection. `W.join` keeps its existing return values and does not retain
+  correspondence evidence.
+- Public Construction-class values are opaque evidence, are not Worlds carriers
+  and confer no authority.
+
+### Lua 5.1 / LuaJIT repair
+
+- persistent boundary sections no longer rely on table `__len`, `__pairs` or
+  proxy-array iteration semantics;
+- opaque persistent sequences retain path-based local updates internally;
+- public Geometry sections are cached ordinary dense arrays with normal Lua 5.1
+  `#`, numeric-index and `ipairs` behaviour;
+- internal fast/query paths use explicit persistent-sequence operations;
+- all shipped Lua is checked for post-5.1 syntax.
+
+### Speculation showcases
+
+- removes the superseded `modern/computation_boundary_lab` and
+  `modern/transactional_computation_lab`;
+- promotes the restrictive Theory contract/lifecycle work to
+  `speculation/showcases/theory/`;
+- promotes the package-first finite transaction, recurrence, stable Judgement
+  and Geometry-viability laboratories to `speculation/showcases/transactions/`;
+- adds `make showcase-check` as their executable verification entry point.
+
+### Ontology and compatibility
+
+No carrier or Geometry-changing primitive is added. Membrane, Point, Strand and
+Face remain the complete Worlds ontology; `boundary`, `join` and `advance` keep
+their existing semantic laws. The 0.6.4/0.6.5 public surface remains compatible.
+
+## 0.6.5 candidate — small centre, disposable speed
+
+- Restores the verified geometric centre to **350 lines** (369 including the exact construction-image witness), below the 0.6.1 kernel budget of 387 lines.
+- Moves local-frame matching and single-Face live specialisation out of `_kernel.lua` into disposable `_fast.lua`; strict `join` remains their reference/fallback law.
+- Keeps persistent boundary, compiled query, and borrowed-view acceleration at the edge for realtime use.
+- Retains the refined quotient mechanics: cyclic induced Membrane quotients are rejected, and affected frame Membranes/Points are rematerialised so Construction images commute with surviving incidence.
+- Adds an architectural size gate: the verified centre may not exceed the 0.6.1 line budget and may not import fast/query acceleration.
+- Public behaviour remains compatible with the 0.6.4 candidate surface; Construction, Presentation, History and query machinery remain edge facilities rather than geometric ontology.
+
 
 ## 0.6.4 — real-time mechanics and deterministic work ratchets
 

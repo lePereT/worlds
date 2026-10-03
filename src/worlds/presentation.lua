@@ -11,7 +11,8 @@ local DENSE=require('worlds._array')
 local Presentation={}
 local STATE=setmetatable({}, {__mode='k'})
 local function immutable() error('Worlds values are immutable',2) end
-local MT={__newindex=immutable,__metatable='Worlds Presentation'}; MT.__index=MT
+local MT={__newindex=immutable,__metatable='Worlds Presentation'}
+MT.__index=MT
 
 local function state(x) return type(x)=='table' and STATE[x] or nil end
 
@@ -24,7 +25,8 @@ local function normal_rows(g,rows)
   for _,row in ipairs(rows) do
     DENSE.length(row,'Presentation row')
     for _,s in ipairs(row) do
-      assert(W.kind(s)=='strand' and g:owns_strand(s),'Presentation coordinate must be an exact Strand of the ambient Geometry')
+      assert(W.kind(s)=='strand' and g:owns_strand(s),
+          'Presentation coordinate must be an exact Strand of the ambient Geometry')
       assert(is_open(g,s),'Presentation coordinate must be open in the ambient Geometry')
     end
   end
@@ -32,7 +34,9 @@ local function normal_rows(g,rows)
 end
 
 local function value(st)
-  local x=setmetatable({},MT); STATE[x]=st; return x
+  local x=setmetatable({},MT)
+  STATE[x]=st
+  return x
 end
 
 function Presentation.new(geometry,rows)
@@ -54,17 +58,20 @@ end
 
 function MT:row(i)
   local st=assert(state(self),'Worlds Presentation required')
-  assert(type(i)=='number' and i>=1 and i%1==0 and i<=#st.rows,'Presentation row index out of range')
+  assert(type(i)=='number' and i>=1 and i%1==0 and i<=#st.rows,
+      'Presentation row index out of range')
   return st.rows[i]
 end
 
 function MT:transport(construction)
   local st=assert(state(self),'Worlds Presentation required')
-  assert(Construction.is_construction(construction),'Presentation transport requires Worlds Construction')
+  assert(Construction.is_construction(construction),
+      'Presentation transport requires Worlds Construction')
 
   local authorised=false
   for _,g in ipairs(construction:parts()) do
-    if g==st.ambient then authorised=true; break end
+    if g==st.ambient then authorised=true
+    break end
   end
   assert(authorised,'Presentation ambient must be an exact part of the Construction')
 
@@ -74,7 +81,8 @@ function MT:transport(construction)
     local out={}
     for _,s in ipairs(row) do
       local mapped=construction:image(s)
-      if mapped and W.kind(mapped)=='strand' and target:owns_strand(mapped) and is_open(target,mapped) then
+      if mapped and W.kind(mapped)=='strand' and target:owns_strand(mapped) and is_open(target,
+          mapped) then
         out[#out+1]=mapped
       end
     end

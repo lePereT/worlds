@@ -9,12 +9,17 @@ package.path='./src/?.lua;./src/?/init.lua;'..package.path
 local W=require('worlds')
 
 local n=0
-local function ok(x,msg) n=n+1; assert(x,msg or 'assertion failed') end
-local function eq(a,b,msg) n=n+1; assert(a==b,(msg or 'neq')..': '..tostring(a)..' ~= '..tostring(b)) end
+local function ok(x,msg) n=n+1
+assert(x,msg or 'assertion failed') end
+local function eq(a,b,msg) n=n+1
+assert(a==b,(msg or 'neq')..': '..tostring(a)..' ~= '..tostring(b)) end
 
 -- Common face-free factor geometry R(x,y), S(y,z).
-local b=W.builder(); local m=b:membrane(nil,'factor-scope')
-local x=b:point(m,'x'); local y=b:point(m,'y'); local z=b:point(m,'z')
+local b=W.builder()
+local m=b:membrane(nil,'factor-scope')
+local x=b:point(m,'x')
+local y=b:point(m,'y')
+local z=b:point(m,'z')
 local R=b:strand(m,{x,y},'R(x,y)')
 local S=b:strand(m,{y,z},'S(y,z)')
 local G=b:finish()
@@ -37,7 +42,9 @@ for xv=0,1 do
     end
   end
 end
-local keys={}; for k in pairs(bool_out) do keys[#keys+1]=k end; table.sort(keys)
+local keys={}
+for k in pairs(bool_out) do keys[#keys+1]=k end
+table.sort(keys)
 eq(table.concat(keys,','),'00,01,10','pre-determined Boolean projection is NAND')
 
 -- Tropical/min-plus elimination over the same x-y-z shape.
@@ -51,7 +58,10 @@ for i=1,2 do
     TC[i][k]=best
   end
 end
-eq(TC[1][1],4); eq(TC[1][2],0); eq(TC[2][1],2); eq(TC[2][2],2)
+eq(TC[1][1],4)
+eq(TC[1][2],0)
+eq(TC[2][1],2)
+eq(TC[2][2],2)
 
 -- Sum-product elimination over the identical dependency shape.
 local PA={{1,2},{3,4}}
@@ -64,7 +74,10 @@ for i=1,2 do
     PC[i][k]=total
   end
 end
-eq(PC[1][1],19); eq(PC[1][2],22); eq(PC[2][1],43); eq(PC[2][2],50)
+eq(PC[1][1],19)
+eq(PC[1][2],22)
+eq(PC[2][1],43)
+eq(PC[2][2],50)
 
 -- Pre-determined nonlinear algebraic elimination.
 --   y^2 = x
@@ -89,4 +102,5 @@ for yv=-5,5 do
 end
 
 print('modern theory algebras: '..n..' assertions passed')
-print('  one Point-Strand scope supports Boolean exists, min-plus, sum-product and fixed polynomial elimination')
+print('  one Point-Strand scope supports Boolean exists, min-plus, ' ..
+    'sum-product and fixed polynomial elimination')

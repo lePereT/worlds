@@ -12,7 +12,8 @@ local function ok(x,msg) assert(x,msg) end
 local function eq(a,b,msg) assert(a==b,(msg or 'neq')..': '..tostring(a)..' ~= '..tostring(b)) end
 
 -- Rigid chemical vocabulary: species are Theory/domain identities, not molecule identity.
-local vb=G.builder(); local vm=vb:membrane(nil,'chemical-vocabulary')
+local vb=G.builder()
+local vm=vb:membrane(nil,'chemical-vocabulary')
 local SA=vb:point(vm,'species:A')
 local SB=vb:point(vm,'species:B')
 local SC=vb:point(vm,'species:C')
@@ -23,11 +24,14 @@ vb:finish()
 
 -- Build an exact vessel boundary. Each molecule is one scarce Strand occurrence.
 local function vessel(species_by_compartment)
-  local b=G.builder(); local root=b:membrane(nil,'vessel')
+  local b=G.builder()
+  local root=b:membrane(nil,'vessel')
   local membranes={}
   local strands={}
   for comp,items in pairs(species_by_compartment) do
-    local m=b:membrane(root,comp); membranes[comp]=m; strands[comp]={}
+    local m=b:membrane(root,comp)
+    membranes[comp]=m
+    strands[comp]={}
     for i,p in ipairs(items) do strands[comp][i]=b:strand(m,{p},comp..':'..G.name(p)..':'..i) end
   end
   local g=b:finish()
@@ -36,7 +40,9 @@ end
 
 -- Local elementary reaction 2A + B -> C. All reactants and product share one
 -- relative local reaction membrane. Cut therefore requires co-local offers.
-local rb=G.builder(); local rr=rb:membrane(nil,'reaction-context'); local rc=rb:membrane(rr,'local-compartment')
+local rb=G.builder()
+local rr=rb:membrane(nil,'reaction-context')
+local rc=rb:membrane(rr,'local-compartment')
 local rA1=rb:strand(rc,{SA},'A1')
 local rA2=rb:strand(rc,{SA},'A2')
 local rB =rb:strand(rc,{SB},'B')
@@ -45,7 +51,9 @@ rb:face(rc,{rA1,rA2,rB},{rC},'2A+B->C')
 local R1=rb:finish()
 
 -- C + D -> E, similarly local.
-local sb=G.builder(); local sr=sb:membrane(nil,'reaction-context'); local sc=sb:membrane(sr,'local-compartment')
+local sb=G.builder()
+local sr=sb:membrane(nil,'reaction-context')
+local sc=sb:membrane(sr,'local-compartment')
 local sC=sb:strand(sc,{SC},'C')
 local sD=sb:strand(sc,{SD},'D')
 local sE=sb:strand(sc,{SE},'E')
@@ -67,7 +75,8 @@ do
   eq(w:membrane(rc),m.cell,'reaction local membrane must map to the cell')
   local _,img=O.commit(w)
   eq(live:size(),1,'three reactants replaced by one product')
-  local c=img.strands[rC]; ok(live:contains(c),'C must be live')
+  local c=img.strands[rC]
+  ok(live:contains(c),'C must be live')
   eq(G.points(c)[1],SC,'product species C')
   eq(G.membrane(c),m.cell,'product remains in reacting compartment')
 end
@@ -76,11 +85,12 @@ end
 --    membranes, the one-locality reaction pattern has no Cut witness.
 do
   local _,live,_,_,s=vessel({left={SA,SA},right={SB}})
-  eq(O.one(live,R1,{offers={s.left[1],s.left[2],s.right[1]}}),nil,'local reaction must reject split compartments')
+  eq(O.one(live,R1,{offers={s.left[1],s.left[2],s.right[1]}}),nil,
+      'local reaction must reject split compartments')
 end
 
 -- 4. Open-network composition: close the intermediate C between R1 and R2.
---    External interface should be 2A+B+D -> E; C disappears from the boundary.
+--    External interface should be 2A+B+D -> E, C disappears from the boundary.
 do
   local network,img=A.close({R1,R2},{{rC,sC}})
   eq(#network:ingress(),4,'network ingress is 2A+B+D')
@@ -94,7 +104,8 @@ do
   ok(w,'composed reaction network should execute from external reactants')
   local _,oi=O.commit(w)
   eq(live:size(),1,'all external reactants replaced by final product')
-  local e=oi.strands[out]; ok(live:contains(e),'E live after network execution')
+  local e=oi.strands[out]
+  ok(live:contains(e),'E live after network execution')
   eq(G.points(e)[1],SE)
 end
 
@@ -102,8 +113,10 @@ end
 -- Pattern has source and destination child membranes. It consumes the molecule
 -- from source plus a destination SITE authority, then reissues SITE and creates
 -- a molecule in destination. The Face itself lives at their LCA (pattern root).
-local tb=G.builder(); local tr=tb:membrane(nil,'transport-context')
-local tsrc=tb:membrane(tr,'src'); local tdst=tb:membrane(tr,'dst')
+local tb=G.builder()
+local tr=tb:membrane(nil,'transport-context')
+local tsrc=tb:membrane(tr,'src')
+local tdst=tb:membrane(tr,'dst')
 local tin=tb:strand(tsrc,{SA},'A@src')
 local sitein=tb:strand(tdst,{SITE},'site@dst')
 local tout=tb:strand(tdst,{SA},'A@dst')

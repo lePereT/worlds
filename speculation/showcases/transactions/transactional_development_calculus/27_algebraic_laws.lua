@@ -1,0 +1,17 @@
+local H=require('speculation.showcases.transactions.transactional_development_calculus.common')
+local ok,eq,count=H.counter()
+ local C=H.C
+local function same(a,b,msg) eq(a:root(),b:root(),msg)
+ eq(a:bytes(),b:bytes(),msg) end
+same(C.or_(C.always('a'),C.always('b')),C.or_(C.always('b'),C.always('a')),'or commutativity')
+local x=H.branch({{true,'x'},{false,'y'}})
+ same(C.bind(x,C.identity_value()),x,'bind right identity')
+local a=C.identity_value()
+ local b=H.branch({{true,false},{false,true}})
+ local c=H.branch({{true,'T'},{false,'F'}})
+same(C.bind(C.bind(a,b),c),C.bind(a,C.bind(b,c)),'pure bind associativity')
+local aa,bb,cc=H.identity_operation(),H.identity_operation(),H.identity_operation()
+local left=C.bind(C.bind(aa,bb,{captures={{from=1,to=1}}}),cc,{captures={{from=1,to=1}}})
+local right=C.bind(aa,C.bind(bb,cc,{captures={{from=1,to=1}}}),{captures={{from=1,to=1}}})
+same(left,right,'authority bind associativity')
+print('PASS td 27: extensional operators satisfy canonical composition laws ('..count()..')')

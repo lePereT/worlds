@@ -65,7 +65,7 @@ obligations.
 
 ## Mechanical refinement obligations
 
-The 0.6.5 fast paths are refinement obligations rather than additional semantic
+The 0.6.4 fast paths are refinement obligations rather than additional semantic
 laws. In particular, future formalisation should permit proof that:
 
 - retained Question realisation is exactly the strict join already certified by

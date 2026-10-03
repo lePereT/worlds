@@ -1,6 +1,6 @@
 -- Quantum Worlds toy experiment
 -- Runs against Worlds 0.6.1. Quantum state/observables live in Theory-like
--- side data; Worlds itself supplies exact identity, local authority and causality.
+-- side data, Worlds itself supplies exact identity, local authority and causality.
 
 package.path = './src/?.lua;./src/?/init.lua;' .. package.path
 local S = require('speculation.support')
@@ -10,7 +10,8 @@ local G = S.G
 local EPS = 1e-10
 local function approx(a,b,eps) return math.abs(a-b) <= (eps or EPS) end
 local function check(x,msg) assert(x,msg) end
-local function check_approx(a,b,msg) assert(approx(a,b), (msg or 'not approximately equal') .. ': '..tostring(a)..' ~= '..tostring(b)) end
+local function check_approx(a,b,msg) assert(approx(a,b), (msg or 'not approximately equal') ..
+    ': '..tostring(a)..' ~= '..tostring(b)) end
 
 -- ---------------------------------------------------------------------------
 -- Minimal finite-dimensional quantum Theory helpers (real matrices suffice
@@ -18,7 +19,8 @@ local function check_approx(a,b,msg) assert(approx(a,b), (msg or 'not approximat
 -- ---------------------------------------------------------------------------
 local function mat(rows)
   local r={}
-  for i=1,#rows do r[i]={}; for j=1,#rows[i] do r[i][j]=rows[i][j] end end
+  for i=1,#rows do r[i]={}
+  for j=1,#rows[i] do r[i][j]=rows[i][j] end end
   return r
 end
 local I2 = mat{{1,0},{0,1}}
@@ -26,17 +28,24 @@ local X  = mat{{0,1},{1,0}}
 local Z  = mat{{1,0},{0,-1}}
 
 local function mscale(a,A)
-  local R={}; for i=1,#A do R[i]={}; for j=1,#A[i] do R[i][j]=a*A[i][j] end end; return R
+  local R={}
+  for i=1,#A do R[i]={}
+  for j=1,#A[i] do R[i][j]=a*A[i][j] end end
+  return R
 end
 local function madd(A,B)
-  local R={}; for i=1,#A do R[i]={}; for j=1,#A[i] do R[i][j]=A[i][j]+B[i][j] end end; return R
+  local R={}
+  for i=1,#A do R[i]={}
+  for j=1,#A[i] do R[i][j]=A[i][j]+B[i][j] end end
+  return R
 end
 local function mmul(A,B)
   local R={}
   for i=1,#A do
     R[i]={}
     for j=1,#B[1] do
-      local s=0; for k=1,#B do s=s+A[i][k]*B[k][j] end
+      local s=0
+      for k=1,#B do s=s+A[i][k]*B[k][j] end
       R[i][j]=s
     end
   end
@@ -54,11 +63,19 @@ local function kron(A,B)
   return R
 end
 local function mv(A,v)
-  local r={}; for i=1,#A do local s=0; for j=1,#v do s=s+A[i][j]*v[j] end; r[i]=s end; return r
+  local r={}
+  for i=1,#A do local s=0
+  for j=1,#v do s=s+A[i][j]*v[j] end
+  r[i]=s end
+  return r
 end
-local function norm2(v) local s=0; for i=1,#v do s=s+v[i]*v[i] end; return s end
+local function norm2(v) local s=0
+for i=1,#v do s=s+v[i]*v[i] end
+return s end
 local function max_abs_matrix(A)
-  local m=0; for i=1,#A do for j=1,#A[i] do m=math.max(m,math.abs(A[i][j])) end end; return m
+  local m=0
+  for i=1,#A do for j=1,#A[i] do m=math.max(m,math.abs(A[i][j])) end end
+  return m
 end
 local function msub(A,B) return madd(A,mscale(-1,B)) end
 
@@ -109,10 +126,15 @@ check(W.is_geometry(geom),'measurement geometry must be valid')
 check(qA~=qB,'quantum systems must retain exact distinct identity')
 
 local function ancestor_chain(m)
-  local r={}; while m do r[m]=true; m=G.parent(m) end; return r
+  local r={}
+  while m do r[m]=true
+  m=G.parent(m) end
+  return r
 end
 local function lca(a,b)
-  local aa=ancestor_chain(a); while b do if aa[b] then return b end; b=G.parent(b) end
+  local aa=ancestor_chain(a)
+  while b do if aa[b] then return b end
+  b=G.parent(b) end
 end
 check(lca(A_mem,B_mem)==root,'joint state support should be the membrane join/LCA')
 
@@ -126,8 +148,10 @@ check(face_is_local(A_face,A_mem),'Alice Face must consume/produce only Alice-lo
 check(face_is_local(B_face,B_mem),'Bob Face must consume/produce only Bob-local authority')
 
 -- Stronger structural check: Alice has no exact incidence with qB, Bob none qA.
-for _,s in ipairs(G.inputs(A_face)) do for _,p in ipairs(G.points(s)) do check(p~=qB,'Alice must not consume Bob identity/authority') end end
-for _,s in ipairs(G.inputs(B_face)) do for _,p in ipairs(G.points(s)) do check(p~=qA,'Bob must not consume Alice identity/authority') end end
+for _,s in ipairs(G.inputs(A_face)) do for _,p in ipairs(G.points(s)) do check(p~=qB,
+    'Alice must not consume Bob identity/authority') end end
+for _,s in ipairs(G.inputs(B_face)) do for _,p in ipairs(G.points(s)) do check(p~=qA,
+    'Bob must not consume Alice identity/authority') end end
 
 -- ---------------------------------------------------------------------------
 -- Quantum Theory state at the join.
@@ -170,7 +194,8 @@ for x=1,2 do
   for _,a in ipairs{-1,1} do
     local vals={}
     for y=1,2 do
-      local p=0; for _,b in ipairs{-1,1} do p=p+joint_probability(singlet,Aobs[x],Bobs[y],a,b) end
+      local p=0
+      for _,b in ipairs{-1,1} do p=p+joint_probability(singlet,Aobs[x],Bobs[y],a,b) end
       vals[y]=p
     end
     check_approx(vals[1],vals[2],'Alice marginal must not depend on Bob setting')
@@ -183,7 +208,8 @@ for y=1,2 do
   for _,b in ipairs{-1,1} do
     local vals={}
     for x=1,2 do
-      local p=0; for _,a in ipairs{-1,1} do p=p+joint_probability(singlet,Aobs[x],Bobs[y],a,b) end
+      local p=0
+      for _,a in ipairs{-1,1} do p=p+joint_probability(singlet,Aobs[x],Bobs[y],a,b) end
       vals[x]=p
     end
     check_approx(vals[1],vals[2],'Bob marginal must not depend on Alice setting')
@@ -195,7 +221,8 @@ end
 -- Verify every setting pair defines a proper probability distribution.
 for x=1,2 do for y=1,2 do
   local total=0
-  for _,a in ipairs{-1,1} do for _,b in ipairs{-1,1} do total=total+joint_probability(singlet,Aobs[x],Bobs[y],a,b) end end
+  for _,a in ipairs{-1,1} do for _,b in ipairs{-1,1} do total=total+joint_probability(singlet,
+      Aobs[x],Bobs[y],a,b) end end
   check_approx(total,1,'joint probabilities must sum to one')
 end end
 

@@ -1,0 +1,33 @@
+local W=require('worlds')
+local Construction=require('worlds.construction')
+local T=require('speculation.extended_theory_lab.theory')
+return function()
+  local a=W.builder()
+  local am=a:membrane(nil,'left producer')
+  local boot=a:strand(am,{},'boot')
+  local supplied=a:strand(am,{},'supplied')
+  a:face(am,{boot},{supplied},'produce-left')
+  local ag=a:finish()
+  local b=W.builder()
+  local bm=b:membrane(nil,'binary operation')
+  local left=b:strand(bm,{},'left')
+  local right=b:strand(bm,{},'right')
+  local out=b:strand(bm,{},'out')
+  b:face(bm,{left,right},{out},'combine')
+  local bg=b:finish()
+  local X=T.var('X')
+  local rule=T.rule(bg,{requires={T.fact('right-property',right,X)},
+      asserts={T.fact('result-property',out,X)}})
+  local c=Construction.join({ag,bg},{{from=supplied,to=left}})
+  local residual,why=T.rebase_rule(rule,c)
+  assert(residual,why)
+  local g=c:result()
+  local ri=c:image(right)
+  local oo=c:image(out)
+  assert(g:is_input(ri),'unsupplied argument did not remain open')
+  assert(g:is_terminal(oo),'result ceased to be an open result')
+  assert(#residual.requires==1 and residual.requires[1].args[1]==ri,
+      'residual Theory requirement did not follow exact construction')
+  return 'partial completion is residual open Geometry plus residual ' ..
+      'Theory premise; no PartialApplication species is needed'
+end

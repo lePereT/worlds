@@ -9,7 +9,7 @@
 -- 21. For TWO generated identities, simultaneous renaming has two orbits:
 --     same and distinct. The invariant Hilbert space is therefore 2D. Exact
 --     identity RELATION survives while allocator names disappear.
--- 22. A rigid exported reference reduces the gauge group to its stabiliser; one
+-- 22. A rigid exported reference reduces the gauge group to its stabiliser, one
 --     fresh name then has two possible relational orbits: equal-to-reference and
 --     other. This recovers the reference-relative distinguishability seen in
 --     actual Worlds Cut.
@@ -42,7 +42,9 @@ end
 local function orbit(seed, action, group)
   local seen={}
   for _,g in ipairs(group or perms) do seen[action(g,seed)]=true end
-  local out={}; for x in pairs(seen) do out[#out+1]=x end; table.sort(out)
+  local out={}
+  for x in pairs(seen) do out[#out+1]=x end
+  table.sort(out)
   return out
 end
 local act1=function(g,i) return key1(g[i]) end
@@ -54,7 +56,7 @@ local act2=function(g,ij) return key2(g[ij[1]],g[ij[2]]) end
 local o1=orbit(1,act1)
 check(#o1==3,'S3 acts transitively on raw fresh allocator labels')
 -- Group average P_G|1>: each target receives 2/6=1/3. Norm^2=1/3 before
--- normalisation; normalised invariant state has 1/sqrt(3) on every label.
+-- normalisation, normalised invariant state has 1/sqrt(3) on every label.
 local amp_raw_avg=1/3
 local norm2_avg=3*amp_raw_avg*amp_raw_avg
 check_approx(norm2_avg,1/3)
@@ -67,7 +69,8 @@ local dim_single_invariant=1
 -- S3: each target gets one even and one odd permutation contribution.
 local sign_amp={0,0,0}
 for _,g in ipairs(perms) do sign_amp[g[1]]=sign_amp[g[1]]+parity(g)/6 end
-for i=1,3 do check_approx(sign_amp[i],0,'no sign-sector vector in one-name S3 permutation representation') end
+for i=1,3 do check_approx(sign_amp[i],0,
+    'no sign-sector vector in one-name S3 permutation representation') end
 
 -- ---------------------------------------------------------------------------
 -- 21. TWO GENERATED IDENTITIES: SAME/DISTINCT ARE TWO GAUGE-INVARIANT ORBITS
@@ -76,8 +79,10 @@ local same_orbit=orbit({1,1},act2)
 local distinct_orbit=orbit({1,2},act2)
 check(#same_orbit==3,'diagonal pair orbit has 3 raw labels')
 check(#distinct_orbit==6,'off-diagonal ordered pair orbit has 6 raw labels')
-local same_set={}; for _,k in ipairs(same_orbit) do same_set[k]=true end
-for _,k in ipairs(distinct_orbit) do check(not same_set[k],'same/distinct permutation orbits disjoint') end
+local same_set={}
+for _,k in ipairs(same_orbit) do same_set[k]=true end
+for _,k in ipairs(distinct_orbit) do check(not same_set[k],
+    'same/distinct permutation orbits disjoint') end
 local dim_pair_invariant=2
 -- Normalised orbit states are orthogonal because their raw supports are disjoint.
 local same_amp=1/math.sqrt(#same_orbit)
@@ -137,8 +142,10 @@ for _=1,n do quotient_amp=quotient_amp + invariant_component_amp*raw_basis_to_or
 check_approx(quotient_amp,1,'normalised orbit state maps isometrically to quotient basis')
 -- Alternating coefficients with zero sum are killed by Q.
 local alt={1,-1,1,-1,1,-1}
-local alt_norm=0; local alt_sum=0
-for _,x in ipairs(alt) do alt_norm=alt_norm+x*x; alt_sum=alt_sum+x end
+local alt_norm=0
+local alt_sum=0
+for _,x in ipairs(alt) do alt_norm=alt_norm+x*x
+alt_sum=alt_sum+x end
 check(alt_norm>0 and alt_sum==0)
 local alt_q=alt_sum/math.sqrt(n)
 check_approx(alt_q,0,'pure label mode orthogonal to invariant orbit is removed by gauge reduction')
@@ -166,4 +173,5 @@ print('   invariant topology dimension = '..dim_membrane_pair_invariant)
 print('')
 print('24. Gauge reduction:')
 print('   quotient-before-quantisation ~= invariant-subspace quantisation for trivial gauge sector')
-print('   the correct late map is E^dagger with 1/sqrt(|orbit|) normalisation, not naive many-to-one identification')
+print('   the correct late map is E^dagger with 1/sqrt(|orbit|) ' ..
+    'normalisation, not naive many-to-one identification')

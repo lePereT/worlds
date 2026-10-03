@@ -1,0 +1,8 @@
+local H=require('speculation.showcases.transactions.transactional_geometry_viability.common')
+ local ok,eq,count=H.counter()
+local p=H.one_root('f',{H.authority_identity_context(1)})
+ local r=p:root('f')
+local state,sources=H.state_two(false,true)
+ local fam=H.Search.family(p,r,1)
+eq(H.Judgement.first_stable(p,r,state,H.empty_knowledge(),{sources[1]},fam),'Hit','unselected live authority was incorrectly required or consumed by eligibility')
+print('PASS gv 19: recursive Judgement selects exact sources without requiring the whole live boundary ('..count()..')')

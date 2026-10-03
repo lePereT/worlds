@@ -1,34 +1,94 @@
-local function read(p) local f=assert(io.open(p,'rb')); local s=f:read('*a'); f:close(); return s end
-local centre,edge,facade=read('src/worlds/_centre.lua'),read('src/worlds/_edge.lua'),read('src/worlds.lua')
-local fast,index=read('src/worlds/_fast.lua'),read('src/worlds/_index.lua')
-local judgement,engine,relation=read('src/worlds/query_factory.lua'),read('src/worlds/query_engine.lua'),read('src/worlds/query_relation.lua')
-local construction=read('src/worlds/_construction.lua')
+-- Worlds centre/edge architecture guard.
+-- Behaviour belongs to the semantic and differential suites. This file protects only
+-- dependency direction, authority ownership and a format-invariant centre-size ratchet.
 
--- Centre: exact Geometry only.
-for _,x in ipairs{'worlds%._fast','worlds%._index','query_factory','query_engine','factorise','hall%-deficiency','required target'} do
-  assert(not centre:match(x),'edge/search leaked into centre: '..x)
+local function read(path)
+    local file = assert(io.open(path, 'rb'))
+    local source = file:read('*a')
+    file:close()
+    return source
 end
-assert(centre:match('function W%.boundary') and centre:match('function W%.join'),'centre must own boundary and join')
-assert(not centre:match('function W%.advance') and not centre:match('function W%.solve'),'derived live/search operations belong at edge')
-assert(centre:match('PRIVATE%.geometry=function'),'edge observation capability missing')
 
--- Edge: disposable acceleration only.
-assert(edge:match("require%('worlds%._centre'%)") and edge:match("require%('worlds%._fast'%)"),'edge must wrap centre with fast paths')
-assert(facade:match("require%('worlds%._edge'%)") and facade:match("require%('worlds%._index'%)"),'public facade must own acceleration')
-assert(fast:match("return nil,'fallback'"),'fast paths must expose reference fallback')
-for _,x in ipairs{'required target','admissible','Question sources'} do assert(not index:match(x),'query policy leaked into index: '..x) end
-assert(index:match('function M%.surface') and index:match('function M%.boundary_after'),'shared disposable index incomplete')
+local function compact(source)
+    return (source:gsub('%s+', ''))
+end
 
--- One exact materialisation witness.
-assert(construction:match('Worlds Construction') and construction:match('function MT:image'),'Construction witness missing')
-assert(not construction:match('Worlds Realisation'),'Realisation must not be a second witness type')
-assert(judgement:match('Construction=require'),'Question must retain the shared Construction witness')
+local function contains(source, text)
+    return source:find(text, 1, true) ~= nil
+end
 
--- Judgement/search split.
-assert(judgement:match('function M%.match') and judgement:match('function M%.close'),'finite Question forms missing')
-assert(judgement:match('K%.try_join'),'Question must validate exact witnesses with centre join')
-assert(not engine:match('K%.try_join'),'search engine must not own quotient lawfulness')
-assert(engine:match('coroutine%.create') and engine:match('local function factorise'),'replaceable finite search missing')
-assert(relation:match('local function hall') and relation:match('local function allocations'),'scarce relation solver missing')
-assert(not relation:match('worlds%._centre') and not relation:match('try_join'),'relation solver must remain Geometry-free')
-print('PASS shape 0.6.5 centre / disposable edge')
+local function lacks(source, text, message)
+    assert(not contains(source, text), message)
+end
+
+local facade = compact(read('src/worlds.lua'))
+local core = compact(read('src/worlds/_kernel.lua'))
+local query_edge = compact(read('src/worlds/_query.lua'))
+local query_public = compact(read('src/worlds/query.lua'))
+local judgement = compact(read('src/worlds/query_factory.lua'))
+local query = compact(read('src/worlds/query_engine.lua'))
+local closure = compact(read('src/worlds/query_closure_engine.lua'))
+local relation = compact(read('src/worlds/query_relation.lua'))
+local image = compact(read('src/worlds/_image.lua'))
+local construction = compact(read('src/worlds/construction.lua'))
+local presentation = compact(read('src/worlds/presentation.lua'))
+
+local core_budget = 23150
+local centre_budget = 23850
+assert(#core <= core_budget,
+    'verified centre exceeded compact-source budget: ' .. #core .. ' characters')
+assert(#core + #image <= centre_budget,
+    'centre plus exact-image evidence exceeded compact-source budget')
+
+assert(contains(core, "require('worlds._array')"), 'kernel dense-array dependency missing')
+assert(contains(core, "require('worlds._image')"), 'kernel exact-image dependency missing')
+lacks(core, "require('worlds._fast')", 'verified centre depends on fast paths')
+lacks(core, "require('worlds._compiled')", 'verified centre depends on compiled indexes')
+lacks(core, 'query_factory', 'verified centre depends on matching policy')
+lacks(core, 'worlds.history', 'optional History leaked into verified centre')
+lacks(core, 'relay.', 'Relay leaked into Worlds')
+assert(contains(core, 'functionW.boundary('), 'boundary projection missing')
+assert(contains(core, 'functionW.join('), 'single join missing')
+assert(contains(core, 'functionW.advance('), 'boundary-normal advance missing')
+lacks(core, 'functionW.solve(', 'complete-query convenience leaked into the centre')
+
+assert(contains(facade, "require('worlds._kernel')"), 'public facade lost verified centre')
+assert(contains(facade, "require('worlds._compiled')"), 'public edge lost compiled indexes')
+assert(contains(facade, "require('worlds._fast')"), 'public edge lost exact fast paths')
+assert(contains(facade, "require('worlds._query')"), 'public edge lost query delegation')
+assert(contains(facade, 'functionW.solve('), 'public solve missing')
+lacks(facade, "require('worlds.construction')", 'facade imported Construction')
+lacks(facade, "require('worlds.presentation')", 'facade imported Presentation')
+
+assert(contains(query_edge, "require('worlds._kernel')"), 'query edge lost strict kernel')
+assert(contains(query_edge, "require('worlds._fast')"), 'query edge lost fast validation')
+assert(contains(query_edge, "require('worlds.query_factory')"), 'query factory edge missing')
+assert(contains(query_public, "require('worlds._query').public"), 'public query edge diverged')
+
+assert(contains(judgement, "require('worlds._compiled')"), 'Question layer lost indexes')
+assert(contains(judgement, 'K.try_join'), 'Question layer must validate strict witnesses')
+assert(contains(judgement, "require('worlds.query_engine')"), 'Match engine missing')
+assert(contains(judgement, "require('worlds.query_closure_engine')"), 'Close engine missing')
+lacks(query, 'K.try_join', 'replaceable Match engine owns quotient lawfulness')
+lacks(closure, 'try_join', 'replaceable Close engine owns quotient lawfulness')
+lacks(relation, "require('worlds._kernel')", 'finite relation search depends on kernel')
+assert(contains(query, "require('worlds.query_relation')"), 'Match relation search missing')
+assert(contains(closure, "require('worlds.query_relation')"), 'Close relation search missing')
+for _, source in ipairs({ judgement, query, closure, relation }) do
+    lacks(source, 'relay.', 'Worlds finite judgement depends on Relay')
+end
+
+assert(contains(construction, "require('worlds')"), 'Construction lost public Worlds view')
+assert(contains(construction, "require('worlds._kernel')"),
+    'Construction lost native quotient evidence from verified centre')
+assert(contains(construction, 'K.construction_join('),
+    'Construction correspondence must use the strict kernel join')
+lacks(construction, 'W.join(', 'Construction duplicated strict join through public facade')
+assert(contains(presentation, "require('worlds.construction')"),
+    'Presentation transport must require Construction evidence')
+assert(contains(presentation, 'construction:image('),
+    'Presentation transport must follow exact Construction image')
+lacks(presentation, 'W.join(', 'Presentation changes Geometry')
+lacks(presentation, 'W.builder(', 'Presentation manufactures carriers')
+
+print('PASS Worlds centre/edge architecture')

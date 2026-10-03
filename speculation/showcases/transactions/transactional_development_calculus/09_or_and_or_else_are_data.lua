@@ -1,0 +1,12 @@
+local H=require('speculation.showcases.transactions.transactional_development_calculus.common')
+local ok,eq,count=H.counter()
+ local C=H.C
+local a,b=C.always('a'),C.always('b')
+ local u=C.or_(a,b)
+ local o=C.or_else(a,b)
+eq(#u:family().items,2)
+ eq(#u:family().edges,0)
+ eq(#o:family().items,2)
+ ok(#o:family().edges>0)
+ ok(u:root()~=o:root())
+print('PASS td 09: unordered/ordered alternatives are canonical family structure ('..count()..')')

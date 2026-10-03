@@ -1,11 +1,12 @@
 -- Optional exact execution history for Worlds.
 --
--- History observes transitions; it is never consulted by solve.  Live state is
+-- History observes transitions, it is never consulted by solve.  Live state is
 -- always the boundary-normal Geometry returned by advance().
 
 local W=require('worlds')
 local H={}
-local MT={}; MT.__index=MT
+local MT={}
+MT.__index=MT
 
 local function face_image(development,image)
   local out={}
@@ -19,7 +20,8 @@ end
 
 function MT:append(development,equations,image)
   local records=self.records
-  records[#records+1]={development=development,equations=equations or {},faces=face_image(development,image)}
+  records[#records+1]={development=development,equations=equations or {},
+      faces=face_image(development,image)}
   return records[#records]
 end
 

@@ -30,7 +30,7 @@ end
 
 -- ---------------------------------------------------------------------------
 -- Tiny complex/matrix layer.
--- Complex = {re, im}; matrices are 2x2 arrays.
+-- Complex = {re, im}, matrices are 2x2 arrays.
 -- ---------------------------------------------------------------------------
 local function C(re,im) return {re or 0, im or 0} end
 local function cadd(a,b) return C(a[1]+b[1], a[2]+b[2]) end
@@ -100,7 +100,7 @@ end
 
 -- ---------------------------------------------------------------------------
 -- One fixed exact Worlds causal boundary and three admissible future contexts.
--- The quantum histories below all project onto this same *causal interface*;
+-- The quantum histories below all project onto this same *causal interface*,
 -- the experiment asks what Theory meaning must accompany it.
 -- ---------------------------------------------------------------------------
 local vb=G.builder()
@@ -118,7 +118,8 @@ local live=ib:strand(root,{q,QUBIT},'q-live')
 local initial_geom=ib:finish()
 
 local function measurement_pattern(name,record_role)
-  local b=G.builder(); local m=b:membrane(nil,name..'-context')
+  local b=G.builder()
+  local m=b:membrane(nil,name..'-context')
   local x=b:point(m,'q')
   local sin=b:strand(m,{x,QUBIT},name..'-in')
   local sout=b:strand(m,{x,QUBIT},name..'-out')
@@ -156,7 +157,8 @@ local histories={
 -- The two plus histories differ as preparation narratives/state vectors but
 -- have exactly the same density operator.  A boundary-sufficient Theory should
 -- therefore quotient them together.
-check(meq(histories[1].rho,histories[2].rho),'global phase/preparation history must quotient to same density state')
+check(meq(histories[1].rho,histories[2].rho),
+    'global phase/preparation history must quotient to same density state')
 
 local OBS={X=X,Y=Y,Z=Z}
 local function signature(h,axes)
@@ -175,8 +177,10 @@ local function partition(axes)
   for _,h in ipairs(histories) do
     local sig=signature(h,axes)
     local found=nil
-    for _,g in ipairs(groups) do if sig_equal(sig,g.sig) then found=g; break end end
-    if not found then found={sig=sig,members={}}; groups[#groups+1]=found end
+    for _,g in ipairs(groups) do if sig_equal(sig,g.sig) then found=g
+    break end end
+    if not found then found={sig=sig,members={}}
+    groups[#groups+1]=found end
     found.members[#found.members+1]=h
   end
   return groups
@@ -195,12 +199,14 @@ local pxyz=partition({'X','Y','Z'})
 -- Z-only sees populations and therefore cannot see phase/coherence.
 check(group_of(pz,'plus via H')==group_of(pz,'minus'),'Z-only future must identify plus and minus')
 check(group_of(pz,'plus-i')==group_of(pz,'minus-i'),'Z-only future must identify +/-i')
-check(group_of(pz,'plus via H')==group_of(pz,'maximally mixed'),'Z-only future must identify coherent and mixed 50/50 populations')
+check(group_of(pz,'plus via H')==group_of(pz,'maximally mixed'),
+    'Z-only future must identify coherent and mixed 50/50 populations')
 
 -- Adding X exposes real coherence, but imaginary coherence remains hidden.
 check(group_of(pxz,'plus via H')~=group_of(pxz,'minus'),'X future must distinguish plus/minus')
 check(group_of(pxz,'plus-i')==group_of(pxz,'minus-i'),'X,Z futures still identify +/-i')
-check(group_of(pxz,'plus-i')==group_of(pxz,'maximally mixed'),'X,Z futures still identify Y-coherent state and mixed state')
+check(group_of(pxz,'plus-i')==group_of(pxz,'maximally mixed'),
+    'X,Z futures still identify Y-coherent state and mixed state')
 
 -- Adding Y makes X/Y/Z tomographically complete. Only physically equal density
 -- matrices may remain observationally equivalent.
@@ -208,16 +214,20 @@ for i=1,#histories do
   for j=1,#histories do
     local eqsig = group_of(pxyz,histories[i].name)==group_of(pxyz,histories[j].name)
     local eqrho = meq(histories[i].rho,histories[j].rho)
-    check(eqsig==eqrho,'XYZ contextual equivalence must coincide with density equality for sample histories')
+    check(eqsig==eqrho,
+        'XYZ contextual equivalence must coincide with density equality for sample histories')
   end
 end
 
 -- Explicit tomography: reconstruct every current density operator from only its
 -- X/Y/Z future-observation signature.
 for _,h in ipairs(histories) do
-  local x=expect(h.rho,X); local y=expect(h.rho,Y); local z=expect(h.rho,Z)
+  local x=expect(h.rho,X)
+  local y=expect(h.rho,Y)
+  local z=expect(h.rho,Z)
   local reconstructed=reconstruct_from_xyz(x,y,z)
-  check(meq(reconstructed,h.rho),'XYZ observations must reconstruct boundary density state: '..h.name)
+  check(meq(reconstructed,h.rho),
+      'XYZ observations must reconstruct boundary density state: '..h.name)
 end
 
 -- Therefore no strictly coarser projection than density equality can preserve
@@ -233,7 +243,8 @@ end
 local function print_partition(label,groups)
   print(label..' ('..#groups..' classes)')
   for i,g in ipairs(groups) do
-    local sig={}; for _,v in ipairs(g.sig) do sig[#sig+1]=string.format('%.3f',v) end
+    local sig={}
+    for _,v in ipairs(g.sig) do sig[#sig+1]=string.format('%.3f',v) end
     print(string.format('  %d. [%s]  {%s}',i,table.concat(sig,','),names(g)))
   end
 end

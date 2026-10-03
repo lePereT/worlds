@@ -34,9 +34,11 @@ end
 local function lca(a,b)
   local seen={}
   local x=a
-  while x do seen[x]=true; x=G.parent(x) end
+  while x do seen[x]=true
+  x=G.parent(x) end
   x=b
-  while x do if seen[x] then return x end; x=G.parent(x) end
+  while x do if seen[x] then return x end
+  x=G.parent(x) end
 end
 
 -- ---------------------------------------------------------------------------
@@ -127,7 +129,7 @@ local cut_norm=cabs2(cut_amp[ma])+cabs2(cut_amp[mb])
 check_approx(cut_norm,1,'superposed Cut state norm')
 
 -- Branchwise scarcity: no branch consumes both exact offers. This is not a
--- fractional duplication of authority; it is an alternative exact wiring.
+-- fractional duplication of authority, it is an alternative exact wiring.
 for _,w in ipairs(hits) do
   local closed=w:cut():closed_inputs()
   check(#closed==1,'each Cut branch must consume exactly one scarce authority')
@@ -139,7 +141,8 @@ end
 -- Build exact process parts A and B. Worlds can close them as A->B or B->A.
 -- Each resulting basis Geometry is individually acyclic and ordinary Worlds.
 local function unary_process(name)
-  local b=G.builder(); local m=b:membrane(nil,name)
+  local b=G.builder()
+  local m=b:membrane(nil,name)
   local si=b:strand(m,{q,QUBIT},name..'-in')
   local so=b:strand(m,{q,QUBIT},name..'-out')
   local f=b:face(m,{si},{so},name)
@@ -159,9 +162,12 @@ local function same_points(sa,sb)
   for i=1,#a do if a[i]~=b[i] then return false end end
   return true
 end
-check(same_points(G_AB:ingress()[1],G_BA:ingress()[1]),'order branches should expose same exact input Point incidence')
-check(same_points(G_AB:egress()[1],G_BA:egress()[1]),'order branches should expose same exact output Point incidence')
-check(G_AB:egress()[1]~=G_BA:egress()[1],'causally distinct order branches retain distinct exact egress occurrences')
+check(same_points(G_AB:ingress()[1],G_BA:ingress()[1]),
+    'order branches should expose same exact input Point incidence')
+check(same_points(G_AB:egress()[1],G_BA:egress()[1]),
+    'order branches should expose same exact output Point incidence')
+check(G_AB:egress()[1]~=G_BA:egress()[1],
+    'causally distinct order branches retain distinct exact egress occurrences')
 
 -- Quantise the geometry: |Psi_order> = (|AB> + |BA>)/sqrt(2).
 -- Give A and B noncommuting quantum meanings X and Z on a target qubit.
@@ -188,7 +194,8 @@ check_approx(p_minus,1,'anticommuting X/Z orders should constructively interfere
 -- order coherence, so an X-basis order measurement is 50/50.
 local mixed_plus=0.5
 local mixed_minus=0.5
-check_approx(mixed_plus,0.5); check_approx(mixed_minus,0.5)
+check_approx(mixed_plus,0.5)
+check_approx(mixed_minus,0.5)
 
 -- Sanity control: if A and B commute (use I and Z), the coherent order remains +.
 local cAB=mvec(Z,mvec(I,ket0))
@@ -229,18 +236,22 @@ print('   each branch acyclic: yes')
 print('   exposed Point incidence equal: yes')
 print('   exact egress occurrence equal: no')
 print(string.format('   coherent X/Z order interference: P(+) = %.1f, P(-) = %.1f',p_plus,p_minus))
-print(string.format('   incoherent classical order mixture: P(+) = %.1f, P(-) = %.1f',mixed_plus,mixed_minus))
+print(string.format('   incoherent classical order mixture: P(+) = %.1f, P(-) = %.1f',
+    mixed_plus,mixed_minus))
 print('   commuting control gives: P(+) = 1, P(-) = 0')
 print('   => coherence of causal geometry itself is operationally observable.')
 print('')
 print('C. Naive boundary projection:')
-print(string.format('   |AB>+|BA> identified to one |B>: projected norm^2 = %.1f',cabs2(plus_projected_amp)))
-print(string.format('   |AB>-|BA> identified to one |B>: projected norm^2 = %.1f',cabs2(minus_projected_amp)))
+print(string.format('   |AB>+|BA> identified to one |B>: projected norm^2 = %.1f',
+    cabs2(plus_projected_amp)))
+print(string.format('   |AB>-|BA> identified to one |B>: projected norm^2 = %.1f',
+    cabs2(minus_projected_amp)))
 print('   => classical many-to-one egress projection is not a valid quantum evolution map.')
 print('')
 print('Kernel pressure:')
 print('   * exact Geometry can remain the basis ontology branchwise;')
-print('   * operational state must become a vector/density operator over exact boundaries/geometries;')
+print('   * operational state must become a vector/density operator ' ..
+    'over exact boundaries/geometries;')
 print('   * Cut witnesses become coherent basis alternatives rather than merely choices;')
 print('   * Hit is evidence of one component, not necessarily enough to commit;')
 print('   * membrane join remains branchwise exact, but context itself may be indefinite;')

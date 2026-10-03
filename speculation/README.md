@@ -2,7 +2,8 @@
 
 # Speculation
 
-Worlds 0.6.5 keeps the verified Geometry laws small while moving acceleration back to a disposable edge. Construction remains exact materialisation evidence; Presentation remains optional descriptive utility.  The substantially richer
+Worlds 0.6.6 keeps the verified Geometry laws and four-carrier ontology unchanged. Construction now
+retains optional exact quotient correspondence evidence at the semantic edge; the substantially richer
 dimensional/inter-World work below remains speculation.
 
 Earlier experiments often treated quantum phase, tensor cycles, overlapping
@@ -22,26 +23,47 @@ The new default rule is therefore:
 
 This is a research discipline, not a law.
 
-Run all executable experiments from the repository root with:
+Run historical/general executable experiments from the repository root with:
 
 ```sh
 make speculation-check
+```
+
+The current multi-file semantic showcase laboratories have their own entry point:
+
+```sh
+make showcase-check
 ```
 
 The corpus has no Python/SymPy dependency. Experiments which mention a known
 symbolic elimination result compare against a pre-determined result rather than
 calling an external CAS.
 
-## Theory programme
+## Current Relay-facing showcases
 
-`theory/` contains experiments about the scope and laws of Theory itself rather
-than new Geometry. The current `theory/occurrence_relative/` hostile lab asks
-whether non-scarce Theory may refer directly to exact Points, Strands,
-Membranes and Faces, with exact rebasing through Construction and projection
-without retained history. It deliberately keeps authority, causality, support
-and scarcity in Geometry.
+`showcases/` is the current principal semantic pressure line. It is deliberately
+separate from the historical `modern/` corpus.
 
-See `theory/README.md`.
+- `showcases/theory/` constrains Theory to positive occurrence-relative knowledge,
+  existential hiding, exact Construction-correspondence transport, monotone
+  domain closure and certified authority-free observation.
+- `showcases/transactions/` treats separately compiled transactional meaning as
+  canonical relative Development meaning, extends it with finite cyclic Package
+  recurrence, proves stable recursive eligibility independently of search depth,
+  and closes authority-dependent viability by quotienting paired Geometry+Theory
+  boundary Developments.
+
+The older `modern/computation_boundary_lab` and
+`modern/transactional_computation_lab` are removed in 0.6.6 because the showcase
+line preserves their strongest semantic pressures with a cleaner Package-first
+mechanical model.
+
+The restrictive Theory showcase also narrows terminology used by some older
+experiments. Historical files may call any algebraic interpretation of fixed
+incidence “Theory”. In the current Relay-facing use, Theory means the idempotent,
+monotone positive knowledge doctrine; min-plus costs, amplitudes and similar
+quantitative interpretations may instead be domain-internal mathematics or
+external analysis.
 
 ## Modern programme
 

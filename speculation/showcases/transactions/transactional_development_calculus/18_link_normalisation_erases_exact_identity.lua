@@ -1,0 +1,12 @@
+local H=require('speculation.showcases.transactions.transactional_development_calculus.common')
+local ok,eq,count=H.counter()
+ local C=H.C
+local l=H.identity_operation()
+ local r=H.branch({{true,'x'}},{auth=true})
+local a=C.bind(l,r,{captures={{from=1,to=1}}})
+ local b=C.bind(l,r,{captures={{from=1,to=1}}})
+eq(a:root(),b:root())
+ eq(a:bytes(),b:bytes())
+local x,y=a:instantiate(1),a:instantiate(1)
+ ok(x.geometry:strands()[1]~=y.geometry:strands()[1])
+print('PASS td 18: exact linker occurrences are disposable normalisation evidence ('..count()..')')

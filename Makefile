@@ -1,17 +1,22 @@
 SHELL := /bin/sh
 
-# Preferred interpreter order: LuaJIT, generic Lua, versioned Lua, TexLua.
-# Override explicitly with e.g. `make LUA=texlua test`.
-LUA_CANDIDATES := luajit lua lua5.1 lua5.2 lua5.3 lua5.4 texlua
+LUA_CANDIDATES := luajit lua5.1 lua5.2 lua5.3 lua5.4 lua5.5 texlua
 LUA ?= $(shell for c in $(LUA_CANDIDATES); do \
-    if command -v $$c >/dev/null 2>&1; then printf '%s' $$c; break; fi; \
-  done)
+  if command -v $$c >/dev/null 2>&1; then printf '%s' $$c; break; fi; \
+done)
 
 ifeq ($(strip $(LUA)),)
 $(error No Lua interpreter found. Tried: $(LUA_CANDIDATES))
 endif
 
-.PHONY: lua51-syntax lua51-runtime-shape test query closure closure-differential advance-differential construction presentation history trust adversarial work mechanical-work centre differential restricted partial nested branching historical shape check full-check bench close-bench stress live trust-bench
+.PHONY: style lua51-syntax lua51-runtime-shape test query closure closure-differential
+.PHONY: advance-differential construction presentation history trust adversarial
+.PHONY: work mechanical-work centre differential restricted partial nested branching
+.PHONY: historical shape check full-check bench close-bench stress live trust-bench
+.PHONY: speculation-check showcase-check
+
+style:
+	$(LUA) tools/check-style.lua
 
 lua51-syntax:
 	$(LUA) tools/check-lua51-syntax.lua
@@ -75,15 +80,18 @@ branching:
 historical:
 	@set -e; for f in tests/historical/*.lua; do \
 	  case "$$f" in *worlds.lua|*support.lua|*prng.lua) continue;; esac; \
-	  LUA_PATH='./compat/?.lua;./tests/historical/?.lua;./src/?.lua;./src/?/init.lua;;' WORLDS_SRC='src/worlds.lua' $(LUA) "$$f"; \
+	  LUA_PATH='./compat/?.lua;./tests/historical/?.lua;./src/?.lua;./src/?/init.lua;;' \
+	  WORLDS_SRC='src/worlds.lua' $(LUA) "$$f"; \
 	done; echo 'PASS historical algebra 15 files'
 
 shape:
 	$(LUA) tools/check-shape.lua
 
-check: lua51-syntax lua51-runtime-shape test query closure construction presentation history trust adversarial work mechanical-work centre shape
+check: style lua51-syntax lua51-runtime-shape test query closure construction presentation history trust \
+	adversarial work mechanical-work centre shape
 
-full-check: check differential restricted partial nested branching closure-differential advance-differential historical
+full-check: check differential restricted partial nested branching \
+	closure-differential advance-differential historical
 
 bench:
 	LUA_PATH='./src/?.lua;;' $(LUA) bench/run.lua
@@ -97,12 +105,20 @@ stress:
 live:
 	LUA_PATH='./src/?.lua;;' $(LUA) bench/live.lua 10000
 
-.PHONY: speculation-check
 speculation-check:
-	@set -e; for f in $$(find speculation -name '*.lua' | sort); do \
+	@set -e; for f in $$(find speculation -name '*.lua' ! -path 'speculation/showcases/*' | sort); do \
 	  printf 'speculation: %s\n' "$$f"; \
 	  LUA_PATH='./src/?.lua;./?.lua;;' $(LUA) "$$f"; \
 	done
+
+
+showcase-check:
+	LUA='$(LUA)' speculation/showcases/theory/knowledge_contract/run.sh
+	LUA='$(LUA)' speculation/showcases/theory/lifecycle_and_correspondence/run.sh
+	LUA='$(LUA)' speculation/showcases/transactions/transactional_development_calculus/run_lab.sh
+	LUA='$(LUA)' speculation/showcases/transactions/transactional_recurrence_calculus/run_lab.sh
+	LUA='$(LUA)' speculation/showcases/transactions/transactional_recursive_judgement/run_lab.sh
+	LUA='$(LUA)' speculation/showcases/transactions/transactional_geometry_viability/run_lab.sh
 
 trust-bench:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) bench/trust.lua

@@ -3,7 +3,7 @@
 -- Experiments:
 --  13. Exact branch identity as a Stinespring/environment record: a coherent
 --      many-to-one extensional quotient is impossible, but retaining an exact
---      branch record gives an isometry; tracing the record gives the expected
+--      branch record gives an isometry, tracing the record gives the expected
 --      classical mixture, while coherent erasure/recombination can recover phase.
 --  14. Quotient-before-quantisation for fresh identity / gauge-like naming:
 --      N alpha-renamed fresh realisations should form one semantic basis state
@@ -11,14 +11,15 @@
 --      raw implementation identities first creates spurious dimensions and a
 --      non-isometric quotient.
 --  15. General support-graph law: Worlds supplies a zero/nonzero matrix of lawful
---      causal transitions; quantum dynamics fills it with amplitudes. Physicality
+--      causal transitions, quantum dynamics fills it with amplitudes. Physicality
 --      is a Gram/contraction condition K^dagger K <= I, not merely per-column
 --      normalisation when output supports overlap.
 
 local EPS=1e-10
 local function approx(a,b) return math.abs(a-b)<=EPS end
 local function check(x,msg) assert(x,msg) end
-local function check_approx(a,b,msg) assert(approx(a,b),(msg or 'not approx')..': '..tostring(a)..' ~= '..tostring(b)) end
+local function check_approx(a,b,msg) assert(approx(a,b),(msg or
+    'not approx')..': '..tostring(a)..' ~= '..tostring(b)) end
 local function C(re,im) return {re or 0,im or 0} end
 local function cadd(a,b) return C(a[1]+b[1],a[2]+b[2]) end
 local function csub(a,b) return C(a[1]-b[1],a[2]-b[2]) end
@@ -29,7 +30,9 @@ local function cabs2(a) return a[1]*a[1]+a[2]*a[2] end
 local INV=1/math.sqrt(2)
 
 local function norm2(v)
-  local s=0; for _,a in pairs(v) do s=s+cabs2(a) end; return s
+  local s=0
+  for _,a in pairs(v) do s=s+cabs2(a) end
+  return s
 end
 
 -- ---------------------------------------------------------------------------
@@ -51,7 +54,7 @@ check_approx(norm2(V),1,'Stinespring lift retaining exact branch record preserve
 local record_offdiag=cmul(psi.OA,cconj(psi.OB))
 check_approx(cabs2(record_offdiag),0.25,'branch phase survives in joint/record coherence')
 -- If record is dephased/traced as inaccessible, branch phase can no longer affect
--- an S-only observation; both alternatives contribute classically.
+-- an S-only observation, both alternatives contribute classically.
 local pS=cabs2(psi.OA)+cabs2(psi.OB)
 check_approx(pS,1,'tracing record yields normalised extensional state')
 -- Coherently measuring record in +/- basis recovers interference.
@@ -77,7 +80,8 @@ check_approx(cabs2(qamp),N,'many-to-one quotient after linearisation inflates no
 -- A phase-alternating gauge mode can instead vanish completely under q.
 local alt={p1=C(0.5),p2=C(-0.5),p3=C(0.5),p4=C(-0.5)}
 check_approx(norm2(alt),1)
-local altq=C(0); for _,a in pairs(alt) do altq=cadd(altq,a) end
+local altq=C(0)
+for _,a in pairs(alt) do altq=cadd(altq,a) end
 check_approx(cabs2(altq),0,'pure naming-phase mode is annihilated by late quotient')
 -- Quotient first: [p1]=...=[p4]=[fresh], then quantise span{|fresh>} -- no
 -- spurious naming degrees of freedom exist.
@@ -87,7 +91,7 @@ check_approx(norm2(semantic),1)
 -- ---------------------------------------------------------------------------
 -- 15. SUPPORT GRAPH + GLOBAL GRAM/CONTRACTION CONDITION
 -- ---------------------------------------------------------------------------
--- Worlds can determine which exact transitions are lawful; write that as a
+-- Worlds can determine which exact transitions are lawful, write that as a
 -- support graph. Quantum amplitudes fill the supported entries. If different
 -- input branches can land in overlapping output subspaces, normalising each
 -- input column separately is NOT enough: columns must have a contraction Gram.
@@ -106,8 +110,12 @@ local function col_inner(K,i,j)
   for r=1,#K do z=cadd(z,cmul(cconj(K[r][i]),K[r][j])) end
   return z
 end
-local g11=col_inner(Kbad,1,1); local g22=col_inner(Kbad,2,2); local g12=col_inner(Kbad,1,2)
-check_approx(g11[1],1); check_approx(g22[1],1); check_approx(g12[1],1)
+local g11=col_inner(Kbad,1,1)
+local g22=col_inner(Kbad,2,2)
+local g12=col_inner(Kbad,1,2)
+check_approx(g11[1],1)
+check_approx(g22[1],1)
+check_approx(g12[1],1)
 local lambda_max_bad=2 -- eigenvalues of [[1,1],[1,1]]
 check(lambda_max_bad>1,'column-wise normalisation alone does not make a physical Cut operator')
 
@@ -116,19 +124,25 @@ local Kgood={
   {C(INV),C(INV)},
   {C(INV),C(-INV)},
 }
-local h11=col_inner(Kgood,1,1); local h22=col_inner(Kgood,2,2); local h12=col_inner(Kgood,1,2)
-check_approx(h11[1],1); check_approx(h22[1],1); check_approx(cabs2(h12),0)
+local h11=col_inner(Kgood,1,1)
+local h22=col_inner(Kgood,2,2)
+local h12=col_inner(Kgood,1,2)
+check_approx(h11[1],1)
+check_approx(h22[1],1)
+check_approx(cabs2(h12),0)
 
 print('Quantum Worlds kernel explorations V: PASS')
 print('')
 print('13. Exact branch record / Stinespring lift:')
 print('   coherent many-to-one quotient replaced by |Oi> -> |S>|record_i>')
 print(string.format('   record coherence |rho_AB|^2 = %.3f',cabs2(record_offdiag)))
-print(string.format('   +/- record recombination: P(+) = %.6f, P(-) = %.6f',cabs2(rplus),cabs2(rminus)))
+print(string.format('   +/- record recombination: P(+) = %.6f, P(-) = %.6f',cabs2(rplus),
+    cabs2(rminus)))
 print('')
 print('14. Quotient-before-quantisation:')
 print('   4 alpha-equivalent fresh-name implementations -> raw 4D artefact')
-print(string.format('   late quotient symmetric norm^2 = %.1f; alternating gauge mode norm^2 = %.1f',cabs2(qamp),cabs2(altq)))
+print(string.format('   late quotient symmetric norm^2 = %.1f; alternating gauge ' ..
+    'mode norm^2 = %.1f',cabs2(qamp),cabs2(altq)))
 print('   quotient first -> one semantic basis state |fresh> with norm 1')
 print('')
 print('15. Quantum Cut support graph:')

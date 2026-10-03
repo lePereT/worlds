@@ -101,7 +101,8 @@ end
 
 -- A structurally ordinary local gate. Quantum meaning is a Theory transform.
 local function gate(name)
-  local b=G.builder(); local m=b:membrane(nil,name..'-local')
+  local b=G.builder()
+  local m=b:membrane(nil,name..'-local')
   local x=b:point(m,'q')
   local si=b:strand(m,{x,QUBIT},name..'-in')
   local so=b:strand(m,{x,QUBIT},name..'-out')
@@ -143,12 +144,14 @@ check_approx(zminus[1],-0.5,'minus coherence')
 -- ---------------------------------------------------------------------------
 local bad_b0=O.from_geometry(initial_geom)
 local bad_bpi=O.from_geometry(initial_geom)
-check(boundary_exactly_same(bad_b0,bad_bpi),'bad test must begin with the same exact boundary occurrence')
+check(boundary_exactly_same(bad_b0,bad_bpi),
+    'bad test must begin with the same exact boundary occurrence')
 
 -- Hidden/non-boundary Theory history:
 local hidden0=plus
 local hiddenpi=minus
-check(boundary_exactly_same(bad_b0,bad_bpi),'hidden phase must leave exact Worlds boundary unchanged')
+check(boundary_exactly_same(bad_b0,bad_bpi),
+    'hidden phase must leave exact Worlds boundary unchanged')
 
 local h0=apply_h(hidden0)
 local hpi=apply_h(hiddenpi)
@@ -171,8 +174,10 @@ local good_bpi=O.from_geometry(initial_geom)
 local out0=commit(good_b0,initial_strand,PHASE0)
 local outpi=commit(good_bpi,initial_strand,PHASEPI)
 check(out0 ~= outpi,'separate causal realisations must reissue distinct exact Strand occurrences')
-check(same_incidence(out0,outpi),'phase outputs should have identical exact Point incidence/locality')
-check(not boundary_exactly_same(good_b0,good_bpi),'causally distinct runs must not have the same exact live boundary occurrence')
+check(same_incidence(out0,outpi),
+    'phase outputs should have identical exact Point incidence/locality')
+check(not boundary_exactly_same(good_b0,good_bpi),
+    'causally distinct runs must not have the same exact live boundary occurrence')
 
 -- Boundary-sufficient quantum Theory: attach all future-relevant quantum state
 -- to the current exact live authority. No closed history is retained.
@@ -202,7 +207,8 @@ check_approx(fpib,1,'boundary Theory phase pi future P1')
 -- affect any later interference experiment. Boundary Theory need not retain it.
 -- ---------------------------------------------------------------------------
 local globally_shifted=global_phase(plus,0.731)
-check(density_equal(plus,globally_shifted),'global phase should quotient out of boundary-sufficient physical state')
+check(density_equal(plus,globally_shifted),
+    'global phase should quotient out of boundary-sufficient physical state')
 local gp0,gp1=probs(apply_h(globally_shifted))
 check_approx(gp0,1,'global phase cannot alter recombination P0')
 check_approx(gp1,0,'global phase cannot alter recombination P1')
@@ -212,7 +218,8 @@ print('')
 print('A. Forbidden hidden-Theory collision:')
 print('   exact Worlds boundary identical: yes')
 print(string.format('   same current basis populations: (%.1f, %.1f)',pplus0,pplus1))
-print(string.format('   retained relative coherence:    Re rho01 = %+0.1f vs %+0.1f',zplus[1],zminus[1]))
+print(string.format('   retained relative coherence:    Re rho01 = %+0.1f vs %+0.1f',zplus[1],
+    zminus[1]))
 print(string.format('   common future H gives:          P0 = %.1f vs %.1f',h0p0,hpip0))
 print('   => exact geometry alone cannot support such hidden Theory evolution.')
 print('')

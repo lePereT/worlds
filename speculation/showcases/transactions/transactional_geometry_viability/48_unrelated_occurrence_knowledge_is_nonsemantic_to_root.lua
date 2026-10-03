@@ -1,0 +1,15 @@
+local H=require('speculation.showcases.transactions.transactional_geometry_viability.common')
+ local eq,count=select(2,H.counter())
+ local K,W=H.K,H.W
+local p=H.one_root('f',{H.authority_identity_context()},{})
+ local r=p:root('f')
+local b=W.builder()
+ local m=b:membrane(nil)
+ local p1,p2=b:point(m),b:point(m)
+ local s1,s2=b:strand(m,{p1}),b:strand(m,{p2})
+ local state=b:finish()
+local ctx={{point=p2,sort='bool',values={false,true}}}
+ local fam=H.Search.family(p,r,1)
+eq(H.Judgement.first_stable(p,r,state,{occurrences=K.point_value(ctx,p2,true)},{s1},fam),'Hit','unrelated occurrence knowledge should not constrain selected authority root')
+eq(H.Judgement.first_stable(p,r,state,{occurrences=K.point_value(ctx,p2,false)},{s1},fam),'Hit','unrelated contradictory fact should remain outside the selected root boundary')
+print('PASS gv 48: unrelated live occurrence knowledge is existentially irrelevant to the selected root ('..count()..')')

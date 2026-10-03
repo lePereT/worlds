@@ -1,81 +1,138 @@
-# Worlds 0.6.5 — small centre, fast disposable edge
+# Worlds 0.6.6 — Construction correspondence and Lua 5.1 compatibility
 
-Worlds is a small operational geometry in which exact identity, scarce authority,
-causal transformation and locality arise from incidence and open boundary.
+Worlds is a small operational geometry in which exact identity, scarce
+authority, causal transformation and locality arise from incidence and open
+boundary.
 
-0.6.5 keeps the real-time engineering earned in 0.6.4, but makes the
-implementation shape match the calculus again.
+Worlds 0.6.6 keeps the Membrane / Point / Strand / Face ontology and the
+existing `boundary`, `join` and `advance` laws unchanged. The release adds one
+piece of immutable evidence around ordinary Construction and repairs the
+persistent boundary representation so the public API works under Lua 5.1 and
+LuaJIT as well as newer Lua runtimes.
 
-## Geometric centre
+The public geometric centre remains:
 
-`src/worlds/_centre.lua` owns only the exact carriers, Geometry validation,
-`boundary`, `join`, and Construction images.
+```lua
+local W = require('worlds')
 
-```text
-Membrane  Point  Strand  Face
-             ↓
-          Geometry
-
-boundary   join
+-- ontology: Membrane / Point / Strand / Face / Geometry
+-- operations: boundary / join / advance
 ```
 
-`join(parts,equations)` is the sole Geometry-changing law. `boundary` removes
-closed causal history while preserving exact future-relevant authority and its
-locality support.
+`join(parts, equations)` remains the reference composition law. `advance` is
+semantically `boundary(join(...))`; local/indexed paths are implementation
+accelerations continuously checked against that definition.
 
-`advance` is deliberately derived at the public edge:
+## Construction correspondence
 
-```text
-boundary(join({boundary(world), development}, equations))
+```lua
+local Construction = require('worlds.construction')
+
+local c = Construction.join(parts, equations)
+local q = c:correspondence()
 ```
 
-## Disposable acceleration
+`Construction:image(x)` is unchanged and remains the surviving result carrier,
+when one exists. `correspondence()` is richer immutable evidence of the exact
+quotient established by that same Construction. It retains construction-local
+classes even when a class is later annihilated and therefore has no final
+carrier image.
 
-The centre imports no cache, persistent sequence, local join, live delta or
-query engine.
+This evidence supports compositional knowledge transport and source-relative
+comparison of exact-distinct Construction results without adding another Worlds
+carrier or another composition law. Public class values are opaque evidence,
+are not Worlds carriers, and grant no authority.
 
-The edge contains three small mechanical modules:
+Ordinary `W.join` keeps its existing return values and does not retain this
+provenance. Construction requests it explicitly from the verified centre.
 
-- `_fast.lua` — exact local-frame and single-Face refinements;
-- `_index.lua` — one rebuildable cache shared by query compilation and live boundaries;
-- `_persistent.lua` — persistent sequence/set mechanics for local boundary edits.
+See `docs/API.md` and `speculation/modern/native_construction_correspondence/`.
 
-A fast path either returns an exact result or `fallback`; the reference centre
-remains the specification. All acceleration can be discarded and rebuilt from
-Geometry.
+## Lua 5.1 and LuaJIT compatibility
 
-## Finite judgement
+Earlier 0.6.4/0.6.5 packages represented persistent boundary sequences as table
+proxies whose array behaviour depended on table `__len`/iteration metamethods.
+That works on newer Lua but is not a valid Lua 5.1/LuaJIT table contract.
 
-Questions remain outside programme state. Matching/search may use counted
-incidence, factorisation, Hall feasibility and other disposable algorithms, but
-every constructive answer is checked by strict `join` before publication.
+0.6.6 separates the representations:
 
-A direct materialisation and a successful Question now retain the same exact
-`Construction` witness. `Realisation` remains only as compatibility API
-terminology, not as another value kind.
+- persistent boundary sequences remain opaque internal tree/rope values;
+- local updates retain their persistent/path-based mechanics;
+- Worlds internals use explicit `length`, `get` and iterator operations;
+- public Geometry boundary/carrier accessors expose cached ordinary dense Lua
+  arrays, so `#`, `ipairs` and numeric indexing have normal Lua 5.1 semantics;
+- the release gate scans all shipped Lua for post-5.1 syntax.
 
-## Trusted in-process performance
+No fast path is disabled to obtain compatibility.
 
-Authentic Worlds values are certified immutable in-process objects. Borrowed
-arrays are read-only by contract rather than defensively copied. Short-lived
-developments may use `development_builder()`, and exact client tokens may be
-minted without quotient construction.
+The Makefile discovers Lua in this order: LuaJIT, Lua 5.1, 5.2, 5.3, 5.4,
+5.5, TeXLua. Set `LUA` explicitly to override discovery.
 
-These are implementation policies, not new semantic concepts.
+## Trusted in-process contract
 
-## Optional edge utilities
+Worlds validates new semantic claims, not immutable facts it has already
+certified. Arrays exchanged with cooperating clients are borrowed read-only
+views rather than defensive copies. Callers must not mutate borrowed state while
+Worlds retains it. Private object state uses weak-key registries.
 
-`worlds.presentation` and `worlds.history` remain optional descriptive and
-observational libraries. Neither owns Geometry or authority.
+See `docs/TRUST.md`.
 
-## Verification
+## Performance shape
+
+The realtime programme from 0.6.4/0.6.5 remains intact:
+
+- successful Questions retain strict-join realisation evidence;
+- identity constructions are identity work;
+- DSU state is allocated only where required;
+- Construction images use dense or sparse representation according to shape;
+- trusted Development builders validate once at `finish()`;
+- prepared live boundaries support frame-aware matching and local `advance`;
+- persistent boundary sections and disposable indexes preserve unchanged live
+  structure across local evolution;
+- Close rejects structurally impossible support pairs before deeper search.
+
+The Lua 5.1 repair changes the boundary-sequence representation, not the
+semantic or algorithmic envelope: persistent local updates remain persistent and
+public array materialisation is cached at the API edge.
+
+Performance acceptance remains based primarily on deterministic work ratchets,
+not elapsed time. See `CHECKS.md`, `tests/work.lua` and
+`tests/mechanical-work.lua`.
+
+## Construction and Presentation remain edge evidence
+
+```lua
+local Construction = require('worlds.construction')
+local Presentation = require('worlds.presentation')
+```
+
+Construction is exact evidence for one ordinary materialisation. Presentation
+is ordered, non-authoritative ABI structure over selected open Strand
+occurrences. Neither extends the ontology.
+
+## Semantic showcases
+
+`speculation/showcases/` contains the strongest current Relay-facing research:
+
+- `showcases/theory/` gives the restrictive occurrence-relative knowledge
+  contract and its Construction/lifecycle pressures;
+- `showcases/transactions/` gives the package-first finite transactional,
+  recurrence, stable-Judgement and authority-viability laboratories.
+
+The older `modern/computation_boundary_lab` and
+`modern/transactional_computation_lab` have been removed as superseded research.
+The newer laboratories preserve their strongest semantic pressures while using a
+cleaner Package-first Development model.
+
+Run them with:
 
 ```sh
-make full-check
+make showcase-check
 ```
 
-runs the semantic, adversarial, work-ratchet and differential gates. The
-Extended-Theory hostile lab in `speculation/theory/occurrence_relative` adds 48
-cross-domain pressures, including generated Construction-image incidence checks.
+## Validation
 
-See `docs/SHAPE.md`, `docs/LAWS.md`, `docs/PERFORMANCE.md`, and `docs/TRUST.md`.
+`make full-check` is the release semantic/differential/work gate.
+`make speculation-check` runs the historical/general speculation corpus.
+`make showcase-check` runs the current Theory and transaction showcases.
+`CHECKS.md` records the release verification shape.

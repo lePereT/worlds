@@ -1,19 +1,25 @@
 -- Atlas-derived quantum attack: contextuality as overlapping Point-Strand scope.
--- Worlds carries the compatibility cover; a tiny external parity Theory carries
+-- Worlds carries the compatibility cover, a tiny external parity Theory carries
 -- the local value constraints. No crossing membranes or new geometry required.
 package.path='./src/?.lua;./src/?/init.lua;'..package.path
 local W=require('worlds')
 
 local n=0
-local function ok(x,msg) n=n+1; assert(x,msg or 'assertion failed') end
-local function eq(a,b,msg) n=n+1; assert(a==b,(msg or 'neq')..': '..tostring(a)..' ~= '..tostring(b)) end
+local function ok(x,msg) n=n+1
+assert(x,msg or 'assertion failed') end
+local function eq(a,b,msg) n=n+1
+assert(a==b,(msg or 'neq')..': '..tostring(a)..' ~= '..tostring(b)) end
 
-local b=W.builder(); local m=b:membrane(nil,'Mermin-Peres')
+local b=W.builder()
+local m=b:membrane(nil,'Mermin-Peres')
 local P={}
-for r=1,3 do P[r]={}; for c=1,3 do P[r][c]=b:point(m,'O'..r..c) end end
+for r=1,3 do P[r]={}
+for c=1,3 do P[r][c]=b:point(m,'O'..r..c) end end
 local contexts={}
-for r=1,3 do contexts[#contexts+1]={name='R'..r, strand=b:strand(m,{P[r][1],P[r][2],P[r][3]},'row '..r), sign=1} end
-for c=1,3 do contexts[#contexts+1]={name='C'..c, strand=b:strand(m,{P[1][c],P[2][c],P[3][c]},'column '..c), sign=(c==3 and -1 or 1)} end
+for r=1,3 do contexts[#contexts+1]={name='R'..r, strand=b:strand(m,{P[r][1],P[r][2],P[r][3]},
+    'row '..r), sign=1} end
+for c=1,3 do contexts[#contexts+1]={name='C'..c, strand=b:strand(m,{P[1][c],P[2][c],P[3][c]},
+    'column '..c), sign=(c==3 and -1 or 1)} end
 local g=b:finish()
 
 eq(#g:faces(),0,'compatibility cover is face-free')
@@ -52,7 +58,8 @@ local function global_count(skip)
           for r=1,3 do for c=1,3 do if P[r][c]==p then idx=(r-1)*3+c end end end
           prod=prod*vals[idx]
         end
-        if prod~=ctx.sign then good=false; break end
+        if prod~=ctx.sign then good=false
+        break end
       end
     end
     if good then count=count+1 end

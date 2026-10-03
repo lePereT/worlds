@@ -1,54 +1,78 @@
-# Shape of Worlds 0.6.5
+# Shape of Worlds 0.6.6
 
-Worlds has one small semantic centre and a disposable edge.
+## 1. Sacred Geometry kernel
 
-## Centre
-
-`src/worlds/_centre.lua` owns only:
+`src/worlds/_kernel.lua` contains the operational ontology:
 
 ```text
-Membrane  Point  Strand  Face
+Membrane
+Point
+Strand
+Face
 Geometry
 boundary
 join
-Construction image
+advance
 ```
 
-`join` is the sole Geometry-changing law. `boundary` forgets closed causal
-history. The centre imports no query engine, cache, persistent sequence or live
-fast path.
+It contains no matching engine or acceleration dependency. The public
+`src/worlds.lua` edge adds `solve(A,B,seeds)` as the complete-Question
+convenience and may eagerly prepare disposable indexes for Builder output. No
+selected-section, optional-target, admissibility, factorisation or scarcity-
+search policy is represented in the verified centre.
 
-`advance` is intentionally *not* a centre primitive. The public edge implements
-its defining equation
+Geometry is the sole composite value carrying programme authority and causal
+structure. Exact carrier identity and open incidence are authoritative.
+
+## 2. Finite Question judgement
+
+`src/worlds/query_factory.lua` defines immutable exact Questions in two forms:
 
 ```text
-boundary(join({boundary(world), development}, equations))
+Match(A,B;S,T,D,R,C,E0)
+Close(P;S,T,D,R,C,E0)
 ```
 
-and may replace that calculation with an exact fast path.
+It validates finite sections/relations and guarantees that every public `yes(E)`
+is accepted by strict `join(question:parts(),E)`. It contains no factor solver,
+Hall matcher or direct-closure enumeration strategy. A Question is not Geometry
+and carries no authority.
 
-## Disposable edge
+## 3. Replaceable query engine
 
-`_fast.lua` contains exact local-join and single-Face refinements. `_index.lua`
-contains the single rebuildable cache used both by finite-query compilation and
-live-boundary updates. `_persistent.lua` is representation support for local
-boundary edits.
+`src/worlds/query_engine.lua` implements the matching judgement efficiently. Its
+current representation contains:
 
-All may be deleted without changing the meaning of Geometry. Fast paths return
-`fallback` whenever their exact preconditions are not evident.
+- counted source incidence rows and exact fibres;
+- endpoint-thread target quotient;
+- compressed target boundary forest;
+- factor relations with AND/OR provenance;
+- Hall feasibility; and
+- one Geometry-free finite scarce-relation solver shared by Match and Close.
 
-## Finite judgement
+These structures are disposable. The source Geometry is not retained after
+compilation; only the selected outgoing section survives in retained search
+state.
 
-Questions remain outside Geometry. Search may use factorisation, Hall
-feasibility and other finite algorithms, but every constructive answer is
-validated by the centre's strict join law.
+## 4. join
 
-A successful search and a direct materialisation now use the same exact
-`Construction` witness; `Realisation` is retained only as compatibility API
-terminology, not as a second value kind.
+`join` remains the single typed-equality and causal-normalisation operation.
+Matching and quotient construction are deliberately distinct: successful `join`
+does not by itself prove that an equation set satisfies the target matching
+judgement, while every constructive Question witness is guaranteed join-lawful.
 
-## Optional edge utilities
+## 5. Semantic edge values
 
-`presentation` and `history` are descriptive/observational libraries. They own
-no Geometry and are not imported by `require('worlds')` unless their services
-are requested indirectly.
+`src/worlds/construction.lua` and `src/worlds/presentation.lua` sit outside the
+verified centre and outside the replaceable query engine.
+
+`worlds.construction` calls the ordinary public `join` exactly once and retains
+its ordered parts, normalised equations, result and exact image in private
+weak-key state. Borrowed array views are immutable by the trusted-client contract. It owns no quotient or matching algorithm.
+
+`worlds.presentation` stores only an exact ambient Geometry plus borrowed read-only arrays of
+selected open Strand references. Its sole derived operation is residual transport
+through a `worlds.construction` value. It cannot create or consume Geometry.
+
+The main `require('worlds')` facade does not import or re-export either module.
+Clients opt into these edge values explicitly.

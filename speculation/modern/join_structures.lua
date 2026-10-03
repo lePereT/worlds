@@ -2,8 +2,10 @@ package.path='./src/?.lua;./src/?/init.lua;'..package.path
 local W=require('worlds')
 
 local n=0
-local function ok(x,msg) n=n+1; if not x then error('FAIL '..n..': '..(msg or '?'),2) end end
-local function eq(a,b,msg) ok(a==b,(msg or 'equality')..' expected '..tostring(b)..' got '..tostring(a)) end
+local function ok(x,msg) n=n+1
+if not x then error('FAIL '..n..': '..(msg or '?'),2) end end
+local function eq(a,b,msg) ok(a==b,(msg or
+    'equality')..' expected '..tostring(b)..' got '..tostring(a)) end
 local function neq(a,b,msg) ok(a~=b,msg or 'expected distinct values') end
 local function pts(s) return W.points(s) end
 local function kind(x) return W.kind(x) end
@@ -22,14 +24,17 @@ end
 print('1. downward congruence / induced lower-dimensional equality')
 do
   local a=W.builder()
-  local ar=a:membrane(nil,'SR'); local ac=a:membrane(ar,'SC')
+  local ar=a:membrane(nil,'SR')
+  local ac=a:membrane(ar,'SC')
   local p=a:point(ac,'p')
   local aout=a:strand(ac,{p,p},'source_pair')
   local A=a:finish()
 
   local b=W.builder()
-  local br=b:membrane(nil,'TR'); local bc=b:membrane(br,'TC')
-  local x=b:point(bc,'x'); local y=b:point(bc,'y')
+  local br=b:membrane(nil,'TR')
+  local bc=b:membrane(br,'TC')
+  local x=b:point(bc,'x')
+  local y=b:point(bc,'y')
   local bin=b:strand(bc,{x,y},'target_pair')
   local sx=b:strand(bc,{x},'sx')
   local sy=b:strand(bc,{y},'sy')
@@ -57,10 +62,20 @@ do
   ok(G:owns_strand(isx) and G:owns_strand(isy),'sideways-rematerialised strands are in result')
 
   -- Ordered incidence remains ordered: quotient propagation is coordinatewise.
-  local c=W.builder(); local cr=c:membrane(nil,'CR'); local cc=c:membrane(cr,'CC')
-  local q=c:point(cc,'q'); local r=c:point(cc,'r'); local so=c:strand(cc,{q,r},'qr'); local C=c:finish()
-  local d=W.builder(); local dr=d:membrane(nil,'DR'); local dc=d:membrane(dr,'DC')
-  local u=d:point(dc,'u'); local v=d:point(dc,'v'); local ti=d:strand(dc,{v,u},'vu'); local D=d:finish()
+  local c=W.builder()
+  local cr=c:membrane(nil,'CR')
+  local cc=c:membrane(cr,'CC')
+  local q=c:point(cc,'q')
+  local r=c:point(cc,'r')
+  local so=c:strand(cc,{q,r},'qr')
+  local C=c:finish()
+  local d=W.builder()
+  local dr=d:membrane(nil,'DR')
+  local dc=d:membrane(dr,'DC')
+  local u=d:point(dc,'u')
+  local v=d:point(dc,'v')
+  local ti=d:strand(dc,{v,u},'vu')
+  local D=d:finish()
   local _,himg=W.join({C,D},{{from=so,to=ti}})
   eq(himg[v],q,'slot 1 maps coordinatewise')
   eq(himg[u],r,'slot 2 maps coordinatewise')
@@ -69,7 +84,10 @@ end
 
 print('2. join image as identity transport')
 do
-  local vb=W.builder(); local vm=vb:membrane(nil,'V'); local R=vb:point(vm,'R'); vb:finish()
+  local vb=W.builder()
+  local vm=vb:membrane(nil,'V')
+  local R=vb:point(vm,'R')
+  vb:finish()
   local A,ar,ax,ai,ao,af=stage('A',R)
   local B,br,bx,bi,bo,bf=stage('B',R)
   local C,cr,cx,ci,co,cf=stage('C',R)
@@ -105,10 +123,20 @@ do
 
   -- The image is allowed to be many-to-one: causal SCC normalisation maps
   -- several source Faces to one new joint Face.
-  local x=W.builder(); local xm=x:membrane(nil,'X'); local xp=x:point(xm,'p')
-  local xi=x:strand(xm,{xp},'xi'); local xo=x:strand(xm,{xp},'xo'); local xf=x:face(xm,{xi},{xo},'xf'); local X=x:finish()
-  local y=W.builder(); local ym=y:membrane(nil,'Y'); local yp=y:point(ym,'p')
-  local yi=y:strand(ym,{yp},'yi'); local yo=y:strand(ym,{yp},'yo'); local yf=y:face(ym,{yi},{yo},'yf'); local Y=y:finish()
+  local x=W.builder()
+  local xm=x:membrane(nil,'X')
+  local xp=x:point(xm,'p')
+  local xi=x:strand(xm,{xp},'xi')
+  local xo=x:strand(xm,{xp},'xo')
+  local xf=x:face(xm,{xi},{xo},'xf')
+  local X=x:finish()
+  local y=W.builder()
+  local ym=y:membrane(nil,'Y')
+  local yp=y:point(ym,'p')
+  local yi=y:strand(ym,{yp},'yi')
+  local yo=y:strand(ym,{yp},'yo')
+  local yf=y:face(ym,{yi},{yo},'yf')
+  local Y=y:finish()
   local cyc,cimg=W.join({X,Y},{{from=xo,to=yi},{from=yo,to=xi}})
   eq(cimg[xf],cimg[yf],'two cyclic Faces map to one joint Face')
   eq(#cyc:faces(),1,'SCC quotient has one Face')
@@ -159,19 +187,28 @@ do
 
   -- A development is genuinely reusable as a presentation because its exact
   -- carriers are never imported into the evolving world when it is non-frame.
-  local vb=W.builder(); local vm=vb:membrane(nil,'roles'); local R=vb:point(vm,'R'); vb:finish()
+  local vb=W.builder()
+  local vm=vb:membrane(nil,'roles')
+  local R=vb:point(vm,'R')
+  vb:finish()
   local D,dr,dx,di,do_,df=stage('D',R)
-  local wb=W.builder(); local wr=wb:membrane(nil,'W'); local wx=wb:point(wr,'value'); local ws=wb:strand(wr,{R,wx},'live'); local W0=wb:finish()
+  local wb=W.builder()
+  local wr=wb:membrane(nil,'W')
+  local wx=wb:point(wr,'value')
+  local ws=wb:strand(wr,{R,wx},'live')
+  local W0=wb:finish()
 
   local W1,m1=W.advance(W0,D,{{from=ws,to=di}})
-  local out1=m1[do_]; local face1=m1[df]
+  local out1=m1[do_]
+  local face1=m1[df]
   neq(out1,do_,'first application materialises fresh output occurrence')
   neq(face1,df,'first application materialises fresh Face')
   ok(W1:owns_strand(out1),'first fresh output is live')
   ok(not W1:owns_face(face1),'boundary has forgotten first Face')
 
   local W2,m2=W.advance(W1,D,{{from=out1,to=di}})
-  local out2=m2[do_]; local face2=m2[df]
+  local out2=m2[do_]
+  local face2=m2[df]
   neq(out2,do_,'second application still does not consume template identity')
   neq(out2,out1,'reusing same exact Development creates a distinct output occurrence')
   neq(face2,df,'second application materialises rather than importing template Face')
@@ -185,13 +222,17 @@ end
 
 print('2b. image coverage and incidence compatibility')
 do
-  local vb=W.builder(); local vm=vb:membrane(nil,'V2'); local R=vb:point(vm,'R2'); vb:finish()
+  local vb=W.builder()
+  local vm=vb:membrane(nil,'V2')
+  local R=vb:point(vm,'R2')
+  vb:finish()
   local A,ar,ax,ai,ao,af=stage('IA',R)
   local B,br,bx,bi,bo,bf=stage('IB',R)
   local G,img=W.join({A,B},{{from=ao,to=bi}})
   local seen={}
   for _,part in ipairs({A,B}) do
-    for _,m in ipairs(part:membranes()) do if img[m] then seen[img[m]]=true; eq(kind(img[m]),'membrane','membrane image preserves kind') end end
+    for _,m in ipairs(part:membranes()) do if img[m] then seen[img[m]]=true
+    eq(kind(img[m]),'membrane','membrane image preserves kind') end end
     for _,p in ipairs(part:points()) do
       ok(img[p]~=nil,'acyclic Point has image')
       seen[img[p]]=true
@@ -203,8 +244,10 @@ do
       seen[img[s]]=true
       eq(kind(img[s]),'strand','Strand image preserves kind')
       eq(W.membrane(img[s]),img[W.membrane(s)],'Strand placement commutes with image')
-      local before,after=pts(s),pts(img[s]); eq(#before,#after,'Strand arity preserved')
-      for i=1,#before do eq(after[i],img[before[i]] or before[i],'Point incidence commutes with image') end
+      local before,after=pts(s),pts(img[s])
+      eq(#before,#after,'Strand arity preserved')
+      for i=1,#before do eq(after[i],img[before[i]] or before[i],
+          'Point incidence commutes with image') end
     end
     for _,f in ipairs(part:faces()) do
       ok(img[f]~=nil,'acyclic Face has image')
@@ -213,17 +256,30 @@ do
       eq(W.membrane(img[f]),img[W.membrane(f)],'acyclic Face placement commutes with image')
     end
   end
-  for _,m in ipairs(G:membranes()) do ok(seen[m],'every resulting membrane is hit by some input image') end
-  for _,p in ipairs(G:points()) do ok(seen[p],'every resulting Point is hit by some input image') end
-  for _,s in ipairs(G:strands()) do ok(seen[s],'every resulting Strand is hit by some input image') end
+  for _,m in ipairs(G:membranes()) do ok(seen[m],
+      'every resulting membrane is hit by some input image') end
+  for _,p in ipairs(G:points()) do ok(seen[p],
+      'every resulting Point is hit by some input image') end
+  for _,s in ipairs(G:strands()) do ok(seen[s],
+      'every resulting Strand is hit by some input image') end
   for _,f in ipairs(G:faces()) do ok(seen[f],'every resulting Face is hit by some input image') end
 
   -- In a causal SCC, internal Strand classes are not transported to surviving
-  -- Strand carriers at all; only the contracted joint Face survives them.
-  local x=W.builder(); local xm=x:membrane(nil,'CX'); local xp=x:point(xm,'p')
-  local xi=x:strand(xm,{xp},'xi'); local xo=x:strand(xm,{xp},'xo'); local xf=x:face(xm,{xi},{xo},'xf'); local X=x:finish()
-  local y=W.builder(); local ym=y:membrane(nil,'CY'); local yp=y:point(ym,'p')
-  local yi=y:strand(ym,{yp},'yi'); local yo=y:strand(ym,{yp},'yo'); local yf=y:face(ym,{yi},{yo},'yf'); local Y=y:finish()
+  -- Strand carriers at all, only the contracted joint Face survives them.
+  local x=W.builder()
+  local xm=x:membrane(nil,'CX')
+  local xp=x:point(xm,'p')
+  local xi=x:strand(xm,{xp},'xi')
+  local xo=x:strand(xm,{xp},'xo')
+  local xf=x:face(xm,{xi},{xo},'xf')
+  local X=x:finish()
+  local y=W.builder()
+  local ym=y:membrane(nil,'CY')
+  local yp=y:point(ym,'p')
+  local yi=y:strand(ym,{yp},'yi')
+  local yo=y:strand(ym,{yp},'yo')
+  local yf=y:face(ym,{yi},{yo},'yf')
+  local Y=y:finish()
   local _,cimg=W.join({X,Y},{{from=xo,to=yi},{from=yo,to=xi}})
   eq(cimg[xf],cimg[yf],'SCC Faces coalesce')
   eq(cimg[xo],nil,'internal cyclic Strand has no surviving carrier image')
@@ -237,9 +293,13 @@ do
   -- One frame contains two distinct Points and three open Strands. Closing two
   -- frame Strands can force the Points equal, so a third frame Strand carrying
   -- the losing Point can no longer survive literally.
-  local b=W.builder(); local m=b:membrane(nil,'F')
-  local p=b:point(m,'p'); local q=b:point(m,'q')
-  local sp=b:strand(m,{p},'sp'); local sq=b:strand(m,{q},'sq'); local witness=b:strand(m,{q},'witness')
+  local b=W.builder()
+  local m=b:membrane(nil,'F')
+  local p=b:point(m,'p')
+  local q=b:point(m,'q')
+  local sp=b:strand(m,{p},'sp')
+  local sq=b:strand(m,{q},'sq')
+  local witness=b:strand(m,{q},'witness')
   local F=b:finish()
   local G,img=W.join({F},{{from=sp,to=sq}})
   eq(img[p],p,'first frame Point chosen as exact representative')

@@ -1,6 +1,6 @@
 # API
 
-**Status: maintained public Lua API for Worlds 0.6.5.**
+**Status: maintained public Lua API for Worlds 0.6.6.**
 
 ```lua
 local W = require('worlds')
@@ -198,18 +198,67 @@ local ps = c:parts()
 local es = c:equations()
 local result = c:result()
 local mapped = c:image(source_carrier)
+local correspondence = c:correspondence()
 
 Construction.is_construction(c)
+Construction.is_correspondence(correspondence)
 ```
 
 A Construction is immutable evidence of one exact `join` materialisation.
-`Construction.join(P,E)` performs the ordinary `W.join(P,E)` operation; it does
-not introduce another Geometry-changing primitive or composition algorithm.
-The stored parts are the ordered exact Geometry values supplied to that join,
-the stored equations are normalised once, and `image(x)` exposes the exact
-construction-relative carrier image returned by the kernel. The supplied parts
-array and the normalised equation array are borrowed read-only views; accessors
-return those stable views without copying. The image table itself is not exposed.
+`Construction.join(P,E)` performs the ordinary strict join law; it does not
+introduce another Geometry-changing primitive or composition algorithm. The
+stored parts are the ordered exact Geometry values supplied to that join, the
+stored equations are normalised once, and `image(x)` exposes the surviving exact
+carrier image returned by the kernel. The supplied parts array and normalised
+equation array are borrowed read-only views. The image table itself is not
+exposed.
+
+### Construction correspondence
+
+0.6.6 adds an optional immutable view of the Construction's native quotient
+provenance:
+
+```lua
+local q = c:correspondence()
+
+local source_parts = q:source_parts()
+local target = q:target()
+local a = q:source_class(source_carrier)
+local b = q:target_class(result_carrier)
+
+local same = q:source_equivalent(source_a, source_b)
+local reaches = q:corresponds(source_carrier, result_carrier)
+
+local composed = q:compose(next_construction:correspondence())
+local same_partition = q:same_source_partition(other_correspondence)
+local peer = q:mate(other_correspondence, result_carrier)
+```
+
+A correspondence class is opaque construction-relative evidence. It is not a
+Membrane, Point, Strand or Face, `W.kind(class)` is `nil`, and possession of a
+class grants no authority. Equality of class values is meaningful only within
+the corresponding immutable witness.
+
+`source_class(x)` preserves quotient identity even when the class containing
+`x` has no surviving result carrier. `target_class(y)` reports the class of a
+result carrier. `source_equivalent(a,b)` asks whether two marked source carriers
+were identified by this Construction; `corresponds(a,b)` asks whether a source
+carrier and result carrier belong to the same class.
+
+`compose(next)` composes correspondence evidence when `next` consumes this
+correspondence's target Geometry, optionally with genuinely fresh additional
+parts. It rejects overlap between those fresh parts and the original marked
+source. The operation composes evidence only; it does not perform another join.
+
+`same_source_partition(other)` compares exact quotienting over an identical
+marked source. `mate(other,y)` uses that common source partition to identify the
+unique source-relative peer of target carrier `y` in another exact-distinct
+Construction result, when one exists.
+
+`Construction:image` remains the simple surviving-carrier projection and is
+unchanged. `W.join` likewise retains its existing two-result API and does not
+retain correspondence provenance. Construction requests the richer witness
+explicitly from the verified centre.
 
 ## Presentation
 
