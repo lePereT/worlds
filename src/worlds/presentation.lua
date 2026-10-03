@@ -9,30 +9,11 @@ local Construction=require('worlds.construction')
 local DENSE=require('worlds._array')
 
 local Presentation={}
-local MT={}; MT.__index=MT
-local MARK_KEY,STATE_KEY,MARK={},{},{}
-
+local STATE=setmetatable({}, {__mode='k'})
 local function immutable() error('Worlds values are immutable',2) end
+local MT={__newindex=immutable,__metatable='Worlds Presentation'}; MT.__index=MT
 
-local function state(x)
-  if type(x)~='table' then return nil end
-  local ok,m=pcall(function() return x[MARK_KEY] end)
-  if not ok or m~=MARK then return nil end
-  local ok2,st=pcall(function() return x[STATE_KEY] end)
-  return ok2 and st or nil
-end
-
-local function copy_row(row)
-  local out={}
-  for i=1,#row do out[i]=row[i] end
-  return out
-end
-
-local function copy_rows(rows)
-  local out={}
-  for i=1,#rows do out[i]=copy_row(rows[i]) end
-  return out
-end
+local function state(x) return type(x)=='table' and STATE[x] or nil end
 
 local function is_open(g,s)
   return g:producer(s)==nil or g:consumer(s)==nil
@@ -40,28 +21,18 @@ end
 
 local function normal_rows(g,rows)
   DENSE.length(rows,'Presentation rows')
-  local out={}
-  for i,row in ipairs(rows) do
-    local xs=DENSE.copy(row,'Presentation row')
-    for _,s in ipairs(xs) do
+  for _,row in ipairs(rows) do
+    DENSE.length(row,'Presentation row')
+    for _,s in ipairs(row) do
       assert(W.kind(s)=='strand' and g:owns_strand(s),'Presentation coordinate must be an exact Strand of the ambient Geometry')
       assert(is_open(g,s),'Presentation coordinate must be open in the ambient Geometry')
     end
-    out[i]=xs
   end
-  return out
+  return rows
 end
 
 local function value(st)
-  return setmetatable({}, {
-    __newindex=immutable,
-    __metatable='Worlds Presentation',
-    __index=function(_,k)
-      if k==MARK_KEY then return MARK end
-      if k==STATE_KEY then return st end
-      return MT[k]
-    end,
-  })
+  local x=setmetatable({},MT); STATE[x]=st; return x
 end
 
 function Presentation.new(geometry,rows)
@@ -78,13 +49,13 @@ function MT:ambient()
 end
 
 function MT:rows()
-  return copy_rows(assert(state(self),'Worlds Presentation required').rows)
+  return assert(state(self),'Worlds Presentation required').rows
 end
 
 function MT:row(i)
   local st=assert(state(self),'Worlds Presentation required')
   assert(type(i)=='number' and i>=1 and i%1==0 and i<=#st.rows,'Presentation row index out of range')
-  return copy_row(st.rows[i])
+  return st.rows[i]
 end
 
 function MT:transport(construction)

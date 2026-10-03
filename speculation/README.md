@@ -2,7 +2,7 @@
 
 # Speculation
 
-Worlds 0.6.3 keeps the verified Geometry centre unchanged and promotes only
+Worlds 0.6.4 keeps the verified Geometry centre and 0.6.3 semantic laws unchanged and promotes only
 Construction and Presentation at the semantic edge.  The substantially richer
 dimensional/inter-World work below remains speculation.
 

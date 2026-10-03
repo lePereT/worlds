@@ -26,7 +26,10 @@ tests/adversarial.lua
     targeted boundary/scarcity/locality regressions
 
 tests/work.lua
-    deterministic complexity/work-budget regression gates
+    deterministic finite-query/search work-budget regression gates
+
+tests/mechanical-work.lua
+    deterministic copying/materialisation/locality work ratchets
 
 tools/check-shape.lua
     architectural/source-shape guard
@@ -73,11 +76,17 @@ wall-clock thresholds.  Solver paths are measured in the kernel's own
 `step(fuel)` work units; complete-Question construction is measured in Lua VM
 instruction quanta because it occurs before the fuelled coroutine exists.
 
-The guarded properties are: indexed rigid lookup independent of unrelated
+The guarded query properties are: indexed rigid lookup independent of unrelated
 source size; symbolic complete-Question construction; persistent query/ancestry
 caches; cached depth work independent of raw membrane depth; and linear early
-scarcity rejection.  The budgets are deliberately loose enough to permit local
+scarcity rejection. The budgets are deliberately loose enough to permit local
 implementation changes while failing changes in asymptotic work.
+
+`mechanical-work.lua` protects the lower mechanics with the same non-timing
+discipline: borrowed observations and identity joins must remain constant work;
+trusted development incidence is validated once; retained realisations must not
+be rematerialised at commit; and indexed local live advance must remain in the
+same work class when the unrelated frontier grows by two orders of magnitude.
 
 
 ## Centre/edge architecture

@@ -134,17 +134,17 @@ do
 end
 
 
--- Question inputs and accessors are deeply immutable at the finite-relation
--- boundary. Caller mutation cannot alter a retained Question/Refutation.
+-- Question constructors canonicalise semantic relation inputs once; public
+-- accessors then return stable borrowed/read-only views rather than copies.
 do
   local world,ss=token_world(2); local pat,d=pattern(2)
   local seed={from=ss[1],to=d[1]}; local admissible={{from=ss[1],to=d[1]},{from=ss[2],to=d[2]}}
   local question=Query.match(world,pat,{seeds={seed},admissible=admissible})
   seed.from=ss[2]; admissible[1].from=ss[2]
   local seeds=question:seeds(); eq(seeds[1].from,ss[1]); eq(seeds[1].to,d[1])
-  seeds[1].from=ss[2]; eq(question:seeds()[1].from,ss[1])
-  local allowed=question:admissible(); allowed[1].from=ss[2]
-  local allowed2=question:admissible(); ok((allowed2[1].from==ss[1] and allowed2[1].to==d[1]) or (allowed2[2].from==ss[1] and allowed2[2].to==d[1]))
+  eq(question:seeds(),seeds,'seed accessor returns the stable canonical view')
+  local allowed=question:admissible(); eq(question:admissible(),allowed,'admissibility accessor returns the stable canonical view')
+  ok((allowed[1].from==ss[1] and allowed[1].to==d[1]) or (allowed[2].from==ss[1] and allowed[2].to==d[1]))
   local k,es=decided(Query.solve(question),100); eq(k,'yes'); local by={}; for _,e in ipairs(es) do by[e.to]=e.from end; eq(by[d[1]],ss[1]); eq(by[d[2]],ss[2])
 end
 
@@ -172,13 +172,32 @@ do
   ok(not pcall(function() Query.match(world,pat,{seeds={[2]={from=ss[1],to=d[1]}}}) end),'sparse seeds must be rejected')
 end
 
--- Type predicates recognise closure-owned values, not spoofable protected
+-- Type predicates recognise registered Worlds values, not spoofable protected
 -- metatable labels.
 do
   local fake_q=setmetatable({}, {__metatable='Worlds Question'})
   local fake_r=setmetatable({}, {__metatable='Worlds Refutation'})
   ok(not Query.is_question(fake_q),'Question predicate must not trust metatable labels')
   ok(not Query.is_refutation(fake_r),'Refutation predicate must not trust metatable labels')
+end
+
+
+-- A matched target ingress which remains open is pass-through authority, not a
+-- consumed source.  Retained local Match evidence must therefore commit to the
+-- same live boundary as the literal strict join.
+do
+  local b=W.builder(); local m=b:membrane(nil,'pass-through.world'); local p=b:point(m,'p'); local ss={}
+  for i=1,100 do ss[i]=b:strand(m,{p},'s'..i) end
+  local world=b:finish()
+  local d=W.development_builder(); local dm=d:membrane(nil,'pass-through.target'); local target=d:strand(dm,{p},'target'); d=d:finish()
+  local source=ss[50]
+  local solve=W.solve(world,d,{{from=source,to=target}}); local tag,equations
+  repeat tag,equations=solve:step(math.huge) until tag~='more'
+  eq(tag,'yes','pass-through Match must solve')
+  local nextw,image=W.advance(world,d,equations)
+  eq(#nextw:egress(),100,'pass-through retained commit must not consume the matched live source')
+  ok(nextw:owns_strand(source),'pass-through matched source remains exact live authority')
+  eq(image[target],source,'pass-through target maps to the exact live source')
 end
 
 print('PASS query',n,'assertions')

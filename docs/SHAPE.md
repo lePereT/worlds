@@ -1,4 +1,4 @@
-# Shape of Worlds 0.6.3
+# Shape of Worlds 0.6.4
 
 ## 1. Sacred Geometry kernel
 
@@ -67,10 +67,10 @@ judgement, while every constructive Question witness is guaranteed join-lawful.
 verified centre and outside the replaceable query engine.
 
 `worlds.construction` calls the ordinary public `join` exactly once and retains
-its ordered parts, normalised equations, result and exact image in immutable
-private state. It owns no quotient or matching algorithm.
+its ordered parts, normalised equations, result and exact image in private
+weak-key state. Borrowed array views are immutable by the trusted-client contract. It owns no quotient or matching algorithm.
 
-`worlds.presentation` stores only an exact ambient Geometry plus copied arrays of
+`worlds.presentation` stores only an exact ambient Geometry plus borrowed read-only arrays of
 selected open Strand references. Its sole derived operation is residual transport
 through a `worlds.construction` value. It cannot create or consume Geometry.
 

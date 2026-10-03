@@ -34,11 +34,10 @@ do
   ok(c:image(b.f)~=b.f,'non-frame Face is freshly materialised')
   eq(c:image({}),nil,'unknown values have no construction image')
 
-  -- Inputs and accessors are copied rather than aliased.
-  parts[1]=B; equations[1][1]=b.o
-  eq(c:parts()[1],A); eq(c:equations()[1].from,a.o)
-  ps[1]=B; es[1].from=b.o
-  eq(c:parts()[1],A); eq(c:equations()[1].from,a.o)
+  -- Trusted in-process arrays are borrowed/read-only rather than defensively copied.
+  eq(c:parts(),parts,'Construction retains the exact parts array')
+  eq(c:parts(),ps,'parts accessor returns the same borrowed view')
+  eq(c:equations(),es,'equations accessor returns one stable normalised view')
   fails(function() c.extra=true end,'immutable')
 end
 

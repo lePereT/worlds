@@ -30,16 +30,19 @@ assert(not core:match('query_factory'),'verified centre must not depend on match
 assert(not core:match('function W%.solve'),'complete-query convenience belongs at the public edge')
 assert(not core:match('HistoryMT'),'History must remain outside the centre')
 assert(not core:match('worlds%.history'),'optional History must not be a centre dependency')
-assert(core:match('function W%.builder%(%)%s+local membranes'),'Builder state must be lexical rather than exposed representation')
+assert(core:match('local function builder%(trusted%)%s+local membranes'),'Builder state must be lexical rather than exposed representation')
+assert(core:match('function W%.builder%(%) return builder%(false%) end'),'public Builder must retain eager trusted-boundary diagnostics')
 assert(not core:match('BuilderMT'),'Builder must not use a shared mutable-state registry/metatable implementation')
 assert(core:match('PRIVATE%.geometry=function'),'private observation capability missing')
 assert(core:match('local function is_boundary_normal'),'boundary normality must be a kernel fact')
 
--- Public edge may eagerly prepare disposable indexes, but it must do so outside
--- the verified centre and only after a Geometry has already been produced.
+-- Public edge owns disposable indexes. Installed/query-source Builder output
+-- is prewarmed, while the explicit development builder skips source-only work.
 assert(facade:match("require%('worlds%._kernel'%)"),'public facade must expose the verified centre')
-assert(facade:match("require%('worlds%._compiled'%)"),'public edge must own eager acceleration')
-assert(facade:match('Compiled%.prepare%(g%)'),'builder installation boundary must prepare outgoing acceleration')
+assert(facade:match("require%('worlds%._compiled'%)"),'public edge must own disposable acceleration')
+assert(facade:match('Compiled%.prepare%(g%)'),'installed Builder output must prepare outgoing acceleration')
+assert(facade:match('function W%.development_builder'),'short-lived development builder missing')
+assert(facade:match('Kernel%.private%.development_builder%(%)'),'development builder must use the private single-validation path')
 assert(facade:match('function W%.solve'),'complete-query convenience must live at the public edge')
 assert(facade:match("require%('worlds%._query'%)"),'public solve must delegate to the disposable query edge')
 assert(queryedge:match("require%('worlds%.query_factory'%)"),'shared query edge must construct the matching implementation')
@@ -50,17 +53,21 @@ assert(not facade:match("worlds%.presentation"),'main facade must not import Pre
 
 -- Construction/Presentation are semantic edge values, not alternate kernel
 -- operations. Construction delegates to ordinary join; Presentation owns only
--- copied references and residualises solely through a Construction image.
+-- borrowed read-only references and residualises solely through a Construction image.
 assert(construction:match("require%('worlds'%)"),'Construction must delegate to public Worlds join')
-assert(construction:match('W%.join%(ps,es%)'),'Construction must perform ordinary join')
+assert(construction:match('W%.join%(parts,equations%)'),'Construction must perform ordinary join')
 assert(not construction:match("worlds%._kernel"),'Construction must not reach into the verified centre')
 assert(not construction:match('do_join'),'Construction must not duplicate join implementation')
-assert(not construction:match("setmetatable({}, {__mode='k'})"),'Construction state must be closure-owned rather than a weak registry')
+assert(construction:find("STATE=setmetatable({}, {__mode='k'})",1,true),'Construction private state must use the shared weak-key trust model')
 assert(presentation:match("require%('worlds%.construction'%)"),'Presentation transport must require an actual Construction')
 assert(presentation:match('construction:image%(s%)'),'Presentation transport must use exact construction image')
 assert(not presentation:match('W%.join'),'Presentation must not change Geometry')
 assert(not presentation:match('W%.builder'),'Presentation must not manufacture carriers')
-assert(not presentation:match("setmetatable({}, {__mode='k'})"),'Presentation state must be closure-owned rather than a weak registry')
+assert(presentation:find("STATE=setmetatable({}, {__mode='k'})",1,true),'Presentation private state must use the shared weak-key trust model')
+assert(not construction:match('pcall'),'Construction closure state must not use defensive pcall recovery')
+assert(not presentation:match('pcall'),'Presentation closure state must not use defensive pcall recovery')
+assert(not judgement:match('pcall'),'Question closure state must not use defensive pcall recovery')
+assert(not core:match('DENSE%.copy'),'verified centre must not defensively clone trusted finite arrays')
 
 -- Private compilation is acceleration only: no finite-Question policy belongs
 -- here, no callback points back into Geometry construction, and all state is
@@ -84,10 +91,8 @@ assert(judgement:match('function M%.complete'),'complete Question constructor mi
 assert(judgement:match('function M%.solve'),'Question solve judgement missing')
 assert(judgement:match('Worlds Refutation'),'Question layer must expose exact refutation evidence')
 assert(not judgement:match('factorise'),'Question judgement must not contain search engine')
-assert(not judgement:match('QSTATE=setmetatable'),'Question state must not use a weak registry')
-assert(not judgement:match('RSTATE=setmetatable'),'Refutation state must not use a weak registry')
-assert(not judgement:match('SOLVESTATE=setmetatable'),'public solve state must not use a weak registry')
-assert(not judgement:match("setmetatable({}, {__mode='k'})"),'Question object state/factory must not use weak registries')
+assert(judgement:find("QSTATE=setmetatable({}, {__mode='k'})",1,true),'Question private state must use the shared weak-key trust model')
+assert(judgement:find("RSTATE=setmetatable({}, {__mode='k'})",1,true),'Refutation private state must use the shared weak-key trust model')
 assert(judgement:match('if spec%.sources==nil then sources=nil; full_sources=true'),'complete source section must remain symbolic')
 assert(judgement:match('if spec%.targets==nil then targets=nil; full_targets=true'),'complete target section must remain symbolic')
 assert(query:match('local function ingress_section'),'declarative development-side matching analysis missing')
@@ -112,4 +117,4 @@ assert(query:match('coroutine%.create'),'retained query engine missing')
 assert(query:match('function M%.complete'),'complete hot-path constructor missing')
 assert(query:match('function M%.solve'),'replaceable query engine missing')
 assert(not query:match('relay%.'),'Worlds Query must remain Relay-neutral')
-print('PASS shape 0.6.3 centre/edge split')
+print('PASS shape 0.6.4 centre/edge split')

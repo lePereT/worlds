@@ -25,6 +25,7 @@ Compiled=Compiled or require('worlds._compiled')(K)
 local M={}
 local EMPTY={}
 local relation=require('worlds.query_relation')
+local Persistent=require('worlds._persistent')
 local INGRESS=setmetatable({}, {__mode='k'})
 local MCACHE=setmetatable({}, {__mode='k'})
 local function immutable() error('Worlds Query solve state is immutable',2) end
@@ -365,7 +366,7 @@ end
 -- exactly the same implementation.
 function M.complete(source,target,seeds)
   local tc=context(target); assert(tc.developable,'Question target must be a development connected to open ingress')
-  return ordinary_solve{surface=full_surface(source),pattern=tc,target=target,targets=tc.ingress,seeds=seeds or EMPTY,cache_full_targets=true,allowed_by_to=nil,admissible_all=true,done=false}
+  return ordinary_solve{surface=full_surface(source),pattern=tc,target=target,targets=Persistent.array(tc.ingress),seeds=seeds or EMPTY,cache_full_targets=true,allowed_by_to=nil,admissible_all=true,done=false}
 end
 
 -- `spec` is the compiled mathematical Question supplied by worlds.query.

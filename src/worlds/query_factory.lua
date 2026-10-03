@@ -12,39 +12,46 @@
 -- Both share the same evidence algebra.  Every public yes(E) is validated by
 -- the same strict quotient/Geometry law as public join before it is exposed.
 -- Search strategy lives in replaceable engines outside the verified centre.
-local QMARK_KEY,QSTATE_KEY,QUESTION={},{},{}
-local RMARK_KEY,RSTATE_KEY,REFUTATION={},{},{}
+local QSTATE=setmetatable({}, {__mode='k'})
+local RSTATE=setmetatable({}, {__mode='k'})
+local ZSTATE=setmetatable({}, {__mode='k'})
+local EVIDENCE=setmetatable({}, {__mode='k'})
 return function(W,K)
 assert(type(W)=='table' and type(W.is_geometry)=='function','Worlds Question requires exact Worlds kernel')
 K=K or require('worlds._kernel').private
 local Compiled=require('worlds._compiled')(K)
+local Boundary=require('worlds._boundary')(K)
 local DENSE=require('worlds._array')
+local Persistent=require('worlds._persistent')
 local MatchEngine=require('worlds.query_engine')(W,K,Compiled)
 local CloseEngine=require('worlds.query_closure_engine')
 local M={}
 local function immutable() error('Worlds values are immutable',2) end
-local QuestionMT,RefutationMT={},{}
+local QuestionMT={__newindex=immutable,__metatable='Worlds Question'}; QuestionMT.__index=QuestionMT
+local RefutationMT={__newindex=immutable,__metatable='Worlds Refutation'}; RefutationMT.__index=RefutationMT
+local RealisationMT={__newindex=immutable,__metatable='Worlds Realisation'}; RealisationMT.__index=RealisationMT
 local SPEC={sources=true,targets=true,required_sources=true,required_targets=true,admissible=true,seeds=true}
-local function array(xs) local r={} for i=1,#(xs or {}) do r[i]=xs[i] end return r end
-local function pairs_copy(xs) local r={} for i,e in ipairs(xs or {}) do r[i]={from=e.from or e[1],to=e.to or e[2]} end return r end
-local function private_state(x,mark_key,mark,state_key)
-  if type(x)~='table' then return nil end
-  local ok,m=pcall(function() return x[mark_key] end); if not ok or m~=mark then return nil end
-  local ok2,st=pcall(function() return x[state_key] end); return ok2 and st or nil
-end
-local function question_state(x) return private_state(x,QMARK_KEY,QUESTION,QSTATE_KEY) end
-local function refutation_state(x) return private_state(x,RMARK_KEY,REFUTATION,RSTATE_KEY) end
+local function question_state(x) return type(x)=='table' and QSTATE[x] or nil end
+local function refutation_state(x) return type(x)=='table' and RSTATE[x] or nil end
+local function realisation_state(x) return type(x)=='table' and ZSTATE[x] or nil end
 local function question_value(st)
-  return setmetatable({}, {
-    __newindex=immutable,__metatable='Worlds Question',
-    __index=function(_,k) if k==QMARK_KEY then return QUESTION elseif k==QSTATE_KEY then return st else return QuestionMT[k] end end,
-  })
+  local x=setmetatable({},QuestionMT); QSTATE[x]=st; return x
 end
 local function refutation_value(st)
-  return setmetatable({}, {
-    __newindex=immutable,__metatable='Worlds Refutation',
-    __index=function(_,k) if k==RMARK_KEY then return REFUTATION elseif k==RSTATE_KEY then return st else return RefutationMT[k] end end,
-  })
+  local x=setmetatable({},RefutationMT); RSTATE[x]=st; return x
+end
+local function realisation_value(st)
+  local x=st.public
+  if x then return x end
+  x=setmetatable({},RealisationMT); ZSTATE[x]=st; st.public=x; return x
+end
+local function retain_realisation(st) EVIDENCE[st.equations]=st; return st end
+local function realisation_boundary(st)
+  if st.boundary~=nil then return st.boundary or nil end
+  if st.source and K.geometry(st.source).boundary_normal then
+    st.boundary=Boundary.after(st.source,st.result)
+  else st.boundary=false end
+  return st.boundary or nil
 end
 local function membership(xs) local set={}; for _,x in ipairs(xs or {}) do set[x]=true end; return set end
 local function canonical_subset(pos,selected,label)
@@ -74,14 +81,8 @@ local function pair_map(pairs,source_has,target_has,label)
   end
   return by_to,false,normal
 end
-local function clone(x,seen)
-  if W.kind(x) then return x end
-  if type(x)~='table' then return x end
-  seen=seen or {}; if seen[x] then return seen[x] end
-  local out={}; seen[x]=out; for k,v in pairs(x) do out[clone(k,seen)]=clone(v,seen) end; return out
-end
 local function refutation(question,reason)
-  return refutation_value{question=question,reason=clone(reason or {kind='exhausted'})}
+  return refutation_value{question=question,reason=reason or {kind='exhausted'}}
 end
 local function check_spec(spec)
   if spec==nil then return {} end
@@ -120,10 +121,7 @@ local function normal_relation(spec,source_has,target_has,source_pos,target_pos)
   return allowed_by_to,admissible_all,admissible
 end
 
-local function join_parts(q)
-  if q.form=='close' then return q.parts end
-  return q.internal and {q.target} or {q.source,q.target}
-end
+local function join_parts(q) return q.parts end
 
 local function wrap_solve(raw,question,deferred)
   local final_no,valid_hits,last_unlawful=nil,0,nil
@@ -140,10 +138,15 @@ local function wrap_solve(raw,question,deferred)
     local q=qstate()
     if q.required_sources and #q.required_sources>0 then
       local used={}; for _,e in ipairs(equations) do used[e.from or e[1]]=true end
-      for _,source in ipairs(q.required_sources) do if not used[source] then return false,'required source remains open' end end
+      for _,source in ipairs(q.required_sources) do if not used[source] then return nil,'required source remains open' end end
     end
-    local geometry,why=K.try_join(join_parts(q),equations)
-    return geometry~=nil,why
+    local parts=join_parts(q)
+    local geometry,image_or_why,source_position
+    if q.form=='match' and not q.internal and Boundary.has(q.source) then source_position=function(from) return Boundary.position(q.source,'strand',from) end end
+    if source_position then geometry,image_or_why=K.try_match_join(q.source,q.target,equations,source_position)
+    else geometry,image_or_why=K.try_join(parts,equations) end
+    if not geometry then return nil,image_or_why end
+    return {parts=parts,equations=equations,result=geometry,image=image_or_why,source=(q.form=='match' and not q.internal and Boundary.has(q.source)) and q.source or nil}
   end
   local function no(reason)
     final_no=refutation(public_question(),reason)
@@ -156,8 +159,8 @@ local function wrap_solve(raw,question,deferred)
     while true do
       local tag,value=raw:step(fuel)
       if tag=='yes' then
-        local ok,why=lawful(value)
-        if ok then valid_hits=valid_hits+1; return 'yes',value end
+        local realisation,why=lawful(value)
+        if realisation then retain_realisation(realisation); valid_hits=valid_hits+1; return 'yes',value end
         last_unlawful={kind='unlawful-realisation',reason=why}
         if not unbounded then return 'more',solve end
       elseif tag=='done' then
@@ -176,9 +179,24 @@ local function wrap_solve(raw,question,deferred)
   return solve
 end
 
+function M.is_realisation(x) return realisation_state(x)~=nil end
+function RealisationMT:parts() return assert(realisation_state(self),'Worlds Realisation required').parts end
+function RealisationMT:equations() return assert(realisation_state(self),'Worlds Realisation required').equations end
+function RealisationMT:result() return assert(realisation_state(self),'Worlds Realisation required').result end
+function RealisationMT:image(carrier) return assert(realisation_state(self),'Worlds Realisation required').image[carrier] end
+function RealisationMT:boundary() return realisation_boundary(assert(realisation_state(self),'Worlds Realisation required')) end
+function M.realisation_image(x) return assert(realisation_state(x),'Worlds Realisation required').image end
+function M.realisation_boundary(x) return realisation_boundary(assert(realisation_state(x),'Worlds Realisation required')) end
+function M.realisation_for(parts,equations)
+  local st=EVIDENCE[equations]
+  if not st or #parts~=#st.parts then return nil end
+  for i=1,#parts do if parts[i]~=st.parts[i] then return nil end end
+  return realisation_value(st)
+end
+
 function M.is_refutation(x) return refutation_state(x)~=nil end
 function RefutationMT:question() return assert(refutation_state(self),'Worlds Refutation required').question end
-function RefutationMT:reason() return clone(assert(refutation_state(self),'Worlds Refutation required').reason) end
+function RefutationMT:reason() return assert(refutation_state(self),'Worlds Refutation required').reason end
 function RefutationMT:form() return self:question():form() end
 function RefutationMT:parts() return self:question():parts() end
 function RefutationMT:source() return self:question():source() end
@@ -191,7 +209,7 @@ function M.match(source,target,spec)
   local internal=source==target
   assert(W.is_geometry(source) and W.is_geometry(target),'Match Question ambient values must be Worlds Geometry')
   source=W.boundary(source)
-  local sc,tc=assert(Compiled.view(source),'missing compiled source Geometry'),assert(Compiled.view(target),'missing compiled target Geometry')
+  local sc,tc=K.geometry(source),K.geometry(target)
   local spos,tpos
   local function source_positions() if not spos then spos=Compiled.egress_positions(source) end; return spos end
   local function target_positions() if not tpos then tpos=Compiled.ingress_positions(target) end; return tpos end
@@ -221,7 +239,7 @@ function M.match(source,target,spec)
   local seeds={}
   if #seed_input>0 then seeds=normal_seeds(spec,source_has,target_has,allowed_by_to,admissible_all,target_positions()) end
   return question_value{
-    kernel=W,form='match',source=source,target=target,internal=internal,
+    kernel=W,form='match',source=source,target=target,internal=internal,parts=internal and {target} or {source,target},
     sources=sources,targets=targets,required_sources=required_sources,required_targets=required_targets,required_all=required_all,seeds=seeds,
     admissible=admissible,allowed_by_to=allowed_by_to,admissible_all=admissible_all,
     full_sources=full_sources,full_targets=full_targets,
@@ -233,12 +251,11 @@ function M.complete(source,target,seeds) return M.match(source,target,{seeds=see
 
 local function closure_sections(parts)
   DENSE.length(parts,'Close Question parts'); assert(#parts>0,'Close Question requires at least one Geometry part')
-  local normal,owner={},{}
+  local owner={}
   local source_pos,target_pos={},{}; local sources,targets={},{}
   local si,ti=0,0
   for pi,g in ipairs(parts) do
     assert(W.is_geometry(g),'Close Question parts must be Worlds Geometry')
-    normal[pi]=g
     for _,m in ipairs(g:membranes()) do assert(not owner[m],'Close Question Geometry parts must be disjoint'); owner[m]=pi end
     for _,p in ipairs(g:points()) do assert(not owner[p],'Close Question Geometry parts must be disjoint'); owner[p]=pi end
     for _,s in ipairs(g:strands()) do assert(not owner[s],'Close Question Geometry parts must be disjoint'); owner[s]=pi end
@@ -246,7 +263,32 @@ local function closure_sections(parts)
     for _,s in ipairs(g:egress()) do si=si+1; source_pos[s]=si; sources[#sources+1]=s end
     for _,s in ipairs(g:ingress()) do ti=ti+1; target_pos[s]=ti; targets[#targets+1]=s end
   end
-  return normal,source_pos,target_pos,sources,targets
+  return parts,source_pos,target_pos,sources,targets
+end
+
+-- Cheap monotone closure support: arity must agree, and any target Point not
+-- owned by the closure parts is rigid and therefore must already be exact-equal
+-- at the corresponding source coordinate.  This only removes impossible pairs.
+local function closure_support(parts,sources,targets)
+  local local_point,source_set={},{}
+  for _,g in ipairs(parts) do for _,p in ipairs(g:points()) do local_point[p]=true end end
+  local arity,useful=nil,false
+  for _,from in ipairs(sources) do source_set[from]=true; local n=#W.points(from); arity=arity or n; if n~=arity then useful=true end end
+  for _,to in ipairs(targets) do
+    local tp=W.points(to); if source_set[to] or (arity~=nil and #tp~=arity) then useful=true end
+    for _,p in ipairs(tp) do if not local_point[p] then useful=true; break end end
+  end
+  if not useful then return nil end
+  local support={}
+  for _,to in ipairs(targets) do
+    local tp,pool=W.points(to),{}; support[to]=pool
+    for _,from in ipairs(sources) do
+      local fp=W.points(from); local ok=from~=to and #fp==#tp
+      if ok then for i,p in ipairs(tp) do if not local_point[p] and fp[i]~=p then ok=false; break end end end
+      if ok then pool[from]=true end
+    end
+  end
+  return support
 end
 
 function M.close(parts,spec)
@@ -265,17 +307,18 @@ function M.close(parts,spec)
     for _,x in ipairs(required_sources) do assert(source_has(x),'Question required source is outside sources') end
   end
   local required_targets
-  if spec.required_targets==nil then required_targets=array(targets)
+  if spec.required_targets==nil then required_targets=targets
   else
     required_targets=canonical_subset(target_pos,spec.required_targets,'Question required targets')
     for _,x in ipairs(required_targets) do assert(target_has(x),'Question required target is outside targets') end
   end
   local allowed_by_to,admissible_all,admissible=normal_relation(spec,source_has,target_has,source_pos,target_pos)
   local seeds=normal_seeds(spec,source_has,target_has,allowed_by_to,admissible_all,target_pos)
+  local support_by_to=closure_support(normal,sources,targets)
   return question_value{
     kernel=W,form='close',parts=normal,
     sources=sources,targets=targets,required_sources=required_sources,required_targets=required_targets,required_all=false,seeds=seeds,
-    admissible=admissible,allowed_by_to=allowed_by_to,admissible_all=admissible_all,
+    admissible=admissible,allowed_by_to=allowed_by_to,admissible_all=admissible_all,support_by_to=support_by_to,
     full_sources=full_sources,full_targets=full_targets,
   }
 end
@@ -284,11 +327,7 @@ end
 
 function M.is_question(x) return question_state(x)~=nil end
 function QuestionMT:form() return assert(question_state(self),'Worlds Question required').form end
-function QuestionMT:parts()
-  local q=assert(question_state(self),'Worlds Question required')
-  if q.form=='close' then return array(q.parts) end
-  return q.internal and {q.target} or {q.source,q.target}
-end
+function QuestionMT:parts() return assert(question_state(self),'Worlds Question required').parts end
 function QuestionMT:source()
   local q=assert(question_state(self),'Worlds Question required'); assert(q.form=='match','source() is defined only for Match Questions'); return q.source
 end
@@ -297,22 +336,19 @@ function QuestionMT:target()
 end
 function QuestionMT:sources()
   local q=assert(question_state(self),'Worlds Question required')
-  if q.form=='close' then return array(q.sources) end
-  return array(q.sources or Compiled.view(q.source).egress)
+  return q.sources or Compiled.view(q.source).egress
 end
 function QuestionMT:targets()
   local q=assert(question_state(self),'Worlds Question required')
-  if q.form=='close' then return array(q.targets) end
-  return array(q.targets or Compiled.view(q.target).ingress)
+  return q.targets or Compiled.view(q.target).ingress
 end
-function QuestionMT:required_sources() return array(assert(question_state(self),'Worlds Question required').required_sources or {}) end
+function QuestionMT:required_sources() return assert(question_state(self),'Worlds Question required').required_sources end
 function QuestionMT:required_targets()
   local q=assert(question_state(self),'Worlds Question required')
-  if q.required_targets then return array(q.required_targets) end
-  return self:targets()
+  return q.required_targets or self:targets()
 end
-function QuestionMT:seeds() return pairs_copy(assert(question_state(self),'Worlds Question required').seeds) end
-function QuestionMT:admissible() local x=assert(question_state(self),'Worlds Question required').admissible; return x and pairs_copy(x) or nil end
+function QuestionMT:seeds() return assert(question_state(self),'Worlds Question required').seeds end
+function QuestionMT:admissible() return assert(question_state(self),'Worlds Question required').admissible end
 
 function M.solve(question)
   local q=assert(question_state(question),'Worlds Question required')
@@ -321,18 +357,15 @@ function M.solve(question)
   if q.form=='match' then
     raw=MatchEngine.solve{
       source=q.source,target=q.target,
-      sources=q.sources and array(q.sources) or nil,
-      targets=q.targets and array(q.targets) or nil,
-      required_targets=q.required_targets and array(q.required_targets) or nil,
-      required_all=q.required_all,
-      seeds=pairs_copy(q.seeds),
+      sources=q.sources,targets=q.targets,required_targets=q.required_targets,
+      required_all=q.required_all,seeds=q.seeds,
       allowed_by_to=q.allowed_by_to,admissible_all=q.admissible_all,
       full_sources=q.full_sources,full_targets=q.full_targets,
     }
   else
     raw=CloseEngine{
-      sources=array(q.sources),targets=array(q.targets),required_sources=array(q.required_sources),required_targets=array(q.required_targets),
-      seeds=pairs_copy(q.seeds),allowed_by_to=q.allowed_by_to,admissible_all=q.admissible_all,
+      sources=q.sources,targets=q.targets,required_sources=q.required_sources,required_targets=q.required_targets,
+      seeds=q.seeds,allowed_by_to=q.allowed_by_to,admissible_all=q.admissible_all,support_by_to=q.support_by_to,
     }
   end
   return wrap_solve(raw,question,nil)
@@ -343,7 +376,8 @@ local function complete_solve(source,target,seeds)
   assert(W.is_geometry(source) and W.is_geometry(target),'Question ambient values must be Worlds Geometry')
   local internal=source==target
   source=W.boundary(source)
-  local sc,tc=assert(Compiled.view(source),'missing compiled source Geometry'),assert(Compiled.view(target),'missing compiled target Geometry')
+  local sc,tc=K.geometry(source),K.geometry(target)
+  assert(tc.developable,'Question target must be a development connected to open ingress')
   seeds=seeds or {}; DENSE.length(seeds,'Question seeds')
   local normal={}
   if #seeds==1 then
@@ -368,9 +402,34 @@ local function complete_solve(source,target,seeds)
     local tpos=Compiled.ingress_positions(target)
     table.sort(normal,function(a,b) return tpos[a.to]<tpos[b.to] end)
   end
-  local raw=MatchEngine.complete(source,target,normal)
-  return wrap_solve(raw,nil,{kernel=W,form='match',source=internal and target or source,target=target,seeds=normal,internal=internal})
+  local covered={}
+  for _,e in ipairs(normal) do covered[e.to]=true end
+  local fully_seeded=#normal==Persistent.length(tc.ingress)
+  if fully_seeded then for _,to in Persistent.iter(tc.ingress) do if not covered[to] then fully_seeded=false; break end end end
+  local raw
+  if fully_seeded then
+    local exact_sources={}; for i,e in ipairs(normal) do exact_sources[i]=e.from end
+    raw=MatchEngine.solve{
+      source=source,target=target,sources=exact_sources,targets=Persistent.array(tc.ingress),
+      required_targets=nil,required_all=true,seeds=normal,
+      allowed_by_to=nil,admissible_all=true,full_sources=false,full_targets=true,
+    }
+  else raw=MatchEngine.complete(source,target,normal) end
+  local qsource=internal and target or source
+  return wrap_solve(raw,nil,{kernel=W,form='match',source=qsource,target=target,seeds=normal,internal=internal,parts=internal and {target} or {qsource,target}})
 end
 
-return M,{complete_solve=complete_solve}
+local function take_realisation_state(parts,equations)
+  local st=EVIDENCE[equations]
+  if not st or #parts~=#st.parts then return nil end
+  for i=1,#parts do if parts[i]~=st.parts[i] then return nil end end
+  EVIDENCE[equations]=nil
+  return st
+end
+
+return M,{
+  complete_solve=complete_solve,
+  take_realisation=take_realisation_state,
+  realisation_boundary=realisation_boundary,
+}
 end

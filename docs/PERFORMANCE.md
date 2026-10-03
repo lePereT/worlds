@@ -32,6 +32,11 @@ for all source egress does not first copy and re-index the complete source
 boundary; rigid postings can therefore retain their dependence on the relevant
 posting rather than unrelated egress size.
 
+Worlds also assumes trusted in-process clients. Authentic finite arrays are
+borrowed read-only views rather than defensively copied at every accessor or
+module boundary. Validation is paid for newly introduced semantic claims, not
+for repeated observation of already-authentic values. See `TRUST.md`.
+
 In particular:
 
 - the world side is pre-counted structural egress incidence with exact fibres;
@@ -95,3 +100,44 @@ portable performance promises. `../CHECKS.md` records the captured release
 snapshot. Release correctness now includes semantic, differential, shape and
 deterministic work-budget tests; elapsed-time thresholds remain deliberately
 outside the acceptance suite.
+
+
+## Current 0.6.4 real-time implementation profile
+
+The performance constitution is now exercised by Relay/Fibers-shaped local developments. The maintained mechanical
+rule is: **prove a candidate once, materialise it once, and let cost follow ambiguity + incoming development +
+changed live boundary rather than historical programme size or repeated validation of certified state.**
+
+The current implementation therefore retains Question realisations, uses lazy DSU state and hybrid images, provides
+a trusted development Builder, and gives `advance` locality-aware representations/indexes while preserving generic
+`join` as the reference oracle. Persistent boundary data and compiled/indexed structures are acceleration only;
+they are neither programme authority nor additional semantic state.
+
+Performance changes are accepted only with the full differential/historical gate and paired Fibers benchmarks.
+See the top-level `CHECKS.md` for the current measured regression shape.
+
+## 0.6.4 mechanical work ratchets
+
+0.6.4 makes the non-timing part of the performance contract executable at two
+levels.
+
+`tests/work.lua` measures finite Question/search work in the engine's own fuel
+quanta, with relative VM-instruction checks only where construction happens
+before the fuelled coroutine exists.
+
+`tests/mechanical-work.lua` protects the mechanics below the query engine. Its
+ratchets require that:
+
+- borrowed `egress` and Strand-incidence observations do not copy or scale with
+  section width;
+- `join({G}, {})` remains identity work independent of `G` size;
+- `development_builder():strand(...)` does not eagerly rescan trusted incidence;
+- committing a retained successful Question does not rematerialise the frame;
+- indexed local live advance over a 10,000-Strand frontier stays in the same
+  work class as the 100-Strand case for both the single-Face delta and small
+  multi-Face causal Developments; and
+- the disposable boundary index transfers to the successor so the next local
+  advance stays local.
+
+These are release correctness gates. Wall-clock benchmark snapshots remain
+non-portable development evidence and are not pass/fail thresholds.

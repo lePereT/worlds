@@ -8,17 +8,18 @@ in the repository.
 
 The maintained documents are:
 
-- `LAWS.md` — **normative semantic laws** for Worlds 0.6.3;
+- `LAWS.md` — **normative semantic laws** for Worlds 0.6.4;
 - `MODEL.md` — maintained explanatory model; if prose conflicts with `LAWS.md`,
   the laws win;
-- `API.md` — maintained public Lua API for 0.6.3, including the optional
+- `API.md` — maintained public Lua API for 0.6.4, including the optional
   `worlds.construction` and `worlds.presentation` edge modules;
 - `QUERY.md` — normative finite matching Question and partial matching judgement;
 - `SHAPE.md` — implementation/representation shape of the clean-boundary kernel;
 - `LIVE.md` — the boundary-only execution result;
 - `COMPLEXITY.md` — structural complexity notes;
 - `THEOREMS.md` — theorem targets and executable evidence, not proofs;
-- `PERFORMANCE.md` — maintained performance constitution;
+- `PERFORMANCE.md` — maintained performance constitution and deterministic work-ratchet contract;
+- `TRUST.md` — maintained in-process trust and borrowed-array contract;
 - `VERIFICATION.md` — formal verification obligations;
 - `RESEARCH.md` — explicitly non-authoritative research programme;
 - `INCIDENCE-ATLAS.md` — explicitly non-authoritative atlas of latent structures

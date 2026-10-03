@@ -5,6 +5,7 @@
 -- may be discarded without changing Geometry or matching semantics.
 
 local INSTANCES=setmetatable({}, {__mode='k'})
+local Persistent=require('worlds._persistent')
 
 return function(K)
 local existing=INSTANCES[K]; if existing then return existing end
@@ -46,7 +47,7 @@ local function counted_surface(strands)
     end
     g.occurrences[#g.occurrences+1]=s; of[s]=g
   end
-  return {relations=relations,of=of}
+  return {relations=relations,groups=groups,of=of}
 end
 
 local function positions(xs)
@@ -60,10 +61,10 @@ function M.view(g)
   local v=VIEW[g]; if v then return v end
   local s=K.geometry(g)
   v={
-    membranes=s.membranes,points=s.points,strands=s.strands,faces=s.faces,
+    membranes=Persistent.array(s.membranes),points=Persistent.array(s.points),strands=Persistent.array(s.strands),faces=Persistent.array(s.faces),
     mset=s.mset,pset=s.pset,sset=s.sset,fset=s.fset,
     producer=s.producer,consumer=s.consumer,
-    ingress=s.ingress,egress=s.egress,
+    ingress=Persistent.array(s.ingress),egress=Persistent.array(s.egress),
     developable=s.developable,
   }
   VIEW[g]=v

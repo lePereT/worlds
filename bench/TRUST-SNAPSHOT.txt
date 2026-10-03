@@ -1,0 +1,28 @@
+Worlds trusted in-process API checkpoint
+TexLua, same host, seven-run medians. `bench/trust.lua`.
+
+API observation/access                 repository 0.6.3   trusted profile   speedup
+W.points(strand), 300k calls              0.194031 s       0.049634 s       3.91x
+Geometry:egress(), 1000 strands, 5k       0.110324 s       0.000379 s     291.09x
+Construction:parts(), 300k                0.283032 s       0.050241 s       5.63x
+Construction:equations(), 300k            0.335843 s       0.052192 s       6.43x
+Presentation:row(), 300k                  0.316189 s       0.088077 s       3.59x
+Question:sources(), 300k                  0.324933 s       0.051642 s       6.29x
+Question:seeds(), 300k                    0.416466 s       0.051786 s       8.04x
+
+Encapsulation microbenchmark, 50,000 objects / 1,000,000 reads:
+
+representation             construction      state reads      retained heap
+weak-key registry            0.020413 s        0.107944 s       10103 KiB
+single closure accessor      0.019312 s        0.134496 s       13133 KiB
+
+The closure accessor is about 25% slower in this seven-run snapshot and retains
+about 30% more heap. Other development runs put the read gap around 25-35%.
+Weak-key private state is therefore used consistently for kernel and semantic
+edge objects. The result is a representation choice, not a portable timing law;
+other Lua implementations should be remeasured if they become deployment
+requirements.
+
+The ordinary query/search benchmarks move little because `_compiled` and the
+query engine already consumed private zero-copy kernel observations. This change
+primarily removes public/client-side allocation and defensive state recovery.

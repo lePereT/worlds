@@ -29,9 +29,9 @@ do
   eq(p1:ambient(),body); eq(#p1:rows(),4)
   eq(p1:row(1)[1],a1); eq(p1:row(1)[2],a2); eq(#p1:row(3),0)
   eq(p1:row(4)[1],a1); eq(p1:row(4)[2],a1,'presentation multiplicity is descriptive and retained')
-  rows[1][1]=r; eq(p1:row(1)[1],a1,'constructor copies row arrays')
-  local got=p1:rows(); got[1][1]=r; eq(p1:row(1)[1],a1,'rows accessor returns copies')
-  local one=p1:row(1); one[1]=r; eq(p1:row(1)[1],a1,'row accessor returns a copy')
+  eq(p1:rows(),rows,'Presentation borrows the exact trusted row array')
+  eq(p1:row(1),rows[1],'row accessor returns the borrowed row view')
+  eq(p1:rows(),p1:rows(),'rows accessor is allocation-free and stable')
   fails(function() p1.extra=true end,'immutable')
   fails(function() p1:row(0) end,'row index')
 end

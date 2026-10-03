@@ -62,3 +62,17 @@ Prove the current executable engine sound and complete for `Solutions(Q)`:
 The package includes flat, selected-section, optional/admissibility, nested and
 branching brute-force differential suites as executable evidence for these
 obligations.
+
+## Mechanical refinement obligations
+
+The 0.6.4 fast paths are refinement obligations rather than additional semantic
+laws. In particular, future formalisation should permit proof that:
+
+- retained Question realisation is exactly the strict join already certified by
+  the judgement;
+- indexed local `advance` is extensionally equal to
+  `boundary(join({boundary(world), development}, equations))`;
+- persistent boundary sections and indexes are disposable representations of
+  the same exact boundary; and
+- dense/sparse Construction images agree pointwise on the complete construction
+  domain.

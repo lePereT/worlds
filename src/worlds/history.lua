@@ -7,11 +7,6 @@ local W=require('worlds')
 local H={}
 local MT={}; MT.__index=MT
 
-local function copy_equations(es)
-  local out={}
-  for i,e in ipairs(es or {}) do out[i]={from=e.from or e[1],to=e.to or e[2]} end
-  return out
-end
 local function face_image(development,image)
   local out={}
   for _,f in ipairs(development:faces()) do out[f]=image[f] end
@@ -24,7 +19,7 @@ end
 
 function MT:append(development,equations,image)
   local records=self.records
-  records[#records+1]={development=development,equations=copy_equations(equations),faces=face_image(development,image)}
+  records[#records+1]={development=development,equations=equations or {},faces=face_image(development,image)}
   return records[#records]
 end
 
@@ -39,7 +34,7 @@ function MT:count()
 end
 
 function MT:events()
-  local out={}; for i,r in ipairs(self.records) do out[i]=r end; return out
+  return self.records
 end
 
 return H

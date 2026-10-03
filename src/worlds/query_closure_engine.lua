@@ -36,7 +36,7 @@ local function machine(st,initial_fuel)
       targets[#targets+1]=target; local pool={}
       for _,source in ipairs(st.sources or EMPTY) do
         work()
-        if not seed_from[source] and (st.admissible_all or (st.allowed_by_to[target] and st.allowed_by_to[target][source])) then pool[#pool+1]=source end
+        if not seed_from[source] and (not st.support_by_to or st.support_by_to[target][source]) and (st.admissible_all or (st.allowed_by_to[target] and st.allowed_by_to[target][source])) then pool[#pool+1]=source end
       end
       pools[target]=pool
     end
@@ -56,6 +56,6 @@ local function machine(st,initial_fuel)
 end
 
 return function(spec)
-  local st={sources=spec.sources or EMPTY,targets=spec.targets or EMPTY,required_sources=spec.required_sources or EMPTY,required_targets=spec.required_targets or EMPTY,seeds=spec.seeds or EMPTY,allowed_by_to=spec.allowed_by_to,admissible_all=spec.admissible_all,done=false}
+  local st={sources=spec.sources or EMPTY,targets=spec.targets or EMPTY,required_sources=spec.required_sources or EMPTY,required_targets=spec.required_targets or EMPTY,seeds=spec.seeds or EMPTY,allowed_by_to=spec.allowed_by_to,admissible_all=spec.admissible_all,support_by_to=spec.support_by_to,done=false}
   st.co=coroutine.create(function(fuel) return machine(st,fuel) end); return solve_object(st)
 end

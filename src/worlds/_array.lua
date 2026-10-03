@@ -1,5 +1,7 @@
--- Private dense-array validation for public Worlds finite inputs.
--- Internal kernel arrays are already trusted and should not pay this check.
+-- Dense-array validation for finite Worlds API sections.
+--
+-- Worlds is an in-process kernel for trusted clients. Arrays are borrowed
+-- read-only values: validation checks their shape once, but does not clone them.
 
 local M={}
 
@@ -13,13 +15,6 @@ function M.length(xs,label)
   end
   assert(n==count,(label or 'value')..' must be a dense array')
   return n
-end
-
-function M.copy(xs,label)
-  local n=M.length(xs,label)
-  local out={}
-  for i=1,n do out[i]=xs[i] end
-  return out
 end
 
 return M

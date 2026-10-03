@@ -2,7 +2,7 @@ SHELL := /bin/sh
 
 # Preferred interpreter order: LuaJIT, generic Lua, versioned Lua, TexLua.
 # Override explicitly with e.g. `make LUA=texlua test`.
-LUA_CANDIDATES := luajit lua lua5.4 lua5.3 texlua
+LUA_CANDIDATES := luajit lua lua5.1 lua5.2 lua5.3 lua5.4 texlua
 LUA ?= $(shell for c in $(LUA_CANDIDATES); do \
     if command -v $$c >/dev/null 2>&1; then printf '%s' $$c; break; fi; \
   done)
@@ -11,7 +11,13 @@ ifeq ($(strip $(LUA)),)
 $(error No Lua interpreter found. Tried: $(LUA_CANDIDATES))
 endif
 
-.PHONY: test query closure closure-differential history adversarial work centre differential restricted partial nested branching historical shape check full-check bench close-bench stress live
+.PHONY: lua51-syntax lua51-runtime-shape test query closure closure-differential advance-differential construction presentation history trust adversarial work mechanical-work centre differential restricted partial nested branching historical shape check full-check bench close-bench stress live trust-bench
+
+lua51-syntax:
+	$(LUA) tools/check-lua51-syntax.lua
+
+lua51-runtime-shape:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/lua51-compat.lua
 
 test:
 	LUA_PATH='./src/?.lua;;' $(LUA) tests/run.lua
@@ -25,6 +31,9 @@ closure:
 closure-differential:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/closure-differential.lua
 
+advance-differential:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/advance-differential.lua
+
 construction:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/construction.lua
 
@@ -34,11 +43,17 @@ presentation:
 history:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/history.lua
 
+trust:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/trust.lua
+
 adversarial:
 	LUA_PATH='./src/?.lua;;' $(LUA) tests/adversarial.lua
 
 work:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/work.lua
+
+mechanical-work:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/mechanical-work.lua
 
 centre:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) tests/centre.lua
@@ -66,9 +81,9 @@ historical:
 shape:
 	$(LUA) tools/check-shape.lua
 
-check: test query closure construction presentation history adversarial work centre shape
+check: lua51-syntax lua51-runtime-shape test query closure construction presentation history trust adversarial work mechanical-work centre shape
 
-full-check: check differential restricted partial nested branching closure-differential historical
+full-check: check differential restricted partial nested branching closure-differential advance-differential historical
 
 bench:
 	LUA_PATH='./src/?.lua;;' $(LUA) bench/run.lua
@@ -88,3 +103,6 @@ speculation-check:
 	  printf 'speculation: %s\n' "$$f"; \
 	  LUA_PATH='./src/?.lua;./?.lua;;' $(LUA) "$$f"; \
 	done
+
+trust-bench:
+	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) bench/trust.lua

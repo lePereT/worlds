@@ -5,7 +5,7 @@
 The finite Question API remains unchanged. The restoration is an implementation
 change: verified Geometry, finite Question semantics and query acceleration stay
 separate, but the query engine no longer reconstructs verified Geometry through
-copying public accessors on every solve.
+copying public accessors on every solve. The subsequent trusted in-process profile removes those defensive accessor copies from the public edge as well.
 
 ## Internal layering
 
@@ -42,8 +42,9 @@ from verified Geometry.
 - Transient `join` output does not eagerly allocate query-only position maps or
   source indexes which `boundary()` is about to discard.
 - The engine consumes a private read-only view of already verified incidence,
-  producer/consumer and developability data. Public Geometry accessors continue
-  to return defensive copies.
+  producer/consumer and developability data. Public Geometry accessors now expose
+  the same immutable-by-contract data as borrowed read-only views rather than
+  defensive copies.
 - `W.solve` has a complete-coverage constructor which enters the same query
   machine directly. It does not introduce a second matcher.
 

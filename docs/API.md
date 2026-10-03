@@ -1,10 +1,22 @@
 # API
 
-**Status: maintained public Lua API for Worlds 0.6.3.**
+**Status: maintained public Lua API for Worlds 0.6.4.**
 
 ```lua
 local W = require('worlds')
 ```
+
+## Trust and finite arrays
+
+Worlds assumes cooperating in-process clients. Finite array arguments and array
+views returned by the API are **borrowed read-only Lua tables**. Worlds validates
+new semantic claims but does not defensively clone these arrays. Callers must not
+mutate an array after passing it to Worlds while retained, or mutate an array
+returned by Worlds. Copy explicitly at an application boundary when a mutable
+owned table is required.
+
+Canonicalisation may still allocate once where representation genuinely changes,
+for example normalised equations or set-like Question sections. See `TRUST.md`.
 
 ## Build Geometry
 
@@ -28,7 +40,7 @@ b:face(membrane, input_strands_or_nil, output_strands_or_nil, name_or_nil)
 b:finish()  -- builder is consumed
 ```
 
-Builders keep their mutable construction state in lexical closures; no membership or carrier arrays are exposed on the Builder value. Builders validate the Geometry laws, including producer/consumer uniqueness, acyclic Face/Strand causality and causal availability of existing/fresh local structure. Public array arguments must be dense Lua arrays; holes or non-positive/non-integral keys are rejected rather than silently truncated.
+Builders keep their mutable construction state in lexical closures; no membership or carrier arrays are exposed on the Builder value. Builders validate the Geometry laws, including producer/consumer uniqueness, acyclic Face/Strand causality and causal availability of existing/fresh local structure. Public array arguments must be dense Lua arrays; holes or non-positive/non-integral keys are rejected rather than silently truncated. Point-incidence and Face-incidence arrays are retained as borrowed read-only inputs rather than cloned.
 
 ## Carrier queries
 
@@ -43,7 +55,7 @@ W.outputs(face)
 W.is_geometry(x)
 ```
 
-Names are not semantic identity. Returned incidence arrays are copies.
+Names are not semantic identity. Returned incidence arrays are borrowed read-only views and are stable by identity.
 
 ## Geometry queries
 
@@ -66,6 +78,8 @@ g:consumer(strand)
 g:is_input(strand)
 g:is_terminal(strand)
 ```
+
+Geometry carrier, ingress and egress arrays are borrowed read-only views; repeated access does not allocate a defensive copy.
 
 ## boundary
 
@@ -134,6 +148,10 @@ parts. In both forms `D` defaults to empty, `R` defaults to selected targets,
 and every `yes(E)` is guaranteed to be consumable by strict
 `join(question:parts(),E)`. The vague `Query.new` constructor is absent.
 
+Question finite-section and evidence accessors return stable borrowed read-only views.
+Canonicalised sections are normalised once at Question construction; observing them does
+not allocate another copy. Refutation reasons follow the same borrowed-view contract.
+
 See `QUERY.md` for the exact definitions and evidence semantics.
 
 ## join
@@ -188,10 +206,10 @@ A Construction is immutable evidence of one exact `join` materialisation.
 `Construction.join(P,E)` performs the ordinary `W.join(P,E)` operation; it does
 not introduce another Geometry-changing primitive or composition algorithm.
 The stored parts are the ordered exact Geometry values supplied to that join,
-the stored equations are a normalised immutable copy, and `image(x)` exposes the
-exact construction-relative carrier image returned by the kernel.
-
-Accessor arrays are copies.  The image table itself is not exposed.
+the stored equations are normalised once, and `image(x)` exposes the exact
+construction-relative carrier image returned by the kernel. The supplied parts
+array and the normalised equation array are borrowed read-only views; accessors
+return those stable views without copying. The image table itself is not exposed.
 
 ## Presentation
 
@@ -210,8 +228,8 @@ local g0 = p:ambient()
 Presentation.is_presentation(p)
 ```
 
-A Presentation is an immutable ordered, non-authoritative view of selected exact
-open Strand occurrences relative to one exact ambient Geometry.  Every
+A Presentation is an immutable-by-contract ordered, non-authoritative view of selected exact
+open Strand occurrences relative to one exact ambient Geometry. Its row arrays are borrowed read-only views rather than copied storage.  Every
 coordinate must be a Strand owned by the ambient Geometry and open there (no
 producer or no consumer).  Rows and coordinate arrays must be dense, but rows
 may be empty and coordinates may be omitted or repeated.
@@ -264,6 +282,10 @@ for _, event in ipairs(h:events()) do
   -- event.faces       -- development Face -> resulting Face
 end
 ```
+
+`h:events()` is a stable borrowed read-only view. Event equation arrays are likewise
+borrowed; History observes exact execution and does not clone evidence merely for
+ownership isolation.
 
 History observes transitions only. It is never consulted by `solve`, `join` or
 `advance`.

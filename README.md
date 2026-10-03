@@ -1,171 +1,71 @@
-# Worlds 0.6.3 — exact construction transport and presented boundaries
+# Worlds 0.6.4 — real-time performance and work-ratchet release
 
-Worlds is a small operational geometry in which exact identity, scarce authority,
-causal transformation and locality arise from incidence and open boundary.
+Worlds is a small operational geometry in which exact identity, scarce authority, causal transformation and
+locality arise from incidence and open boundary.
 
-Worlds 0.6.3 is an additive edge release.  The verified Geometry centre is
-unchanged.  No carrier kind, causal law, `boundary`, `join`, `advance`, Question
-or matching rule changes.
+This release keeps the 0.6.3 ontology and judgement laws while locking in the performance programme
+needed by Relay and real-time Fibers. The implementation now treats authentic Worlds values as certified immutable
+in-process objects, retains exact judgement evidence instead of recomputing it, and makes common live evolution
+proportional to the changed region where practical.
 
-The release adds two deliberately small public edge modules:
-
-```lua
-local Construction = require('worlds.construction')
-local Presentation = require('worlds.presentation')
-```
-
-`Construction` makes the existing exact image returned by `join` into an
-immutable witness that can safely be passed between components.  `Presentation`
-is an ordered, non-authoritative view of selected exact open Strand occurrences
-relative to one ambient Geometry.  It gives clients somewhere to put boundary
-presentation structure without thickening that structure into causal Geometry.
-
-The main API remains unchanged:
+The public centre remains:
 
 ```lua
 local W = require('worlds')
+
+-- ontology: Membrane / Point / Strand / Face / Geometry
+-- operations: boundary / join / advance
 ```
 
-## Verified centre
+`join(parts, equations)` is still the reference Geometry composition law. `advance` is semantically
+`boundary(join(...))`; specialised paths are implementation accelerations checked against that definition.
 
-The operational ontology remains:
+## Trusted in-process contract
 
-```text
-Membrane
-Point
-Strand
-Face
-Geometry
+Worlds validates new semantic claims, not immutable facts that it has already certified. Arrays exchanged with
+cooperating clients are borrowed read-only views rather than defensive copies. Callers must not mutate borrowed
+state while Worlds retains it. Private object state uses weak-key registries.
 
-boundary
-join
-advance
-```
+See `docs/TRUST.md`.
 
-`join(parts,equations)` remains the sole Geometry-changing primitive.  The first
-part remains the frame; exact unaffected frame carriers survive literally;
-later-part carriers materialise as required; and causal SCCs normalise to one
-joint Face exactly as before.
+## Performance shape
 
-The release does **not** add W1/W2/W3 types, rank, higher cells, cuts, a new
-composition algorithm or a second execution semantics.
+The implementation now avoids several forms of repeated mechanical work:
 
-## Construction
+- successful Questions retain their strict-join realisation for later Construction/commit use;
+- identity constructions are identity work;
+- DSU state is allocated only for carriers that need it;
+- Construction images use dense or sparse representation according to the shape where each is cheaper;
+- short-lived trusted developments use `W.development_builder()` and are validated once at `finish()`;
+- exact client tokens can be minted without performing a quotient join;
+- prepared live boundaries support frame-aware matching and local `advance`;
+- persistent boundary sections/disposable indexes preserve unchanged live structure across local evolution;
+- Close search rejects structurally impossible support pairs monotonically before deeper search.
+
+None of these structures is programme authority. They may be discarded and reconstructed from the exact Geometry.
+
+## Deterministic work ratchets
+
+Performance acceptance is based on work done, not elapsed time. `tests/work.lua` protects finite Question/search
+complexity in solver fuel quanta; `tests/mechanical-work.lua` protects allocation/materialisation/locality mechanics.
+The latter includes constant-work borrowed observations and identity joins, retained-realisation reuse, one-pass trusted
+development validation, and local indexed advance over a 10,000-Strand live frontier. Wall-clock files under `bench/`
+remain development evidence only.
+
+## Construction and Presentation
 
 ```lua
 local Construction = require('worlds.construction')
-
-local c = Construction.join(parts, equations)
-local result = c:result()
-local mapped = c:image(source_carrier)
-```
-
-`Construction.join(P,E)` performs the ordinary `W.join(P,E)` operation and
-retains immutable access to:
-
-```text
-ordered parts
-normalised equations
-result Geometry
-exact construction-relative carrier image
-```
-
-Construction carries no programme authority.  It is a witness of one exact
-materialisation, not another way to compose Geometry.
-
-The image is important because exact identity after construction depends on the
-actual materialisation path.  It also records the kernel's existing many-to-one
-Face image under causal SCC contraction and the disappearance of cyclic Strand
-authority.
-
-## Presentation
-
-```lua
 local Presentation = require('worlds.presentation')
-
-local p = Presentation.new(body, {
-  {arg1, arg2},
-  {result},
-})
 ```
 
-A Presentation is a finite ordered family of rows of selected exact **open
-Strand occurrences** relative to one exact ambient Geometry.
+Construction is exact transport evidence for one materialisation; Presentation is ordered, non-authoritative ABI
+structure over selected exact open Strand occurrences. They remain deliberately outside the ontology.
 
-It is not Geometry.  It owns no carrier, grants no authority and imposes no
-causal order.  Rows, coordinate order and multiplicity are presentation
-semantics only.  Any number of different Presentations may describe the same
-Geometry.
+## Validation
 
-Coordinates may be omitted, repeated and arranged in empty rows.  This permits a
-client to expose public ports while leaving hidden authority ordinary Geometry.
-An empty row has no completion meaning.
+`make LUA=texlua full-check` is the release semantic/differential/work gate. `make LUA=texlua speculation-check` runs
+the broader experimental corpus. `CHECKS.md` records the current performance and regression shape.
 
-### Residual transport
-
-```lua
-local p2 = p:transport(c)
-```
-
-The Presentation ambient must be one of `c:parts()` by exact Geometry identity.
-Each coordinate is mapped pointwise through `c:image`.  Mapped Strands are
-retained, in the same row order and with the same multiplicity, exactly when they
-remain open in `c:result()`.  Coordinates which become internal or are
-annihilated disappear.
-
-Transport therefore supports residual public presentations without causal
-wrappers.  It never creates completion or any other authority.
-
-Presentation is intentionally an in-memory relative view.  If an enclosing
-format such as Relay needs durable presentations, that format must encode enough
-ambient-relative exact coordinates to reconstruct the Presentation after import.
-
-## Why 0.6.3 stops here
-
-The non-authoritative research programme has become substantially richer since
-0.6.2.  It now includes exact incidence reductions, intrinsic rank-1-like
-structures, higher coherence examples, fixed-shadow realisation fibres,
-Membrane/causal-spine topology and coherent correspondences between exact-distinct
-construction outcomes.
-
-Those experiments are preserved under `speculation/modern/dimensional_lab/`,
-including `shadows/`, `fibre_census/` and `between_worlds/`.
-
-They strongly motivate separating presentation, causal Geometry and exact
-construction transport, but they do **not** yet justify production W1/W3 types,
-a ranked-complex API, a canonical inter-World deformation relation or a higher
-cell carrier.  0.6.3 therefore promotes only what repeated experiments already
-require while leaving the dimensional interpretation free to evolve.
-
-## Questions and live computation
-
-The finite judgement API remains in `worlds.query`:
-
-```text
-Match(A,B;S,T,D,R,C,E0)
-Close(P;S,T,D,R,C,E0)
-```
-
-`W.solve(A,B,seeds)` remains the complete Match convenience.  `advance` remains
-definitionally:
-
-```text
-boundary(join({boundary(world), development}, equations))
-```
-
-Optional `worlds.history` observes execution only and is never consulted by the
-kernel.
-
-## Checks
-
-```sh
-make full-check
-make speculation-check
-```
-
-`full-check` includes maintained Construction and Presentation tests in addition
-to the unchanged Geometry, Question, differential and historical suites.
-`speculation-check` runs the non-authoritative research corpus separately.
-
-See `docs/LAWS.md` for normative semantics and `CHECKS.md` for the captured
-release acceptance record.
+The current paired Fibers checkpoint reaches historical V1-class small Channel performance while retaining
+Worlds-based transactional laws, providing an application-shaped validation of this kernel profile.

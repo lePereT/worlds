@@ -264,4 +264,94 @@ do
   ok(not pcall(function() W.solve(g,g,{[2]={from=s,to=s}}) end),'sparse solve seeds must be rejected')
 end
 
-print('PASS 0.6.3',n,'assertions')
+
+-- The single-Face operational fast path is definitionally equivalent to
+-- boundary(join(...)): unchanged frame authority survives exactly and fresh
+-- outputs carry the same rigid Point incidence.  Imported Points keep this
+-- workload on the zero-owned-Point live-boundary shape used by Fibers.
+do
+  local atoms=W.development_builder(); local am=atoms:membrane(nil,'atoms'); atoms:finish()
+  local mint=W.minter(am); local Control=mint('Control'); local o1,o2,o3=mint('o1'),mint('o2'),mint('o3')
+  local wb=W.builder(); local wm=wb:membrane(nil,'live')
+  local s1=wb:strand(wm,{Control,o1},'s1'); local s2=wb:strand(wm,{Control,o2},'s2'); local untouched=wb:strand(wm,{Control,o3},'s3')
+  local world=W.boundary(wb:finish())
+  local db=W.development_builder(); local dm=db:membrane(nil,'step')
+  local i1=db:strand(dm,W.points(s1),'i1'); local i2=db:strand(dm,W.points(s2),'i2')
+  local o1s=db:strand(dm,{Control,o1},'o1'); local o2s=db:strand(dm,{Control,o2},'o2')
+  db:face(dm,{i1,i2},{o1s,o2s},'step'); local dev=db:finish(); local es={{from=s1,to=i1},{from=s2,to=i2}}
+
+  local generic,gimg=W.join({world,dev},es); generic=W.boundary(generic)
+  local fast,fimg=W.advance(world,dev,es)
+  eq(#generic:egress(),#fast:egress(),'fast advance preserves boundary arity')
+  ok(generic:owns_strand(untouched) and fast:owns_strand(untouched),'fast advance preserves untouched exact frame authority')
+  local function incidence_set(g)
+    local out={}
+    for _,s in ipairs(g:egress()) do
+      local ps=W.points(s); out[ps[1]]=out[ps[1]] or {}; out[ps[1]][ps[2]]=true
+    end
+    return out
+  end
+  local a,b=incidence_set(generic),incidence_set(fast)
+  ok(a[Control] and b[Control],'both paths retain control-labelled outputs')
+  for _,owner in ipairs({o1,o2,o3}) do eq(a[Control][owner],b[Control][owner],'fast advance preserves rigid output incidence') end
+  local gp,fp=W.points(assert(gimg[o1s])),W.points(assert(fimg[o1s])); eq(#gp,#fp); for i=1,#gp do eq(gp[i],fp[i]) end
+end
+
+
+
+-- Frame-local advance also covers small multi-Face Developments and fresh
+-- causally-created locality.  The fast path must agree with the literal
+-- boundary(join(...)) law while preserving unrelated exact frame authority.
+do
+  local wb=W.builder(); local wm=wb:membrane(nil,'multi.live'); local wp=wb:point(wm,'world-point'); local ss={}
+  for i=1,100 do ss[i]=wb:strand(wm,{wp},'s'..i) end
+  local world=wb:finish()
+
+  local b=W.development_builder(); local root=b:membrane(nil,'multi.root'); local child=b:membrane(root,'multi.child')
+  local x=b:point(root,'x'); local y=b:point(child,'y')
+  local input=b:strand(root,{x},'input'); local middle=b:strand(child,{y},'middle'); local output=b:strand(child,{y},'output')
+  b:face(root,{input},{middle},'create child'); b:face(child,{middle},{output},'use child'); local dev=b:finish()
+  local es={{from=ss[50],to=input}}
+  local generic,gimg=W.join({W.boundary(world),dev},es); generic=W.boundary(generic)
+  local fast,fimg=W.advance(world,dev,es)
+  eq(#generic:egress(),#fast:egress(),'multi-Face local advance preserves boundary arity')
+  ok(generic:owns_strand(ss[1]) and fast:owns_strand(ss[1]),'multi-Face local advance preserves untouched exact frame authority')
+  local gm,fm=W.membrane(assert(gimg[output])),W.membrane(assert(fimg[output]))
+  eq(W.parent(gm),wm,'generic output child is rooted in live locality'); eq(W.parent(fm),wm,'fast output child is rooted in live locality')
+  eq(W.membrane(W.points(gimg[output])[1]),gm,'generic output Point inhabits fresh child locality')
+  eq(W.membrane(W.points(fimg[output])[1]),fm,'fast output Point inhabits fresh child locality')
+end
+
+
+-- A frame-local quotient may not splice across a quotient which identifies two
+-- distinct live frame Membranes.  Untouched authority in either Membrane is
+-- structurally affected too, so this shape must fall back to the strict whole-
+-- frame law rather than pretending the touched source subset is closed.
+do
+  local wb=W.builder(); local ma=wb:membrane(nil,'merge.a'); local mb=wb:membrane(nil,'merge.b')
+  local p=wb:point(ma,'a'); local q=wb:point(mb,'b')
+  local a=wb:strand(ma,{p},'a'); local untouched=wb:strand(ma,{p},'untouched'); local z=wb:strand(mb,{q},'b')
+  for i=1,100 do wb:strand(ma,{p},'noise'..i) end
+  local world=wb:finish()
+  local d=W.development_builder(); local dm=d:membrane(nil,'merge.dev')
+  local ai=d:strand(dm,{p},'ai'); local zi=d:strand(dm,{q},'zi'); local ao=d:strand(dm,{p},'ao'); local zo=d:strand(dm,{q},'zo')
+  d:face(dm,{ai,zi},{ao,zo},'merge'); local dev=d:finish(); local es={{from=a,to=ai},{from=z,to=zi}}
+  local gj,gi=W.join({W.boundary(world),dev},es); local generic=W.boundary(gj)
+  local fast,fi=W.advance(world,dev,es)
+  local gu,fu=assert(gi[untouched]),assert(fi[untouched]); local ga,fa=assert(gi[ao]),assert(fi[ao])
+  eq(W.membrane(gu),W.membrane(ga),'strict quotient must transport untouched authority through the Membrane identification')
+  eq(W.membrane(fu),W.membrane(fa),'local advance failed to fall back across a Membrane identification')
+  eq(#generic:egress(),#fast:egress(),'Membrane-identifying fallback changed boundary arity')
+end
+
+-- Public fast paths preserve the same dense finite-section contract as join.
+-- This shape is deliberately eligible for the general local multi-Face path.
+do
+  local atoms=W.development_builder(); local am=atoms:membrane(nil,'sparse.atoms'); atoms:finish(); local p=W.minter(am)('p')
+  local wb=W.builder(); local wm=wb:membrane(nil,'sparse.live'); local source=wb:strand(wm,{p},'source'); for i=2,100 do wb:strand(wm,{p},'s'..i) end; local world=wb:finish()
+  local b=W.development_builder(); local dm=b:membrane(nil,'sparse.dev'); local input=b:strand(dm,{p},'input'); local middle=b:strand(dm,{p},'middle'); local output=b:strand(dm,{p},'output')
+  b:face(dm,{input},{middle},'one'); b:face(dm,{middle},{output},'two'); local dev=b:finish()
+  ok(not pcall(function() W.advance(world,dev,{[2]={from=source,to=input}}) end),'sparse advance equations must be rejected before a local fast path can accept them')
+end
+
+print('PASS 0.6.4',n,'assertions')

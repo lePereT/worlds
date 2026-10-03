@@ -6,37 +6,15 @@
 -- and exact construction-relative carrier image.
 
 local W=require('worlds')
-local DENSE=require('worlds._array')
-
+local Q=require('worlds.query')
 local Construction={}
-local MT={}; MT.__index=MT
-local MARK_KEY,STATE_KEY,MARK={},{},{}
-
+local STATE=setmetatable({}, {__mode='k'})
 local function immutable() error('Worlds values are immutable',2) end
+local MT={__newindex=immutable,__metatable='Worlds Construction'}; MT.__index=MT
 
-local function state(x)
-  if type(x)~='table' then return nil end
-  local ok,m=pcall(function() return x[MARK_KEY] end)
-  if not ok or m~=MARK then return nil end
-  local ok2,st=pcall(function() return x[STATE_KEY] end)
-  return ok2 and st or nil
-end
-
-local function copy(xs)
-  local out={}
-  for i=1,#xs do out[i]=xs[i] end
-  return out
-end
-
-local function copy_equations(es)
-  local out={}
-  for i=1,#es do out[i]={from=es[i].from,to=es[i].to} end
-  return out
-end
+local function state(x) return type(x)=='table' and STATE[x] or nil end
 
 local function normal_equations(es)
-  es=es or {}
-  DENSE.length(es,'Construction equations')
   local out={}
   for i,e in ipairs(es) do
     assert(type(e)=='table','Construction equation entries must be exact equations')
@@ -46,22 +24,20 @@ local function normal_equations(es)
 end
 
 local function value(st)
-  return setmetatable({}, {
-    __newindex=immutable,
-    __metatable='Worlds Construction',
-    __index=function(_,k)
-      if k==MARK_KEY then return MARK end
-      if k==STATE_KEY then return st end
-      return MT[k]
-    end,
-  })
+  local x=setmetatable({},MT); STATE[x]=st; return x
 end
 
 function Construction.join(parts,equations)
-  local ps=DENSE.copy(parts,'Construction parts')
-  local es=normal_equations(equations)
-  local result,image=W.join(ps,es)
-  return value{parts=ps,equations=es,result=result,image=image}
+  equations=equations or {}
+  local r=Q.realisation_for(parts,equations)
+  if r then return value{realisation=r} end
+  local result,image=W.join(parts,equations)
+  return value{parts=parts,equations=normal_equations(equations),result=result,image=image}
+end
+
+function Construction.from_realisation(realisation)
+  assert(Q.is_realisation(realisation),'Construction.from_realisation requires Worlds Realisation')
+  return value{realisation=realisation}
 end
 
 function Construction.is_construction(x)
@@ -69,19 +45,19 @@ function Construction.is_construction(x)
 end
 
 function MT:parts()
-  return copy(assert(state(self),'Worlds Construction required').parts)
+  local st=assert(state(self),'Worlds Construction required'); return st.realisation and st.realisation:parts() or st.parts
 end
 
 function MT:equations()
-  return copy_equations(assert(state(self),'Worlds Construction required').equations)
+  local st=assert(state(self),'Worlds Construction required'); return st.realisation and st.realisation:equations() or st.equations
 end
 
 function MT:result()
-  return assert(state(self),'Worlds Construction required').result
+  local st=assert(state(self),'Worlds Construction required'); return st.realisation and st.realisation:result() or st.result
 end
 
 function MT:image(carrier)
-  return assert(state(self),'Worlds Construction required').image[carrier]
+  local st=assert(state(self),'Worlds Construction required'); return st.realisation and st.realisation:image(carrier) or st.image[carrier]
 end
 
 return Construction
