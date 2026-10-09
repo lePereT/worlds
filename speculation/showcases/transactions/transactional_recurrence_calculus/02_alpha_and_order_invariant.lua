@@ -1,8 +1,0 @@
-local H=require('speculation.showcases.transactions.transactional_recurrence_calculus.common')
-local ok,eq,count=H.counter()
-local p=H.rec_package('loop',{H.authority_identity_context(),H.unary_context({definition='loop'})})
-local q=H.rec_package('renamed',{H.unary_context({definition='renamed'}),H.authority_identity_context()})
-eq(p:root('loop'),q:root('renamed'),'recursive root changed under local alpha-renaming')
-eq(p:bytes(),q:bytes(),'recursive Package bytes changed under alpha/order variation')
-ok(true)
-print('PASS tr 02: local recursive names/order are non-semantic ('..count()..')')

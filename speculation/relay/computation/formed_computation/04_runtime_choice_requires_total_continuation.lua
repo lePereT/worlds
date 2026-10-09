@@ -1,0 +1,13 @@
+local H=require('speculation.relay.computation.formed_computation.common')
+local ok,eq,count=H.counter()
+local ints=H.package('int',{H.value_context('int')})
+local sockets=H.package('socket',{H.value_context('socket')})
+local forms=H.package('forms',{H.C.form_context(ints:root('int'),0),H.C.form_context(sockets:root('socket'),0)})
+local performer=H.C.perform_package({authority={inputs=0,outputs=0},values={inputs=0,outputs=1}},
+  {require_outputs={{position=1,value='int'}}},'run_int')
+local linked=H.link({ints,sockets,forms,performer})
+local kind,result,detail=H.C.perform(linked,forms:root('forms'),performer:root('run_int'))
+eq(kind,'Retry','non-total runtime continuation was not rejected')
+ok(result==nil)
+eq(detail.reason,'perform-continuation-not-total')
+print('PASS tf 04: admitted runtime choice requires total continuation ('..count()..')')

@@ -1,8 +1,0 @@
-local H=require('speculation.showcases.transactions.transactional_geometry_viability.common')
- local ok,eq,count=H.counter()
-local p=H.one_root('f',{H.authority_identity_context(2)})
- local r=p:root('f')
-local state,sources=H.state_one(1)
- local none=H.Search.family(p,r,0)
-eq(H.Judgement.first_stable(p,r,state,H.empty_knowledge(),sources,none),'Retry','exactly impossible authority demand became computational Deferred')
-print('PASS gv 16: exact authority impossibility is Retry even before a candidate is discovered ('..count()..')')

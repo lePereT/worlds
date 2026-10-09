@@ -29,41 +29,38 @@ Run historical/general executable experiments from the repository root with:
 make speculation-check
 ```
 
-The current multi-file semantic showcase laboratories have their own entry point:
+The current multi-file Relay laboratories have their own entry point:
 
 ```sh
-make showcase-check
+make relay-check
 ```
 
 The corpus has no Python/SymPy dependency. Experiments which mention a known
 symbolic elimination result compare against a pre-determined result rather than
 calling an external CAS.
 
-## Current Relay-facing showcases
+## Current Relay-facing research
 
-`showcases/` is the current principal semantic pressure line. It is deliberately
-separate from the historical `modern/` corpus.
+`relay/` is the principal Relay pressure line. It is deliberately separate from the
+historical `modern/` corpus.
 
-- `showcases/theory/` constrains Theory to positive occurrence-relative knowledge,
-  existential hiding, exact Construction-correspondence transport, monotone
-  domain closure and certified authority-free observation.
-- `showcases/transactions/` treats separately compiled transactional meaning as
-  canonical relative Development meaning, extends it with finite cyclic Package
-  recurrence, proves stable recursive eligibility independently of search depth,
-  and closes authority-dependent viability by quotienting paired Geometry+Theory
-  boundary Developments.
+- `relay/theory/` constrains Theory to positive occurrence-relative knowledge,
+  existential hiding, exact Construction-correspondence transport, monotone domain
+  closure and certified authority-free observation.
+- `relay/computation/` treats separately compiled computation as canonical relative
+  Development meaning, extends it with finite cyclic Package recurrence, first-class
+  formed computation, stable recursive eligibility, authority-boundary viability and
+  concurrency discovery.
 
-The older `modern/computation_boundary_lab` and
-`modern/transactional_computation_lab` are removed in 0.6.6 because the showcase
-line preserves their strongest semantic pressures with a cleaner Package-first
-mechanical model.
+The concurrency laboratory deliberately imports the earlier computation findings. Its tiny
+synchronous channel, three-party triple-swap protocol, dependent `and_then`/Form pressures,
+grounded IVar/MVar owner protocol, derived one-place buffer and exact-endpoint experiment all
+exercise the existing composition algebra rather than a scheduler or transaction calculus.
 
-The restrictive Theory showcase also narrows terminology used by some older
-experiments. Historical files may call any algebraic interpretation of fixed
-incidence “Theory”. In the current Relay-facing use, Theory means the idempotent,
-monotone positive knowledge doctrine; min-plus costs, amplitudes and similar
-quantitative interpretations may instead be domain-internal mathematics or
-external analysis.
+Older historical files may call any algebraic interpretation of fixed incidence
+"Theory". In the current Relay-facing use, Theory means the idempotent, monotone
+positive knowledge doctrine; quantitative interpretations may instead be
+domain-internal mathematics or external analysis.
 
 ## Modern programme
 

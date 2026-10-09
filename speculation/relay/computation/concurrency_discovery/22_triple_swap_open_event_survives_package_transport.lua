@@ -1,0 +1,13 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local Triple=require('speculation.relay.computation.concurrency_discovery.triple_swap')
+local ok,eq,count=H.counter()
+local P=H.C.Package()
+local original=Triple.swap('swap','alice',1)
+local reloaded=P.decode(original:bytes())
+eq(reloaded:root(),original:root(),'open triple-swap event changed root across transport')
+local peers={Triple.swap('swap','bob',2),Triple.swap('swap','carol',3)}
+local direct=H.C.together({original,peers[1],peers[2]})
+local transported=H.C.together({reloaded,P.decode(peers[1]:bytes()),P.decode(peers[2]:bytes())})
+eq(transported:root(),direct:root(),'separately transported triple-swap events changed rendezvous meaning')
+ok(true)
+print('PASS cc 22: triple-swap event meaning survives canonical Package transport ('..count()..')')

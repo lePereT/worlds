@@ -1,19 +1,33 @@
-# Relay open-Geometry/cut experiments
+# Relay research
 
-These executable toys ask whether Relay Front can eliminate `hole`/`offer` and
-`scalar`/`context` compiler categories in favour of ordinary open Worlds Geometry
-plus transient finite boundary selections (“cuts”).
+`speculation/relay/` is the current Relay-facing research programme built on Worlds.
+It is executable research, not Worlds semantic authority.
 
-`cuts_disjoint.lua` exercises the direct finite-closure judgement: `Query.close`
-ranges over the original disjoint Geometry parts, and every `yes(E)` is consumed
-by strict `join(parts, E)` without constructing a staging product.
+The programme is organised by what it is trying to establish rather than by whether a
+file is a generic demonstration:
 
-`cuts_internal.lua` exercises the distinct same-Geometry case. It first establishes
-a product Geometry deliberately, then asks `Query.close({product}, ...)` to close
-selected cuts inside that already-existing Geometry. This is not asserted to be
-equivalent to direct multi-part closure; locality establishment can make the two
-judgements differ.
+- `theory/` constrains Relay Theory to positive occurrence-relative knowledge,
+  existential hiding, exact Construction-correspondence transport, monotone closure
+  and certified authority-free observation;
+- `computation/` builds portable Package meaning, finite composition, recurrence,
+  first-class formed computation, stable recursive Judgement, boundary viability and
+  concurrency discovery over the same Development centre;
+- `cuts_disjoint.lua` and `cuts_internal.lua` are earlier open-Geometry/cut pressures
+  retained as small historical Relay experiments.
 
-The experiments deliberately create no `Cut` carrier. A cut is a temporary Lua
-selection of existing ingress/egress Strand occurrences. The semantic operations
-remain Question and strict `join`.
+Run the promoted Relay research from the repository root with:
+
+```sh
+make relay-check
+```
+
+## Research rule
+
+The Relay programme tries to add observations, laws and composition vocabulary before
+adding semantic ontology. Search procedures, proof witnesses, cooperative discovery
+order and physical execution strategies are disposable evidence unless a pressure
+shows that they change programme meaning.
+
+The current computation line therefore treats words such as `choice`, `or_else`,
+`and_then`, `each`, `together`, `form` and `perform` as vocabulary over ordinary
+Development rather than evaluator instructions.

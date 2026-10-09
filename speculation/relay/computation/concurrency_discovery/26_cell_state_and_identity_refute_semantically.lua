@@ -1,0 +1,8 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local ok,eq,count=H.counter()
+local wrong_cell=H.C.together({H.Cell.full('left',1),H.Cell.take('right')})
+local wrong_state=H.C.together({H.Cell.empty('same'),H.Cell.take('same')})
+eq(#wrong_cell:family().items,0,'different cells interacted')
+eq(#wrong_state:family().items,0,'take consumed an Empty state')
+ok(true)
+print('PASS cc 26: cell identity and typestate are positive Strand meaning, not primitive checks ('..count()..')')

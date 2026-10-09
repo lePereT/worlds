@@ -1,0 +1,6 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local ok,eq,count=H.counter()
+local p=H.C.together({H.Cell.full('box',7),H.Cell.take('box'),H.Cell.take('box')})
+eq(#p:family().items,0,'one Full cell state satisfied two simultaneous destructive takes')
+ok(true)
+print('PASS cc 27: cell exclusivity is exact open scarcity, not a lock semantic ('..count()..')')

@@ -213,6 +213,18 @@ carrier image returned by the kernel. The supplied parts array and normalised
 equation array are borrowed read-only views. The image table itself is not
 exposed.
 
+### `Construction.try_join(parts, equations)`
+
+Non-exceptional exact composition judgement for client-supplied cuts. Malformed
+API inputs still raise. A dense, well-formed equation set which cannot form a
+lawful Worlds quotient returns `nil, reason`. Success returns the same immutable
+`Construction` witness as `Construction.join`. Positive Query realisations are
+reused exactly as by strict `join`.
+
+Use `try_join` when geometric incompatibility is an expected semantic outcome;
+use `join` when the caller already possesses a lawful witness or an invalid cut
+is a programming error.
+
 ### Construction correspondence
 
 0.6.6 adds an optional immutable view of the Construction's native quotient
@@ -225,6 +237,7 @@ local source_parts = q:source_parts()
 local target = q:target()
 local a = q:source_class(source_carrier)
 local b = q:target_class(result_carrier)
+local y = q:survivor(source_carrier)
 
 local same = q:source_equivalent(source_a, source_b)
 local reaches = q:corresponds(source_carrier, result_carrier)
@@ -241,14 +254,20 @@ the corresponding immutable witness.
 
 `source_class(x)` preserves quotient identity even when the class containing
 `x` has no surviving result carrier. `target_class(y)` reports the class of a
-result carrier. `source_equivalent(a,b)` asks whether two marked source carriers
-were identified by this Construction; `corresponds(a,b)` asks whether a source
-carrier and result carrier belong to the same class.
+result carrier. `survivor(x)` returns the unique exact target carrier in the
+same quotient class as marked source carrier `x`, or `nil` when that class is
+annihilated (and for values outside the marked source). `source_equivalent(a,b)`
+asks whether two marked source carriers were identified by this Construction;
+`corresponds(a,b)` asks whether a source carrier and result carrier belong to
+the same class.
 
 `compose(next)` composes correspondence evidence when `next` consumes this
 correspondence's target Geometry, optionally with genuinely fresh additional
 parts. It rejects overlap between those fresh parts and the original marked
 source. The operation composes evidence only; it does not perform another join.
+On a composed correspondence, `survivor(x)` follows the source-relative class
+through the whole composed relation; it is therefore not merely an alias for
+the first Construction's `image(x)`.
 
 `same_source_partition(other)` compares exact quotienting over an identical
 marked source. `mate(other,y)` uses that common source partition to identify the

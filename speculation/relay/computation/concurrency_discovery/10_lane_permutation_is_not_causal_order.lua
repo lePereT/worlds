@@ -1,0 +1,8 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local ok,eq,count=H.counter()
+local a=H.finish(H.C.together({H.Channel.send('x',7),H.Channel.recv('x')}),'done')
+local b=H.finish(H.C.together({H.Channel.recv('x'),H.Channel.send('x',7)}),'done')
+eq(a:root(),b:root(),'sibling lane permutation changed closed semantic root')
+eq(a:bytes(),b:bytes(),'sibling lane permutation changed closed Package meaning')
+ok(true)
+print('PASS cc 10: together lane order is presentation, not causality ('..count()..')')

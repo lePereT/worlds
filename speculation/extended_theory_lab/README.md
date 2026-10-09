@@ -1,6 +1,11 @@
 # Extended Theory hostile laboratory
 
-**Status: non-authoritative Worlds-only speculation.  No Relay code is imported.**
+**Status: historical, non-authoritative Worlds-only speculation. No Relay code is imported.**
+
+This laboratory predates the thin regular-doctrine Knowledge contract now exercised in
+`speculation/relay/theory/knowledge_contract/`. Its richer fact/rule engine, including legacy
+retraction and image-based transport machinery, is retained only as hostile-pressure history. It is
+not an alternative current Theory API and should not be copied into Relay.
 
 This branch asks whether a broader notion of Theory can recover Relay's difficult
 semantic correlations without adding another operational ontology.

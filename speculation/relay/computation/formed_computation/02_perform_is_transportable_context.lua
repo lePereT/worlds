@@ -1,0 +1,12 @@
+local H=require('speculation.relay.computation.formed_computation.common')
+local ok,eq,count=H.counter()
+local p=H.C.perform_package({authority={inputs=0,outputs=0},values={inputs=0,outputs=1}},nil,'run')
+local root=p:root('run')
+local q=H.roundtrip(p)
+eq(q:bytes(),p:bytes(),'perform Context transport changed bytes')
+local c=q:definition(root).family.items[1]
+eq(c.holes[1].target.value_input,1,'perform target is not supplied by first public value input')
+ok(not p:bytes():find('callback',1,true))
+ok(not p:bytes():find('continuation',1,true))
+ok(not p:bytes():find('performed',1,true))
+print('PASS tf 02: perform itself is transportable open Package meaning ('..count()..')')

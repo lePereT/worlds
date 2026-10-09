@@ -1,0 +1,12 @@
+local H=require('speculation.relay.computation.development_calculus.common')
+local ok,eq,count=H.counter()
+ local C=H.C
+local conditional=H.branch({{true,'then'},{false,'else'}})
+local program=C.bind(C.identity_value(),conditional)
+local t=C.specialize(program,{[1]=true})
+ local f=C.specialize(program,{[1]=false})
+eq(H.out_value(t,1),'then')
+ eq(H.out_value(f,1),'else')
+ok(not program:bytes():find('if',1,true))
+ ok(not program:bytes():find('handler',1,true))
+print('PASS td 15: conditional control is ordinary packaged relational composition ('..count()..')')

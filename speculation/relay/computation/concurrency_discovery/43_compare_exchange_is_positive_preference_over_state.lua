@@ -1,0 +1,23 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local ok,eq,count=H.counter()
+local A=H.AtomicCell
+local Family=require('speculation.relay.computation.development_calculus.family')
+local hit=A.step(A.cell('x',1),A.cas('x',1,2))
+local hf=H.C.family(hit)
+local hfront=Family.frontier(hf)
+eq(#hfront,1,'successful CAS did not have one preferred complete descendant')
+local hi=hfront[1]
+eq(H.value(hit,hi,1),'full')
+eq(H.value(hit,hi,2),2,'successful CAS did not install desired value')
+eq(H.value(hit,hi,3),true,'successful CAS did not report success')
+eq(H.value(hit,hi,4),1,'successful CAS did not report observed old value')
+local miss=A.step(A.cell('x',1),A.cas('x',0,2))
+local mf=H.C.family(miss)
+local mfront=Family.frontier(mf)
+eq(#mfront,1,'failed CAS did not have one fallback descendant')
+local mi=mfront[1]
+eq(H.value(miss,mi,2),1,'failed CAS changed cell state')
+eq(H.value(miss,mi,3),false,'failed CAS did not report fallback')
+eq(H.value(miss,mi,4),1,'failed CAS did not return observed value')
+ok(H.no_runtime_words(hit:bytes()) and H.no_runtime_words(miss:bytes()))
+print('PASS cc 43: CAS is positive equality plus ordinary or_else fallback, not a primitive effect ('..count()..')')

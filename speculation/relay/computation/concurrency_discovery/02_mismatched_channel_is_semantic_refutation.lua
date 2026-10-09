@@ -1,0 +1,6 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local ok,eq,count=H.counter()
+local p=H.C.together({H.Channel.send('left',1),H.Channel.recv('right')})
+eq(#p:family().items,0,'mismatched channel names produced a rendezvous')
+ok(not p:bytes():find('blocked',1,true),'mismatch became blocked runtime state')
+print('PASS cc 02: mismatched channel knowledge refutes closure without blocked state ('..count()..')')

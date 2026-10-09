@@ -1,0 +1,13 @@
+local H=require('speculation.relay.computation.development_calculus.common')
+local ok,eq,count=H.counter()
+ local C=H.C
+local p=C.bind(C.identity_value(),H.branch({{true,'yes'},{false,'no'}}))
+eq(#p:family().items,2)
+local yes=C.specialize(p,{[1]=true})
+ eq(#yes:family().items,1)
+ eq(H.out_value(yes,1),'yes')
+ eq(#yes:alternative(1).values.inputs,0)
+local no=C.specialize(p,{[1]=false})
+ eq(#no:family().items,1)
+ eq(H.out_value(no,1),'no')
+print('PASS td 07: dynamic branch is positive Theory specialisation, not evaluator code ('..count()..')')

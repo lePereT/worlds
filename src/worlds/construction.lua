@@ -8,6 +8,7 @@
 local W=require('worlds')
 local Kernel=require('worlds._kernel')
 local Query=require('worlds._query')
+local DENSE=require('worlds._array')
 local K=Kernel.private
 local Q,QP=Query.public,Query.private
 local Construction={}
@@ -56,8 +57,15 @@ local function value(st)
 end
 
 local function correspondence_value(parts,target,source,target_class)
+  local survivor={}
+  for y,raw in pairs(target_class) do
+    local old=survivor[raw]
+    assert(old==nil or old==y,'correspondence class has multiple target carriers')
+    survivor[raw]=y
+  end
   local x=setmetatable({},CMT)
   CSTATE[x]={source_parts=parts,target=target,source=source,target_class=target_class,
+      survivor=survivor,
       public_classes=setmetatable({}, {__mode='k'})}
   return x
 end
@@ -103,6 +111,22 @@ function Construction.join(parts,equations)
       provenance=provenance}
 end
 
+-- Non-exceptional exact composition judgement. Malformed API use still raises;
+-- a well-formed but geometrically unrealizable equation set returns nil,reason.
+-- This is the public counterpart of Query's soft realisation check and lets
+-- clients distinguish semantic rejection from programming failure directly.
+function Construction.try_join(parts,equations)
+  equations=equations or {}
+  DENSE.length(parts,'join parts')
+  DENSE.length(equations,'join equations')
+  local normal=normal_equations(equations)
+  local r=Q.realisation_for(parts,equations)
+  if r then return Construction.from_realisation(r) end
+  local result,image_or_why,provenance=K.try_join(parts,normal,true)
+  if not result then return nil,image_or_why end
+  return value{parts=parts,equations=normal,result=result,image=image_or_why,provenance=provenance}
+end
+
 function Construction.from_realisation(realisation)
   assert(Q.is_realisation(realisation),'Construction.from_realisation requires Worlds Realisation')
   return value{realisation=realisation,provenance=QP.realisation_provenance(realisation)}
@@ -133,7 +157,10 @@ end
 
 function MT:image(carrier)
   local st=assert(state(self),'Worlds Construction required')
-  return st.realisation and st.realisation:image(carrier) or st.image[carrier]
+  -- A lawful image may be nil when a source carrier is annihilated. Do not use
+  -- the Lua `a and b or c` idiom here: nil is a result, not a missing fast path.
+  if st.realisation then return st.realisation:image(carrier) end
+  return st.image[carrier]
 end
 
 function MT:correspondence()
@@ -156,6 +183,17 @@ end
 function CMT:target_class(x)
   local st=assert(cstate(self),'Worlds Construction correspondence required')
   return public_class(st,st.target_class[x])
+end
+
+-- Return the unique surviving target carrier of a marked source carrier's
+-- quotient class, or nil when that class is annihilated (or x is not in the
+-- marked source).  This is correspondence evidence rather than exact
+-- Construction image and therefore remains meaningful after correspondence
+-- composition.
+function CMT:survivor(x)
+  local st=assert(cstate(self),'Worlds Construction correspondence required')
+  local raw=st.source[x]
+  return raw and st.survivor[raw] or nil
 end
 
 function CMT:source_equivalent(a,b)

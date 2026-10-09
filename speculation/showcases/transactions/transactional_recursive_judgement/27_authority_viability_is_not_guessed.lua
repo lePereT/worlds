@@ -1,8 +1,0 @@
-local H=require('speculation.showcases.transactions.transactional_recursive_judgement.common')
- local eq=select(2,H.counter())
-local p=H.rec_package('f',{H.authority_identity_context()},{})
- local r=p:root('f')
- local f=H.Search.family(p,r,1)
-local empty=H.K.top({})
-eq(H.Judgement.first_stable(p,r,empty,f),'Deferred','Judgement guessed authority-rich recursive eligibility from Theory alone')
-print('PASS rj 27: authority-rich recursive eligibility is Deferred until Geometry gets its own exact boundary summary (1)')

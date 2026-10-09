@@ -1,0 +1,10 @@
+local H=require('speculation.relay.computation.development_calculus.common')
+local ok,eq,count=H.counter()
+ local C=H.C
+local l=H.identity_operation()
+ local r=H.branch({{true,'x'}},{auth=true})
+local p=C.bind(l,r)
+ local a=p:alternative(1)
+eq(#a.authority.inputs,2)
+ eq(#a.authority.outputs,2)
+print('PASS td 19: bind does not capture fresh authority implicitly ('..count()..')')

@@ -4,14 +4,16 @@
 
 - centre/edge architecture: native Construction provenance remains in the verified join;
   composition/public wrapping remain in `worlds.construction`;
-- Lua 5.1 syntax: every shipped Lua file, including showcase laboratories, is scanned;
+- Lua 5.1 syntax: every shipped Lua file, including Relay research laboratories, is scanned;
 - Lua 5.1 representation: persistent sequences are opaque internal values and public Geometry
   sections are ordinary dense arrays, so correctness no longer depends on table `__len` or
   metamethod-backed iteration;
 - Construction correspondence: native quotient evidence is differentially pressured against
   staged composition, hidden/annihilated classes and the source-relative between-Worlds groupoid;
-- semantic showcases: `make showcase-check` runs the restrictive Theory and package-first
-  transaction/recurrence/Judgement/authority-viability suites.
+- Relay research: `make relay-check` runs the restrictive Theory and package-first
+  finite-composition/recurrence/formed-computation/Judgement/authority-viability/concurrency suites.
+  The concurrency arena is currently 50/50 pressures. Its recurrence change is also covered by all 32
+  recurrence pressures and all 59 Geometry-viability pressures.
 
 The packaging environment provides Lua 5.3 TeXLua but no literal Lua 5.1 or LuaJIT binary.
 Compatibility is therefore verified here by the Lua 5.1 syntax gate, by removing the table

@@ -1,0 +1,8 @@
+local H=require('speculation.relay.computation.geometry_viability.common')
+ local ok,eq,count=H.counter()
+local p=H.one_root('f',{H.authority_identity_context(),H.unary_context({definition='f'})})
+ local r=p:root('f')
+local state,sources=H.state_one(1)
+ local none=H.Search.family(p,r,0)
+eq(H.Judgement.first_stable(p,r,state,H.empty_knowledge(),sources,none),'Deferred','productive authority root was refuted because search found nothing yet')
+print('PASS gv 15: semantic authority viability stays separate from bounded discovery ('..count()..')')

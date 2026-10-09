@@ -36,7 +36,9 @@ local q = c:correspondence()
 when one exists. `correspondence()` is richer immutable evidence of the exact
 quotient established by that same Construction. It retains construction-local
 classes even when a class is later annihilated and therefore has no final
-carrier image.
+carrier image. `correspondence:survivor(x)` gives the unique surviving exact
+target of a marked source class, or `nil` when the class is annihilated, and
+continues to do so after correspondence composition.
 
 This evidence supports compositional knowledge transport and source-relative
 comparison of exact-distinct Construction results without adding another Worlds
@@ -110,29 +112,41 @@ Construction is exact evidence for one ordinary materialisation. Presentation
 is ordered, non-authoritative ABI structure over selected open Strand
 occurrences. Neither extends the ontology.
 
-## Semantic showcases
+## Relay-facing research
 
-`speculation/showcases/` contains the strongest current Relay-facing research:
+`speculation/relay/` contains the strongest current Relay-facing work. It is organised
+by research subject rather than as a generic research bucket:
 
-- `showcases/theory/` gives the restrictive occurrence-relative knowledge
-  contract and its Construction/lifecycle pressures;
-- `showcases/transactions/` gives the package-first finite transactional,
-  recurrence, stable-Judgement and authority-viability laboratories.
+- `relay/theory/` gives the restrictive occurrence-relative knowledge contract and
+  its Construction/lifecycle pressures;
+- `relay/computation/` gives package-first finite composition, recurrence, first-class
+  formed computation, stable recursive Judgement, boundary viability and concurrency
+  discovery.
 
-The older `modern/computation_boundary_lab` and
-`modern/transactional_computation_lab` have been removed as superseded research.
-The newer laboratories preserve their strongest semantic pressures while using a
-cleaner Package-first Development model.
+The concurrency-discovery arena uses the same `choice`, `or_else`, `and_then`, `each`,
+`together`, `form` and `perform` vocabulary across synchronous channels, three-party rendezvous,
+grounded IVar/MVar state and derived one-place buffering. Open composition uses ordinary exact
+Strand occurrences selected by a non-authoritative boundary Presentation, with positive Theory
+supported on those occurrences and transported through Construction correspondence. No
+match-signature object or facility-local composition algebra remains. The same `together` can
+discover a rendezvous SCC, a grounded state request, a directed barrier, or causally independent
+subgraphs; heterogeneous choice can contain channel receive, MVar take and a performed Form.
+Persistent ownership also has a productive cyclic Package representation. Semaphore capacity is
+scarce token topology, latch completion is positive all-token evidence, CAS is positive equality plus
+ordinary preference, actor turns compose from mailbox/state protocols, cancellation consumes residual
+authority, and external readiness remains an open environmental seam. Dynamically minted endpoint
+identity can be an imported rigid Point rather than a string. The first memory-order pressure keeps
+distinct atomic locations unordered until explicit synchronisation authority adds causality.
 
-Run them with:
+Run the promoted Relay research with:
 
 ```sh
-make showcase-check
+make relay-check
 ```
 
 ## Validation
 
 `make full-check` is the release semantic/differential/work gate.
 `make speculation-check` runs the historical/general speculation corpus.
-`make showcase-check` runs the current Theory and transaction showcases.
+`make relay-check` runs the promoted Relay Theory and computation research.
 `CHECKS.md` records the release verification shape.

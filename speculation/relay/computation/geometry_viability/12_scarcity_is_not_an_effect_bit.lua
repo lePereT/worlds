@@ -1,0 +1,10 @@
+local H=require('speculation.relay.computation.geometry_viability.common')
+ local ok,eq,count=H.counter()
+local only=H.two_authority_identity_context(false,true)
+ local p=H.one_root('f',{only})
+ local r=p:root('f')
+local state,one=H.state_one(1)
+ local sources={one[1],one[1]}
+ local fam=H.Search.family(p,r,1)
+eq(H.Judgement.first_stable(p,r,state,H.empty_knowledge(),sources,fam),'Retry','one exact Strand was duplicated across two recursive authority inputs')
+print('PASS gv 12: recursive viability inherits exact Worlds scarcity rather than capability metadata ('..count()..')')

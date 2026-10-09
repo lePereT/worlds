@@ -8,6 +8,9 @@
   of the exact quotient established by the ordinary join materialisation.
 - Source classes remain available even when the identified class is later
   annihilated and has no result carrier.
+- `correspondence:survivor(source)` returns the unique surviving target carrier
+  of a marked source quotient class, or `nil` after annihilation; composed
+  correspondences preserve the same source-to-final-target query.
 - Correspondences compose across staged constructions with genuinely fresh
   later parts and support source-relative endpoint mating.
 - `Construction:image` is unchanged and remains the simple surviving-carrier
@@ -15,6 +18,10 @@
   correspondence evidence.
 - Public Construction-class values are opaque evidence, are not Worlds carriers
   and confer no authority.
+- `Construction.try_join(P,E)` provides non-exceptional judgement for well-formed
+  client-supplied cuts: geometric incompatibility returns `nil, reason`, while
+  malformed API use still raises. Strict `Construction.join` remains unchanged
+  for callers which already possess lawful evidence.
 
 ### Lua 5.1 / LuaJIT repair
 
@@ -26,15 +33,40 @@
 - internal fast/query paths use explicit persistent-sequence operations;
 - all shipped Lua is checked for post-5.1 syntax.
 
-### Speculation showcases
+### Relay research laboratories
 
 - removes the superseded `modern/computation_boundary_lab` and
   `modern/transactional_computation_lab`;
 - promotes the restrictive Theory contract/lifecycle work to
-  `speculation/showcases/theory/`;
-- promotes the package-first finite transaction, recurrence, stable Judgement
-  and Geometry-viability laboratories to `speculation/showcases/transactions/`;
-- adds `make showcase-check` as their executable verification entry point.
+  `speculation/relay/theory/`;
+- promotes the package-first finite composition, recurrence, stable Judgement and
+  Geometry-viability laboratories to `speculation/relay/computation/`;
+- adds a Relay concurrency-discovery arena in which channel operations are ordinary open
+  Packages and the shared `choice` / `or_else` / `and_then` / `each` / `together` algebra
+  discovers synchronous and three-party rendezvous without facility-local composition wrappers;
+- replaces the early match-signature prototype with ordinary exact open Strand occurrences,
+  Strand-supported positive Theory and native Construction-correspondence transport, including
+  lawful annihilation of the matched occurrence before public projection;
+- adds cell/state pressures showing exact scarcity, typestate, stable knowledge fan-out,
+  heterogeneous choice and the direct-state grounding falsifier, then follows that falsifier with
+  grounded IVar/MVar owner transitions and a one-place buffered channel defined exactly as MVar
+  put/take;
+- adds a heterogeneous choice pressure containing channel receive, MVar take and a computation
+  genuinely produced through `form`/`perform`;
+- demonstrates fresh dynamic endpoint identity as an imported exact Point, using the existing rigid
+  imported-Point law of `Close` rather than a string or Package-global nominal token;
+- demonstrates dependent `and_then` in which tentative rendezvous knowledge selects a fresh Form
+  root while descendant refutation still governs commitment;
+- extends the concurrency arena to 50 pressures with productive cyclic persistent ownership, imported
+  exact Point parameters, scarce-token semaphores, positive-evidence latches, directed barriers, CAS,
+  actor turns, cancellation, open external readiness, cyclic turn-taking and first weak-memory ordering;
+- strengthens recursive Context plugging so Strand-supported Theory and surviving open Presentation are
+  transported through Construction correspondence before hidden recursive classes are projected;
+- records liveness as a distinct downstream obligation rather than treating bounded viability or scheduler
+  state as semantic progress evidence;
+- fixes `Construction:image` for a lawful annihilated `nil` image returned through a
+  cached Query Realisation;
+- adds `make relay-check` as the executable Relay research entry point.
 
 ### Ontology and compatibility
 

@@ -109,10 +109,11 @@ local function check_file(path)
     assert(state.kind == 'code', path .. ': unfinished long string or comment')
 end
 
--- Showcase laboratories are executable research archives with their own check.
+-- Relay research laboratories are executable archives with their own check.
 -- Production and historical speculation retain the compact repository style gate.
 local command = "find src tests bench tools speculation compat " ..
-    "-type f -name '*.lua' ! -path 'speculation/showcases/*' -print | sort"
+    "-type f -name '*.lua' ! -path 'speculation/relay/theory/*' " ..
+    "! -path 'speculation/relay/computation/*' -print | sort"
 local files = assert(io.popen(command, 'r'))
 local count = 0
 for path in files:lines() do

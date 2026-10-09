@@ -1,0 +1,8 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local ok,eq,count=H.counter()
+local sends=H.C.together({H.Channel.send('x',1),H.Channel.send('x',2)})
+local recvs=H.C.together({H.Channel.recv('x'),H.Channel.recv('x')})
+eq(#sends:family().items,0,'two sends rendezvoused through hidden role metadata')
+eq(#recvs:family().items,0,'two receives rendezvoused through hidden role metadata')
+ok(true)
+print('PASS cc 15: send/receive complementarity is carried by ordinary open interface meaning ('..count()..')')

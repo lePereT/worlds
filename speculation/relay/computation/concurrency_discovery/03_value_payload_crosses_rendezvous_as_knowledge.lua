@@ -1,0 +1,8 @@
+local H=require('speculation.relay.computation.concurrency_discovery.common')
+local ok,eq,count=H.counter()
+local p=H.C.together({H.Channel.send('numbers',41),H.Channel.recv('numbers')})
+eq(#p:family().items,1)
+eq(H.value(p,1,1),41,'receiver did not learn sender payload')
+ok(not p:bytes():find('numbers',1,true),'closed channel identity was not existentially hidden')
+ok(true)
+print('PASS cc 03: generic rendezvous transports positive value knowledge and hides channel identity ('..count()..')')

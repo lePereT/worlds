@@ -1,0 +1,8 @@
+local H=require('speculation.relay.computation.recursive_judgement.common')
+ local ok,eq,count=H.counter()
+local p=H.rec_package('f',{H.base_bool_context(nil),H.unary_bool_context({definition='f'})},{})
+local q=H.roundtrip(p)
+ eq(p:bytes(),q:bytes(),'restrictive recurrence Package roundtrip changed bytes')
+ eq(p:package_root(),q:package_root(),'roundtrip changed Package root')
+ok(not p:bytes():find('function',1,true),'Package contains evaluator-shaped code text')
+print('PASS rj 09: restrictive recurrence remains canonical cyclic semantic Package data ('..count()..')')

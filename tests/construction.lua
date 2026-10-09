@@ -1,6 +1,7 @@
 package.path='./src/?.lua;./src/?/init.lua;'..package.path
 local W=require('worlds')
 local Construction=require('worlds.construction')
+local Query=require('worlds.query')
 
 local n=0
 local function ok(x,m) n=n+1
@@ -60,6 +61,9 @@ do
   eq(corr:source_class(a.o),corr:target_class(c:image(a.o)),
       'surviving target does not retain its source quotient class')
   ok(corr:corresponds(a.o,c:image(b.i)),'source/result correspondence is absent')
+  eq(corr:survivor(a.o),c:image(a.o),'survivor disagrees with direct Construction image')
+  eq(corr:survivor(b.i),c:image(b.i),'identified source has the wrong survivor')
+  eq(corr:survivor({}),nil,'value outside the marked source acquired a survivor')
   eq(W.kind(corr:source_class(a.o)),nil,'quotient evidence leaked as an exact carrier')
   ok(corr:source_class(a.o)~=a.o,'quotient class token aliases exact authority')
   fails(function() corr.extra=true end,'immutable')
@@ -116,6 +120,8 @@ do
   local corr=c:correspondence()
   ok(corr:source_equivalent(xi.o,yi.i),'annihilated cut lost its native source class')
   ok(corr:source_class(xi.o)~=nil,'annihilated quotient class is not retained')
+  eq(corr:survivor(xi.o),nil,'annihilated quotient class acquired a survivor')
+  eq(corr:survivor(yi.i),nil,'identified annihilated source acquired a survivor')
 end
 
 -- Staged image transport is ordinary pointwise composition wherever carriers
@@ -133,6 +139,27 @@ do
     local staged=mid and c2:image(mid) or nil
     ok(staged~=nil,'surviving source carrier has a staged image')
     eq(W.kind(staged),W.kind(mid),'staged image preserves carrier kind')
+  end
+end
+
+-- Correspondence survivor is compositional evidence, not merely an alias for
+-- Construction:image on the first Construction.  It follows an old marked
+-- source through later quotienting and also covers genuinely fresh later parts.
+do
+  local A,a=stage('CS1')
+  local B,b=stage('CS2')
+  local C,c0=stage('CS3')
+  local c1=Construction.join({A,B},{{from=a.o,to=b.i}})
+  local g1=c1:result()
+  local c2=Construction.join({g1,C},{{from=assert(c1:image(b.o)),to=c0.i}})
+  local corr=c1:correspondence():compose(c2:correspondence())
+  for _,x in ipairs({a.m,a.p,a.i,a.o,a.f,b.m,b.p,b.i,b.o,b.f}) do
+    local mid=c1:image(x)
+    eq(corr:survivor(x),mid and c2:image(mid) or nil,
+        'composed survivor disagrees with staged Construction image')
+  end
+  for _,x in ipairs({c0.m,c0.p,c0.i,c0.o,c0.f}) do
+    eq(corr:survivor(x),c2:image(x),'fresh composed source has the wrong survivor')
   end
 end
 
@@ -184,6 +211,43 @@ do
   local g=b:finish()
   fails(function() Construction.join({g},{{from=source,to=target}}) end,
       'inconsistent boundary equation')
+end
+
+
+-- A cached Query Realisation may lawfully map an annihilated source carrier to nil.
+-- Construction:image must return that nil directly rather than falling through to a
+-- non-existent materialised image table.
+do
+  local A,a=stage('cached-cycle-A')
+  local B,b=stage('cached-cycle-B')
+  local solve=Query.solve(Query.close({A,B},{sources={a.o,b.o},targets={a.i,b.i},
+    required_sources={a.o,b.o},required_targets={a.i,b.i},
+    admissible={{from=a.o,to=b.i},{from=b.o,to=a.i}}}))
+  local kind,equations=solve:step(math.huge)
+  eq(kind,'yes','cyclic close did not establish')
+  local c=Construction.join({A,B},equations)
+  eq(c:image(a.o),nil,'annihilated Realisation source acquired an image')
+  eq(c:image(a.i),nil,'annihilated Realisation target acquired an image')
+  eq(#c:result():faces(),1,'cyclic rendezvous did not SCC-normalise')
+end
+
+
+-- try_join separates lawful geometric rejection from malformed API use without
+-- converting arbitrary Lua failures into composition semantics.
+do
+  local A,a=stage('try-A')
+  local B,b=stage('try-B')
+  local c,why=Construction.try_join({A,B},{{from=a.o,to=b.i}})
+  ok(Construction.is_construction(c),why)
+  eq(why,nil)
+
+  local no,reason=Construction.try_join({A,B},{{from=a.i,to=b.i}})
+  eq(no,nil,'invalid exact cut unexpectedly constructed')
+  ok(type(reason)=='string' and reason:match('open egress'),
+      'try_join did not return geometric rejection reason')
+
+  fails(function() Construction.try_join({[1]=A,[3]=B},{}) end,'dense array')
+  fails(function() Construction.try_join({}, {}) end,'join expects Geometry parts')
 end
 
 print('PASS construction',n,'assertions')

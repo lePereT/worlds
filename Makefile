@@ -13,7 +13,7 @@ endif
 .PHONY: advance-differential construction presentation history trust adversarial
 .PHONY: work mechanical-work centre differential restricted partial nested branching
 .PHONY: historical shape check full-check bench close-bench stress live trust-bench
-.PHONY: speculation-check showcase-check
+.PHONY: speculation-check relay-check
 
 style:
 	$(LUA) tools/check-style.lua
@@ -106,19 +106,22 @@ live:
 	LUA_PATH='./src/?.lua;;' $(LUA) bench/live.lua 10000
 
 speculation-check:
-	@set -e; for f in $$(find speculation -name '*.lua' ! -path 'speculation/showcases/*' | sort); do \
+	@set -e; for f in $$(find speculation -name '*.lua' ! -path 'speculation/relay/theory/*' ! -path 'speculation/relay/computation/*' | sort); do \
 	  printf 'speculation: %s\n' "$$f"; \
 	  LUA_PATH='./src/?.lua;./?.lua;;' $(LUA) "$$f"; \
 	done
 
 
-showcase-check:
-	LUA='$(LUA)' speculation/showcases/theory/knowledge_contract/run.sh
-	LUA='$(LUA)' speculation/showcases/theory/lifecycle_and_correspondence/run.sh
-	LUA='$(LUA)' speculation/showcases/transactions/transactional_development_calculus/run_lab.sh
-	LUA='$(LUA)' speculation/showcases/transactions/transactional_recurrence_calculus/run_lab.sh
-	LUA='$(LUA)' speculation/showcases/transactions/transactional_recursive_judgement/run_lab.sh
-	LUA='$(LUA)' speculation/showcases/transactions/transactional_geometry_viability/run_lab.sh
+
+relay-check:
+	LUA='$(LUA)' speculation/relay/theory/knowledge_contract/run.sh
+	LUA='$(LUA)' speculation/relay/theory/lifecycle_and_correspondence/run.sh
+	LUA='$(LUA)' speculation/relay/computation/development_calculus/run_lab.sh
+	LUA='$(LUA)' speculation/relay/computation/recurrence_calculus/run_lab.sh
+	LUA='$(LUA)' speculation/relay/computation/formed_computation/run_lab.sh
+	LUA='$(LUA)' speculation/relay/computation/recursive_judgement/run_lab.sh
+	LUA='$(LUA)' speculation/relay/computation/geometry_viability/run_lab.sh
+	LUA='$(LUA)' speculation/relay/computation/concurrency_discovery/run_lab.sh
 
 trust-bench:
 	LUA_PATH='./src/?.lua;./src/?/init.lua;;' $(LUA) bench/trust.lua

@@ -1,0 +1,11 @@
+local H=require('speculation.relay.computation.geometry_viability.common')
+ local ok,eq,count=H.counter()
+ local Canonical=require('speculation.relay.computation.development_calculus.canonical')
+local a=assert(H.Context.plug(H.bool_authority_context(1,true),{}))
+ local b=assert(H.Context.plug(H.bool_authority_context(2,true),{}))
+ok(H.Case.key(a)~=H.Case.key(b),'authority support missing from paired boundary case')
+local c=assert(H.Context.plug(H.bool_authority_context(1,false),{}))
+ ok(H.Case.key(a)~=H.Case.key(c),'positive knowledge missing from paired boundary case')
+local spec=H.Case.new(a).spec
+ eq(H.Case.key(a),Canonical.encode(spec),'boundary case key contains hidden evaluator identity')
+print('PASS gv 34: paired Geometry+Theory boundary cases have canonical portable keys ('..count()..')')
